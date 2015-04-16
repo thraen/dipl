@@ -13,7 +13,7 @@ armijo_bas			= 0.5
 armijo_sig			= 0.5
 
 const dx			= 1
-const dt			= 0.5#(600/6-1/6) /100 #0.99833
+const dt			= 0.95#(600/6-1/6) /100 #0.99833
 
 @everywhere alpha	= 0.01
 
@@ -122,8 +122,6 @@ while steps < maxsteps
 		H1_J_w				= _H1_norm(grd_u_J, grd_v_J)
 
 		I_next				= transport( s0, u_next, v_next, T-1 )
-
-		#p_next, L2_err_next	= ruecktransport( s, I_next, -u_next, -v_next, n_samples, n_zwischensamples, norm_s )
 		L2_err_next, _		= sample_err_L2(I_next,s,norm_s)
 
 		J_next 				= L2_err_next/2 + alpha*H1_err_next/2
@@ -141,6 +139,7 @@ while steps < maxsteps
 		echo("H1_J_w", H1_J_w)
 		echo()
 
+		#wtf?
 		if (J_next < J) 
 		#if J_next < J-armijo_sig*t*H1_J_w
 			I					= I_next
@@ -150,7 +149,6 @@ while steps < maxsteps
 			H1_err				= H1_err_next
 			L2_err				= L2_err_next
 
-			#p					= p_next
 			p, _				= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 
 			grd_u_J, grd_v_J	= grad_J( I, p, u, v )
