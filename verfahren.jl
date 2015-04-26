@@ -13,14 +13,14 @@ armijo_bas			= 0.5
 armijo_sig			= 0.5
 
 const dx			= 1
-const dt			= 0.95#(600/6-1/6) /100 #0.99833
+const dt			= 1#(600/6-1/6) /100 #0.99833
 
-@everywhere alpha	= 0.01
+@everywhere alpha	= 0.001
 
-maxsteps 			= 1000
+maxsteps 			= 10
 
 #@everywhere rootdir = "$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
-@everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)/"
+@everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
 
 include("marcel_matrizen.jl")
 include("misc.jl")
@@ -31,6 +31,19 @@ include("beispiele.jl")
 
 # marcel Finite-Differenzen-Matrizen
 _, Cx, Cy, Dx, Dy = generateMatrices3(n, 1)
+
+# matrix fuer poissongleichung wird nur einmal vorbestimmt und spaeter wiederverwertet
+L			= generate_laplace(m, n) 
+LU			= factorize(L)
+
+s		= inits(quadrat)
+#s		= inits(rot_circle)
+s0		= s[:,:,1]
+
+
+u		= 0* ones( m, n, T-1 )
+v		= 0* ones( m, n, T-1 )
+
 
 function grad_J(I, p, u, v)
 	println( "================calculate gradient $m x $n" )
@@ -67,107 +80,100 @@ function grad_J(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-s		= inits(quadrat)
-#s		= inits(rot_circle)
-s0		= s[:,:,1]
+function verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+	println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	norm_s		= L2norm(s)
+	echo("norm_s", norm_s)
 
-norm_s	= L2norm(s)
+	H1_err		= H1_norm( u, v )
 
-echo("norm_s", norm_s)
+	I			= transport(s0, u, v, T-1)
 
-u		= 0* ones( m, n, T-1 )
-v		= 0* ones( m, n, T-1 )
+	p, L2_err	= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	L2_err, _	= sample_err(I,s,norm_s)
 
-println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	echo("initial L2_err", L2_err)
 
-# matrix fuer poissongleichung wird nur einmal vorbestimmt und spaeter wiederverwertet
-L			= generate_laplace(m, n) 
-LU			= factorize(L)
+	grd_u_J, grd_v_J	= grad_J( I, p, u, v )
+	H1_J_w				= H1_norm(grd_u_J, grd_v_J)
+	#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
+	#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
 
-H1_err		= _H1_norm( u, v )
+	J	= L2_err/2 + alpha*H1_err/2
+	J0	= J
+	H0	= H1_err
+	L0	= L2_err
 
-I			= transport(s0, u, v, T-1)
+	# Armijo-Schrittweite
+	armijo_exp = 0
+	steps = 0
+	while steps < maxsteps
+		while (armijo_exp < 40)
+			t 					= armijo_bas^armijo_exp
 
-# what! hier sollte ,..,-u, -v uebergeben werden # hier ist es eh noch egal, wenn u0 = v0 = 0
-p, L2_err	= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
-L2_err, _	= sample_err_L2(I,s,norm_s)
+			echo()
+			echo("step", steps, armijo_exp,"test armijo step length ", t)
+			echo("step", steps, armijo_exp,"test armijo step length ", t)
+			echo()
 
-echo("initial L2_err", L2_err)
+			u_next				= u - t*grd_u_J
+			v_next				= v - t*grd_v_J
 
-grd_u_J, grd_v_J = grad_J( I, p, u, v )
-#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
+			H1_err_next			= H1_norm(u_next, v_next)
+			H1_J_w				= H1_norm(grd_u_J, grd_v_J)
 
-J	= L2_err/2 + alpha*H1_err/2
-J0	= J
-H0	= H1_err
-L0	= L2_err
+			I_next				= transport( s0, u_next, v_next, T-1 )
+			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
-# Armijo-Schrittweite
-armijo_exp = 0
-steps = 0
-while steps < maxsteps
-	while (armijo_exp < 40)
-		t 					= armijo_bas^armijo_exp
+			J_next 				= L2_err_next/2 + alpha*H1_err_next/2
 
-		echo()
-		echo("step", steps, armijo_exp,"test armijo step length ", t)
-		echo("step", steps, armijo_exp,"test armijo step length ", t)
-		echo()
+			#echo( "L2errors", L2_err, L2_err_next, tmp, t2 )
 
-		u_next				= u - t*grd_u_J
-		v_next				= v - t*grd_v_J
+			#echo("max u\t", maximum(abs(u)), "max u_next", maximum(abs(u_next)))
+			#echo("max v\t", maximum(abs(v)), "max v_next", maximum(abs(v_next)))
+			#echo("max I\t", maximum(abs(I)), "max I_next", maximum(abs(I_next)))
 
-		H1_err_next			= _H1_norm(u_next, v_next)
-		H1_J_w				= _H1_norm(grd_u_J, grd_v_J)
+			echo("L2errors",  L2_err, L2_err_next, L2_err-L2_err_next)
+			echo("H1_errors", H1_err, H1_err_next, H1_err-H1_err_next)
+			echo("alpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next))
+			echo("J        ", J, J_next,J-J_next)
+			echo("H1_J_w", H1_J_w)
+			echo()
 
-		I_next				= transport( s0, u_next, v_next, T-1 )
-		L2_err_next, _		= sample_err_L2(I_next,s,norm_s)
+			#wtf?
+			if (J_next < J) 
+			#if J_next < J-armijo_sig*t*H1_J_w
+				I					= I_next
+				u					= u_next
+				v					= v_next
 
-		J_next 				= L2_err_next/2 + alpha*H1_err_next/2
+				H1_err				= H1_err_next
+				L2_err				= L2_err_next
 
-		#echo( "L2errors", L2_err, L2_err_next, tmp, t2 )
+				p, _				= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 
-		#echo("max u\t", maximum(abs(u)), "max u_next", maximum(abs(u_next)))
-		#echo("max v\t", maximum(abs(v)), "max v_next", maximum(abs(v_next)))
-		#echo("max I\t", maximum(abs(I)), "max I_next", maximum(abs(I_next)))
+				grd_u_J, grd_v_J	= grad_J( I, p, u, v )
 
-		echo("L2errors",  L2_err, L2_err_next, L2_err-L2_err_next)
-		echo("H1_errors", H1_err, H1_err_next, H1_err-H1_err_next)
-		echo("alpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next))
-		echo("J        ", J, J_next,J-J_next)
-		echo("H1_J_w", H1_J_w)
-		echo()
+				J					= L2_err/2 + alpha*H1_err/2
 
-		#wtf?
-		if (J_next < J) 
-		#if J_next < J-armijo_sig*t*H1_J_w
-			I					= I_next
-			u					= u_next
-			v					= v_next
-
-			H1_err				= H1_err_next
-			L2_err				= L2_err_next
-
-			p, _				= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
-
-			grd_u_J, grd_v_J	= grad_J( I, p, u, v )
-
-			J					= L2_err/2 + alpha*H1_err/2
-
-			armijo_exp = 0
-			echo("\n****** NEW GRADIENT *****")
-			echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-			echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
-			break 
+				armijo_exp = 0
+				echo("\n****** NEW GRADIENT *****")
+				echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
+				echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
+				break 
+			end
+			
+			armijo_exp += 1
 		end
-		
-		armijo_exp += 1
-	end
 
-	steps +=1
+		steps +=1
+	end
+	#save_images_(s, "s")
+
+	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
 
-#save_images_(s, "s")
+I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+save_images_(s, "s")
 
 

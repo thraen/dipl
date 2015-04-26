@@ -47,11 +47,6 @@ function ___H1_norm(u, v, L)
 	return dt*ret[1]
 end
 
-function _H1_norm(u,v)
-	___H1_norm(u,v,L)
-end
-
-
 function l2norm(s)
 	#l2_s	= sum([ sum(s[:,:,k].^2) for k=1:n_samples ])
 	return sum(s.^2)
@@ -82,10 +77,6 @@ end
 B		= generateB(m, dx)
 Beye	= speye(m*n)
 
-function L2norm(s)
-	return Xnorm(s,B)
-end
-
 function sample_err_L2(I, s, norm_s)
 	err		= zeros( size(s) )
 	L2err	= 0
@@ -106,4 +97,21 @@ function sample_err_l2(I, s, norm_s)
 	l2err = sum(err.*err)/norm_s 
 	return l2err, err
 end
+
+function L2norm(s)
+	return Xnorm(s,B)
+	#return Xnorm(s,Beye)
+end
+
+function sample_err(I, s, norm_s)
+	return sample_err_L2(I, s, norm_s)
+	#return sample_err_l2(I, s, norm_s)
+end
+
+function H1_norm(u,v)
+	___H1_norm(u,v,L)
+end
+#H1_norm = __H1_norm
+
+
 
