@@ -13,11 +13,11 @@ armijo_bas			= 0.5
 armijo_sig			= 0.5
 
 const dx			= 1
-const dt			= 1#(600/6-1/6) /100 #0.99833
+const dt			= 0.77#(600/6-1/6) /100 #0.99833
 
-@everywhere alpha	= 0.001
+@everywhere alpha	= 0.1
 
-maxsteps 			= 10
+maxsteps 			= 100
 
 #@everywhere rootdir = "$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
 @everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
@@ -30,20 +30,18 @@ include("view.jl")
 include("beispiele.jl")
 
 # marcel Finite-Differenzen-Matrizen
-_, Cx, Cy, Dx, Dy = generateMatrices3(n, 1)
+_, Cx, Cy, Dx, Dy = generateMatrices3(n, dx) #thr
 
 # matrix fuer poissongleichung wird nur einmal vorbestimmt und spaeter wiederverwertet
-L			= generate_laplace(m, n) 
+L			= generate_laplace(m, n, dx) 
 LU			= factorize(L)
 
 s		= inits(quadrat)
 #s		= inits(rot_circle)
-s0		= s[:,:,1]
 
 
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
-
 
 function grad_J(I, p, u, v)
 	println( "================calculate gradient $m x $n" )
@@ -53,13 +51,6 @@ function grad_J(I, p, u, v)
 		# p[2:m-1,2:n-1] vielleicht lieber im Voraus fuer alle t berechnen, damit die p[:,:,t] nicht umkopiert werden muessen
 
 		# marcel's Variante
-		##pI_x_			= Cx*sI_h.values.*sp_h.values;
-		#I_x_			= reshape(Cx*reshape(I[:,:,t] , n*m) , m, n )
-		#I_y_			= reshape(Cy*reshape(I[:,:,t] , n*m) , m, n )
-
-		#pI_x_			= I_x_.*p[:,:,t]
-		#pI_y_			= I_y_.*p[:,:,t]
-
 		pI_x_			= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
 		pI_y_			= reshape(Cy*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
 		phi_x_			= poissolv( LU, pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
@@ -70,18 +61,60 @@ function grad_J(I, p, u, v)
 		# meine Variante
 		#pI_x			= p[2:m-1,2:n-1,t].*central_diff_x( I[:,:,t] )
 		#pI_y			= p[2:m-1,2:n-1,t].*central_diff_y( I[:,:,t] )
-		# what? meiner meinung nach sollte hier -pI_x stehen und im naechsten +alpha*u
 		#phi_x			= poissolv( LU, pI_x, zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
 		#phi_y			= poissolv( LU, pI_y, zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		# ..und hier +alpha*u
 		#grd_u_J[:,:,t]	= phi_x+alpha*u[:,:,t] 
 		#grd_v_J[:,:,t]	= phi_y+alpha*v[:,:,t]
 	end
 	return grd_u_J, grd_v_J
 end
 
-function verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+function next_w!(I, p, u, v)
+	for t= 1:T-1
+		pI_x_		= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
+		pI_y_		= reshape(Cy*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
+		u[:,:,t]	= poissolv( LU, -pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
+		v[:,:,t]	= poissolv( LU, -pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
+	end
+
+	return u/alpha, v/alpha
+end
+
+function verfahren_direkt(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 	println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	s0			= s[:,:,1]
+	norm_s		= L2norm(s)
+
+	I			= zeros(m, n, T)
+	p			= zeros(m, n, T)
+
+	L2_err, _	= sample_err(I,s,norm_s)
+	H1_err		= H1_norm( u, v )
+	J			= L2_err/2 + alpha*H1_err/2
+
+	steps 		= 0
+	while steps < maxsteps
+		I			= transport(s0, u, v, T-1)
+		p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+		u, v		= next_w!(I, p, u, v)
+
+		L2_err, _	= sample_err(I,s,norm_s)
+		H1_err		= H1_norm( u, v )
+		J			= L2_err/2 + alpha*H1_err/2
+
+		echo()
+		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err)
+		echo("J", J)
+		echo()
+		steps+=1
+	end
+
+	return I, u, v, p, L2_err, H1_err, J, steps
+end
+
+function verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+	println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
 	echo("norm_s", norm_s)
 
@@ -89,7 +122,7 @@ function verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 
 	I			= transport(s0, u, v, T-1)
 
-	p, L2_err	= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	echo("initial L2_err", L2_err)
@@ -150,7 +183,7 @@ function verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 				H1_err				= H1_err_next
 				L2_err				= L2_err_next
 
-				p, _				= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+				p					= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 
 				grd_u_J, grd_v_J	= grad_J( I, p, u, v )
 
@@ -173,7 +206,11 @@ function verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
 
-I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
-save_images_(s, "s")
+#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+
+I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+
+#save_images_(s, "s")
+_="fertig"
 
 

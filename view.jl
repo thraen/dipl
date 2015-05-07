@@ -36,7 +36,7 @@ function save_quivers_(u,v, pref)
 	m, n, T = size(u)
 	run(`mkdir -p $rootdir/$pref`)
 
-	:sync @parallel for t=1:T 
+	@sync @parallel for t=1:T 
 		print("$t ")
 		save_quiver(u, v, pref, t)
 		#savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)

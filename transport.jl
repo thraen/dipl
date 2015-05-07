@@ -41,7 +41,7 @@ end
 function transport(I0, u, v, schritte)
 	m, n	= size(I0)
 	I		= cat( 3, I0, zeros( m, n, schritte ) )
-	println("==============Transport============$n x $m x $T")
+	println("==============Transport=================$n x $m x $T")
 
 	for t = 1:schritte
 		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
@@ -75,8 +75,6 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 	#p		= SharedArray(typeof(I[1,1,1]), size(I), init=false)
 	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
 
-	L2err	= 0
-
 	# thr!!! rechter oder linker grenzwert zum diracterm?
 	sk		= 0
 
@@ -84,9 +82,8 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 		# thr!!! rechter oder linker grenzwert zum diracterm?
 		if mod(t-1, n_zsamp) == 0 then
 			#echo("am sample        ", t, "->", t-1, n_samp-sk)
-			err			=  I[:, :, t] - s[:, :, n_samp-sk] 
+			err			= I[:, :, t] - s[:, :, n_samp-sk] 
 			p[:,:,t] 	= p[:,:,t] - err/norm_s
-			L2err		+= sum(err.*err)/norm_s
 			sk 			+= 1
 		#else
 			#echo("zwischen samples ", t, "->", t-1)
@@ -103,5 +100,5 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 			end
 		end
 	end
-	return p, L2err
+	return p
 end

@@ -32,7 +32,7 @@
 	return reshape(u, m, n)
 end
 
-# where LU is either precalculated LU-Decomposition of A or A itself, works both
+# where LU is either precalculated LU-Decomposition of A or A itself, both work
 @everywhere function poissolv(LU, f, gu, gd, gl, gr)
 	m = size(f, 1) +2
 	n = size(f, 2) +2
@@ -46,7 +46,7 @@ end
 	return reshape(u, m, n)
 end
 
-@everywhere function generate_laplace(m,n)
+@everywhere function generate_laplace(m,n,dx)
 	ind_i_diag	= 1:m*n
 	ind_j_diag 	= 1:m*n
 
@@ -63,7 +63,7 @@ end
 	ind_j		= [ind_j_diag; ind_j_ndiag]
 	val			= [diag; ndiag]
 
-	return sparse(ind_i, ind_j, val, m*n, m*n) 
+	return sparse(ind_i, ind_j, val, m*n, m*n) / dx
 end
 
 @everywhere function ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
