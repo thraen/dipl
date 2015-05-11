@@ -29,7 +29,7 @@ end
 
 # teste H1_norm mit l2-Norm und L2-Norm
 function __H1_norm(u, v)
-	return dt* ( sum( central_diff_x( u ).^2 + sum( central_diff_y( u ).^2 ) ) + sum( central_diff_x( v ).^2 + sum( central_diff_y( v ).^2 ) ) )
+	return dx*dx* dt* ( sum( central_diff_x( u ).^2 + sum( central_diff_y( u ).^2 ) ) + sum( central_diff_x( v ).^2 + sum( central_diff_y( v ).^2 ) ) )
 end
 
 function ___H1_norm(u, v, L)
@@ -44,12 +44,12 @@ function ___H1_norm(u, v, L)
 		end
 		ret += ret_
 	end
-	return dt*ret[1]
+	return dx*dx* dt* ret[1]
 end
 
 function l2norm(s)
 	#l2_s	= sum([ sum(s[:,:,k].^2) for k=1:n_samples ])
-	return sum(s.^2)
+	return dx*dx* dt* sum(s.^2)
 end
 
 # berechnet sum( L_X(s[:,:,k ) , k in I )
@@ -83,7 +83,7 @@ function sample_err_L2(I, s, norm_s)
 	for (k,t) in sample_times
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
-	L2err 	= L2norm(err)/norm_s
+	L2err 	= dx*dx* L2norm(err)/norm_s
 	return L2err, err
 end
 
@@ -94,7 +94,7 @@ function sample_err_l2(I, s, norm_s)
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
 	# dasselbe wie, aber schneller als l2err=Xnorm(err, speye, ..)
-	l2err = sum(err.*err)/norm_s 
+	l2err = dx*dx* sum(err.*err)/norm_s 
 	return l2err, err
 end
 

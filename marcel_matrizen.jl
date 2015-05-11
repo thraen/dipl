@@ -152,3 +152,7 @@ function generateB(n, h)
 
 	return B * h^2/24
 end
+
+function generate_wave(n, h)
+	return lskjdf
+end

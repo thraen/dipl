@@ -1,23 +1,22 @@
-@everywhere m					=  40
-@everywhere n					=  40
+@everywhere m					=  60
+@everywhere n					=  60
 
 @everywhere n_samples			=   5
-@everywhere n_zwischensamples	=  25   # duerfen nicht zu wenige sein? abhaengig von dt?
+@everywhere n_zwischensamples	=  40   # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 T					= (n_samples-1)*n_zwischensamples+1
 # Zuordnung Samplenummer zu Zeitpunkt 
 sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
 
-armijo_lim			= 0.1
 armijo_bas			= 0.5
-armijo_sig			= 0.5
+armijo_sig			= 0.0
 
-const dx			= 1
-const dt			= 0.77#(600/6-1/6) /100 #0.99833
+const dx			= 0.5
+const dt			= 0.27 #0.99833
 
-@everywhere alpha	= 0.1
+@everywhere alpha	= 0.01
 
-maxsteps 			= 100
+maxsteps 			= 1000
 
 #@everywhere rootdir = "$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
 @everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
@@ -36,8 +35,8 @@ _, Cx, Cy, Dx, Dy = generateMatrices3(n, dx) #thr
 L			= generate_laplace(m, n, dx) 
 LU			= factorize(L)
 
-s		= inits(quadrat)
-#s		= inits(rot_circle)
+#s		= inits(quadrat)
+s		= inits(rot_circle)
 
 
 u		= 0* ones( m, n, T-1 )
@@ -73,11 +72,11 @@ function next_w!(I, p, u, v)
 	for t= 1:T-1
 		pI_x_		= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
 		pI_y_		= reshape(Cy*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
-		u[:,:,t]	= poissolv( LU, -pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		v[:,:,t]	= poissolv( LU, -pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
+		u[:,:,t]	= poissolv( LU, -pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) ) /alpha
+		v[:,:,t]	= poissolv( LU, -pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) ) /alpha
 	end
 
-	return u/alpha, v/alpha
+	return u, v
 end
 
 function verfahren_direkt(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
@@ -174,8 +173,8 @@ function verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 			echo()
 
 			#wtf?
-			if (J_next < J) 
-			#if J_next < J-armijo_sig*t*H1_J_w
+			#if (J_next < J) 
+			if J_next < J-armijo_sig*t*H1_J_w
 				I					= I_next
 				u					= u_next
 				v					= v_next
@@ -206,9 +205,9 @@ function verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
 
-#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 
-I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
+#I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(maxsteps, s, u, v, L2norm, H1_norm, sample_err)
 
 #save_images_(s, "s")
 _="fertig"

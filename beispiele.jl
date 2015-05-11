@@ -9,7 +9,8 @@ function quadrat(y,x,t)
 	cl	= cx - 8
 	cr	= cx + 8
 
-	return (x >= cl +t*d).*(x <= cr +t*d).*(y >= cl).*(y <= cr);
+	#return (x >= cl +t*d).*(x <= cr +t*d).*(y >= cl).*(y <= cr);
+	return (x >= cl ).*(x <= cr ).*(y >= cl+t*d).*(y <= cr+t*d);
 end
 
 function slotted_circle(y,x)
