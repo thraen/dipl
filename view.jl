@@ -50,7 +50,6 @@ function save_images_(im, pref)
 	run(`mkdir -p $rootdir/$pref`)
 
 	@sync @parallel for t=1:T 
-		print("$t ")
 		save_image(im, pref, t)
 		#savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
 	end
@@ -76,6 +75,11 @@ function save_all()
 	#save_w()
 end
 
+function save_value(M, pref)
+	fn	= rootdir * pref * vsuff
+	writedlm(fn, M)
+end
+
 function save_values(M, pref)
 	_, _, T	= size(M)
 	pref = rootdir * pref * "/"
@@ -94,7 +98,4 @@ end
 #x = linspace(0,2*pi,1000); y = sin(3*x + 4*cos(2*x));
 #plot(x, y, color="red", linewidth=2.0, linestyle="--")
 #title("A sinusoidally modulated sinusoid")
-
-
-
 

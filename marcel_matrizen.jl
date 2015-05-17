@@ -1,6 +1,5 @@
 # Cx, Cy zentrale finite Differenzen
 # Dx, Dy ?
-# B      identitaet
 
 function  generateMatrices3(n, h)
 	nDOF= n^2
@@ -27,7 +26,6 @@ function  generateMatrices3(n, h)
 	Cx[n+1:end-n, 1:end-2*n] = -tCx
 	Cx[n+1:end-n, 2*n+1:end] = Cx[n+1:end-n, 2*n+1:end] + tCx
 
-
 	T[n+1:end-n, n+1:end-n] = -2*tCx
 
 	Dx	= T + abs(Cx)
@@ -38,17 +36,13 @@ function  generateMatrices3(n, h)
 	Dy	= Dy / 2 / h
 	Dx	= Dx / 2 / h
 
-	#B	= spdiagm(ones(nDOF,1),0,nDOF,nDOF)
-	B	= spdiagm(vec(ones(nDOF,1)),0);
 
 	#println("Cx",  Cx)
 	#println("Cy ", Cy)
 	#println("Dx ", Dx)
 	#println("Dy ", Dy)
-	#println("B ", B)
 
-	#return  B, transpose(Cx), transpose(Cy), Dx, Dy
-	return  B, Cx, Cy, Dx, Dy
+	return  Cx, Cy, Dx, Dy
 end
 
 function generateB(n, h)
@@ -153,6 +147,91 @@ function generateB(n, h)
 	return B * h^2/24
 end
 
-function generate_wave(n, h)
-	return lskjdf
+function generate_laplace(m,n,dx)
+	ind_i_diag	= 1:m*n
+	ind_j_diag 	= 1:m*n
+
+	diag_seg	= [ 1; repmat([4], n-2) ; 1]
+	diag		= [ ones(n); repmat(diag_seg, m-2); ones(n) ]
+
+	ind_j_ndiag = zeros(1:(n-2)*(m-2)*4) # das hier ist nur zur Deklaration der Variablen
+	ind_i_ndiag = zeros(1:(n-2)*(m-2)*4) # als Index (Integerarray) in der gewuenschten Groesse
+	lap_ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
+
+	ndiag	 	= -ones( (n-2)*(m-2)*4 )
+
+	ind_i		= [ind_i_diag; ind_i_ndiag]
+	ind_j		= [ind_j_diag; ind_j_ndiag]
+	val			= [diag; ndiag]
+
+	return sparse(ind_i, ind_j, val, m*n, m*n) / (dx*dx)
 end
+
+function lap_ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
+	for i = 2:m-1
+		for j = 2:n-1
+			off	= ((i-2)*(n-2)+j-2)*4
+			diag= (i-1)*n+j
+			#println( ((i-2)*(n-2)+j-2)*4,' ', (i-1)*n+j )
+
+			#ind_j_ndiag[ off+1:off+4  ] = [(i-1)*n+j-n, (i-1)*n+j-1, (i-1)*n+j+1,(i-1)*n+j+n]
+			#ind_i_ndiag[ off+1:off+4  ] = [(i-1)*n+j,   (i-1)*n+j,   (i-1)*n+j,  (i-1)*n+j  ]
+			
+			ind_j_ndiag[ off+1 ] = diag -n
+			ind_j_ndiag[ off+2 ] = diag -1
+			ind_j_ndiag[ off+3 ] = diag +1
+			ind_j_ndiag[ off+4 ] = diag +n
+
+			ind_i_ndiag[ off+1 ] = diag
+			ind_i_ndiag[ off+2 ] = diag
+			ind_i_ndiag[ off+3 ] = diag
+			ind_i_ndiag[ off+4 ] = diag
+		end
+	end
+end
+
+const L					= generate_laplace(m, n, dx) 
+const LU				= factorize(L)
+const B					= generateB(m, dx)
+const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
+
+function generate_wave_op(n, schritte, dt, alpha, beta)
+	nDOF		= n^2
+
+	#B	= spdiagm(vec(ones(nDOF,1)),0);
+	Id	= speye(nDOF)
+
+    L2	= copy(L)
+	R	= 2*Id
+	R2	= -Id
+    for k = 2:schritte-1
+        L2	= blkdiag(L2, L)
+        R	= blkdiag(R, 2*Id)
+        R2	= blkdiag(R2, -Id)
+    end
+
+    L2	= blkdiag(L/2,L2,L/2)*dt^2
+
+    To	= blkdiag(-Id, R2)
+    Tu	= blkdiag(R2, -Id)
+    R	= blkdiag(Id, R, Id)
+       
+    R[nDOF+1:end, 1:end-nDOF] = R[nDOF+1:end, 1:end-nDOF] + Tu
+    R[1:end-nDOF, nDOF+1:end] = R[1:end-nDOF, nDOF+1:end] + To
+
+    # hae?
+	#R[nDOF+1:end-nDOF,:] = R[nDOF+1:end-nDOF,:]
+
+    WaveOp = L2 + R
+    #%GradNormOp = WaveOp / sTime.dt;
+    #%CostNormOp = WaveOp / sTime.dt * sRegParam.alpha;
+    GradNormOp = (L2 + R )/dt
+    CostNormOp = (alpha * L2 + beta * R)/dt
+    
+    #setup.type = 'nofill';
+    #[WaveL, WaveU] = ilu(WaveOp, setup);
+	return L2, R, WaveOp, GradNormOp, CostNormOp
+end
+
+L2, R, WaveOp, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+

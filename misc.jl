@@ -1,5 +1,7 @@
 #Base.Multimedia.writemime(stream,::MIME"text/plain",x::Float64)=@printf("%1.2f",x)
 
+include("marcel_matrizen.jl")
+
 function echo(args...)
 	for x in args print( x, '\t') end 
 	print('\n')
@@ -44,12 +46,14 @@ function ___H1_norm(u, v, L)
 		end
 		ret += ret_
 	end
-	return dx*dx* dt* ret[1]
+	# thr! dx steckt in L
+	return dt* ret[1]
 end
 
 function l2norm(s)
 	#l2_s	= sum([ sum(s[:,:,k].^2) for k=1:n_samples ])
-	return dx*dx* dt* sum(s.^2)
+	# thr! hier darf kein dt rein?
+	return dx*dx* sum(s.^2)
 end
 
 # berechnet sum( L_X(s[:,:,k ) , k in I )
@@ -74,16 +78,13 @@ function Xnorm(s, X)
 	return ret[1]
 end
 
-B		= generateB(m, dx)
-Beye	= speye(m*n)
-
 function sample_err_L2(I, s, norm_s)
 	err		= zeros( size(s) )
 	L2err	= 0
 	for (k,t) in sample_times
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
-	L2err 	= dx*dx* L2norm(err)/norm_s
+	L2err 	= L2norm(err)/norm_s
 	return L2err, err
 end
 
@@ -100,7 +101,7 @@ end
 
 function L2norm(s)
 	return Xnorm(s,B)
-	#return Xnorm(s,Beye)
+	#return Xnorm(s,Id)
 end
 
 function sample_err(I, s, norm_s)
@@ -113,5 +114,33 @@ function H1_norm(u,v)
 end
 #H1_norm = __H1_norm
 
+#  laplace(u) = -f
+#
+# with boundary condition 
+#  u(x,y) = g on the border of the rectangular area [1..m]x[1..n]
+#
+# where f is given as ((m-2) x (n-2))-sample and 
+# where g is given as 2 m-2 vectors gl, gr and 2 n vectors gu, gd
+#
+# 		=======gu======		_
+#       |			  |
+#		gl     f      gr	m-2
+#		|			  |		_
+# 		=======gd======		
+#
+#		|	  n  	  |
+#
+function poissolv(f, gu, gd, gl, gr)
+	m = size(f, 1) +2
+	n = size(f, 2) +2
 
+	# boundary condition
+	g			= [gu ; [gl f gr] ; gd]
+	b			= reshape(g, m*n)
+
+	# where LU is either precalculated LU-Decomposition of A or A itself, both work
+	u 			= LU\b 
+
+	return reshape(u, m, n)
+end
 
