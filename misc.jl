@@ -46,27 +46,14 @@ function ___H1_norm(u, v, L)
 		end
 		ret += ret_
 	end
-	# thr! dx steckt in L
-	return dt* ret[1]
+	# thr! dx steckt auch in L? stimmt das so?
+	return dt* dx*dx*ret[1]
 end
 
 function l2norm(s)
 	#l2_s	= sum([ sum(s[:,:,k].^2) for k=1:n_samples ])
 	# thr! hier darf kein dt rein?
 	return dx*dx* sum(s.^2)
-end
-
-# berechnet sum( L_X(s[:,:,k ) , k in I )
-# s[:,:,k], k in 0:T Bildsequenz
-# X quadratische Matrix
-# I Indexmenge
-function Xnorm(s, X, Idx) 
-	ret	= 0
-	for k in Idx
-		s_	 = reshape(s[:,:,k] , n*m)
-		ret	+= s_'*X*s_
-	end
-	return ret[1]
 end
 
 function Xnorm(s, X) 
@@ -94,7 +81,7 @@ function sample_err_l2(I, s, norm_s)
 	for (k,t) in sample_times
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
-	# dasselbe wie, aber schneller als l2err=Xnorm(err, speye, ..)
+	# dasselbe wie, aber schneller als l2err=Xnorm(err, speye)
 	l2err = dx*dx* sum(err.*err)/norm_s 
 	return l2err, err
 end
@@ -102,11 +89,6 @@ end
 function L2norm(s)
 	return Xnorm(s,B)
 	#return Xnorm(s,Id)
-end
-
-function sample_err(I, s, norm_s)
-	return sample_err_L2(I, s, norm_s)
-	#return sample_err_l2(I, s, norm_s)
 end
 
 function H1_norm(u,v)
