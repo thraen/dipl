@@ -233,5 +233,5 @@ function generate_wave_op(n, schritte, dt, alpha, beta)
 	return L2, R, WaveOp, GradNormOp, CostNormOp
 end
 
-L2, R, WaveOp, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+#L2, R, WaveOp, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
 

@@ -2,7 +2,7 @@
 @everywhere n					=  60
 
 @everywhere n_samples			=   5
-@everywhere n_zwischensamples	= 100    # duerfen nicht zu wenige sein? abhaengig von dt?
+@everywhere n_zwischensamples	= 200    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 T					= (n_samples-1)*n_zwischensamples+1
 # Zuordnung Samplenummer zu Zeitpunkt 
@@ -13,13 +13,6 @@ armijo_sig			= 0.0
 
 const dx			= 1.0
 const dt			= 0.95 #0.99833
-
-#const	dx			= 0.1
-#t_0 = 1/6
-#t_end = 5/6
-#N = T
-#dt = (t_end - t_0) / N
-#println(dt)
 
 @everywhere alpha	= 0.01
 @everywhere beta	= 0.01
