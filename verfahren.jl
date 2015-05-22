@@ -6,6 +6,50 @@ function grad_J(I, p, u, v, alpha)
 	grd_u_J	= zeros( m, n, T-1 )
 	grd_v_J	= zeros( m, n, T-1 )
 	for t= 1:T-1
+		pI_x__			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+		pI_y__			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+		phi_x__			= poissolv_(pI_x__, m, n)
+		phi_y__			= poissolv_(pI_y__, m, n)
+
+		grd_u_J[:,:,t]	= phi_x__+alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= phi_y__+alpha*v[:,:,t]
+	end
+	return grd_u_J, grd_v_J
+end
+
+function grad_J_beta(I, p, u, v, alpha, beta)
+	println( "================calculate gradient $m x $n" )
+	rhs_x	= zeros( m, n, T-1 )
+	rhs_y	= zeros( m, n, T-1 )
+
+	for t= 1:T-1
+		# STOP! reshape ordnet Spalten vor Zeilen
+		Lu				= L* reshape(u[:,:,t], n*m)
+		Lv				= L* reshape(v[:,:,t], n*m)
+		pI_x			= Cx*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
+		pI_y			= Cy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
+		# Cx, Cy setzen schon 0-Randbedingungen auf dem Rand, 0-setzen der Raender nicht noetig
+		rhs_x[:,:,t]	= (beta-alpha)* Lu + pI_x 
+		rhs_y[:,:,t]	= (beta-alpha)* Lv + pI_y
+		if t==1 || t==T-1
+			echo("ja")
+			rhs_x[:,:,t]	/= (t==1 || t==T-1) && 2 || 1
+			rhs_y[:,:,t]	/= (t==1 || t==T-1) && 2 || 1
+		end
+	end
+
+	grd_u_J		= WaveOpLU \ reshape(rhs_x, (T-1)*n*m)
+	grd_v_J		= WaveOpLU \ reshape(rhs_y, (T-1)*n*m)
+
+	return reshape(grd_u_J, m, n, T-1), reshape(grd_v_J, m, n, T-1)
+end
+
+
+function grad_J_alt(I, p, u, v, alpha)
+	println( "================calculate gradient $m x $n" )
+	grd_u_J	= zeros( m, n, T-1 )
+	grd_v_J	= zeros( m, n, T-1 )
+	for t= 1:T-1
 		# p[2:m-1,2:n-1] vielleicht lieber im Voraus fuer alle t berechnen, damit die p[:,:,t] nicht umkopiert werden muessen
 
 		# marcel's Variante
@@ -163,3 +207,4 @@ function verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err)
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
+

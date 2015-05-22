@@ -29,16 +29,17 @@ function central_diff_x( a )
 	return d
 end
 
-# teste H1_norm mit l2-Norm und L2-Norm
-function __H1_norm(u, v)
+# Integration durch Treppenfunktion
+function H1_norm_riemann(u, v)
 	return dx*dx* dt* ( sum( central_diff_x( u ).^2 + sum( central_diff_y( u ).^2 ) ) + sum( central_diff_x( v ).^2 + sum( central_diff_y( v ).^2 ) ) )
 end
 
-function ___H1_norm(u, v, L)
+# Integral genaehert durch Integral einer Stueckweise linearen Interpolation
+function H1_norm_lin(u, v)
 	ret = 0
 	for t=1:T-1
-		u_ = reshape(u[:,:,t] , n*m)
-		v_ = reshape(v[:,:,t] , n*m)
+		u_ = reshape(u[:,:,t], n*m)
+		v_ = reshape(v[:,:,t], n*m)
 		ret_  = (u_'*L*u_) 
 		ret_ += (v_'*L*v_) 
 		if t==1 || t==T
@@ -48,6 +49,12 @@ function ___H1_norm(u, v, L)
 	end
 	# thr! dx steckt auch in L? stimmt das so?
 	return dt* dx*dx*ret[1]
+end
+
+function H1_norm_beta(u,v)
+	u_	= reshape(u, m*n*(T-1))
+	v_	= reshape(v, m*n*(T-1))
+	return  dx*dx* u_'*CostNormOp*u_ + v_'*CostNormOp*v_
 end
 
 function l2norm(s)
@@ -91,11 +98,6 @@ function L2norm(s)
 	#return Xnorm(s,Id)
 end
 
-function H1_norm(u,v)
-	___H1_norm(u,v,L)
-end
-#H1_norm = __H1_norm
-
 #  laplace(u) = -f
 #
 # with boundary condition 
@@ -124,5 +126,20 @@ function poissolv(f, gu, gd, gl, gr)
 	u 			= LU\b 
 
 	return reshape(u, m, n)
+end
+
+# hier wird in b schon zusammengesetzt aus f und g uebergeben
+function poissolv_(f,m, n)
+	# where LU is either precalculated LU-Decomposition of A or A itself, both work
+	u 			= LU\f 
+	return reshape(u, m, n)
+end
+
+# L*f ~= ∆f !
+# am Rand stimmt's nicht! in unseren Beispielen egal, da dort und in der Naehe eh alles 0 ist
+function laplace(f)
+	# Lf		= L*f # wrong on boundary 
+	# corrected = extrapolate inner values to boundary # geht allerdings von stetigem ∆f
+	# return 	corrected
 end
 

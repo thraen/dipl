@@ -195,22 +195,23 @@ const LU				= factorize(L)
 const B					= generateB(m, dx)
 const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
 
-function generate_wave_op(n, schritte, dt, alpha, beta)
+function generate_wave_op(n, T, dt, alpha, beta)
 	nDOF		= n^2
 
 	#B	= spdiagm(vec(ones(nDOF,1)),0);
 	Id	= speye(nDOF)
 
-    L2	= copy(L)
+	# thr langsam. mit repmat geht das wohl besser
+    LT	= copy(L)
 	R	= 2*Id
 	R2	= -Id
-    for k = 2:schritte-1
-        L2	= blkdiag(L2, L)
+    for k = 2:T-1
+        LT	= blkdiag(LT, L)
         R	= blkdiag(R, 2*Id)
         R2	= blkdiag(R2, -Id)
     end
 
-    L2	= blkdiag(L/2,L2,L/2)*dt^2
+    LT	= blkdiag(L/2,LT,L/2)*dt^2
 
     To	= blkdiag(-Id, R2)
     Tu	= blkdiag(R2, -Id)
@@ -222,16 +223,22 @@ function generate_wave_op(n, schritte, dt, alpha, beta)
     # hae?
 	#R[nDOF+1:end-nDOF,:] = R[nDOF+1:end-nDOF,:]
 
-    WaveOp = L2 + R
+
+    WaveOp = LT + R
     #%GradNormOp = WaveOp / sTime.dt;
     #%CostNormOp = WaveOp / sTime.dt * sRegParam.alpha;
-    GradNormOp = (L2 + R )/dt
-    CostNormOp = (alpha * L2 + beta * R)/dt
-    
-    #setup.type = 'nofill';
-    #[WaveL, WaveU] = ilu(WaveOp, setup);
-	return L2, R, WaveOp, GradNormOp, CostNormOp
+    GradNormOp = (LT + R )/dt
+    CostNormOp = (alpha * LT + beta * R)/dt
+
+	println("factorize")
+	WaveOpLU	= factorize(WaveOp)
+	#WaveOpLU	= lufact(WaveOp)
+	println("factorized")
+
+	return WaveOp, GradNormOp, CostNormOp
+	#return WaveOpLU, GradNormOp, CostNormOp
 end
 
-#L2, R, WaveOp, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+#const WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+
 

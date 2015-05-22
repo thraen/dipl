@@ -12,7 +12,7 @@ armijo_bas			= 0.5
 armijo_sig			= 0.0
 
 const dx			= 0.5
-const dt			= 0.95 #0.99833
+const dt			= 0.28 #0.99833
 
 @everywhere alpha	= 0.01
 @everywhere beta	= 0.01
@@ -30,17 +30,15 @@ include("view.jl")
 #include("marcel_matrizen.jl")
 #save_value(full(L2), "L2")
 
-
 #s		= inits(quadrat)
 s		= inits(rot_circle)
-
 
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
 
-I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err_L2)
+I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm_lin, sample_err_L2)
 
-#I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err_L2)
+#I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(maxsteps, alpha, s, u, v, L2norm, H1_norm_lin, sample_err_L2)
 #save_all()
 #save_images_(s, "s")
 
