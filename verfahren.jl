@@ -1,7 +1,7 @@
 include("misc.jl")
 include("transport.jl")
 
-function grad_J(I, p, u, v, alpha)
+function grad_J_nobeta(I, p, u, v, alpha)
 	println( "================calculate gradient $m x $n" )
 	grd_u_J	= zeros( m, n, T-1 )
 	grd_v_J	= zeros( m, n, T-1 )
@@ -43,6 +43,8 @@ function grad_J_beta(I, p, u, v, alpha, beta)
 
 	return reshape(grd_u_J, m, n, T-1), reshape(grd_v_J, m, n, T-1)
 end
+
+grad_J = grad_J_beta
 
 
 function grad_J_alt(I, p, u, v, alpha)
