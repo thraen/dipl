@@ -31,10 +31,9 @@ function grad_J_beta(I, p, u, v, alpha, beta)
 		# Cx, Cy setzen schon 0-Randbedingungen auf dem Rand, 0-setzen der Raender nicht noetig
 		rhs_x[:,:,t]	= (beta-alpha)* Lu + pI_x 
 		rhs_y[:,:,t]	= (beta-alpha)* Lv + pI_y
-		if t==1 || t==T-1
-			echo("ja")
-			rhs_x[:,:,t]	/= (t==1 || t==T-1) && 2 || 1
-			rhs_y[:,:,t]	/= (t==1 || t==T-1) && 2 || 1
+		if (t==1) || (t==T-1)
+			rhs_x[:,:,t] /= 2
+			rhs_y[:,:,t] /= 2
 		end
 	end
 
@@ -131,7 +130,7 @@ function verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err)
 
 	echo("initial L2_err", L2_err)
 
-	grd_u_J, grd_v_J	= grad_J( I, p, u, v, alpha )
+	grd_u_J, grd_v_J	= grad_J( I, p, u, v, alpha, beta )
 	H1_J_w				= H1_norm(grd_u_J, grd_v_J)
 	#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
 	#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
@@ -178,8 +177,8 @@ function verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err)
 			echo()
 
 			#wtf?
-			#if (J_next < J) 
-			if J_next < J-armijo_sig*t*H1_J_w
+			if (J_next < J) 
+			#if J_next < J-armijo_sig*t*H1_J_w
 				I					= I_next
 				u					= u_next
 				v					= v_next
@@ -189,7 +188,7 @@ function verfahren_grad(maxsteps, alpha, s, u, v, L2norm, H1_norm, sample_err)
 
 				p					= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 
-				grd_u_J, grd_v_J	= grad_J( I, p, u, v, alpha )
+				grd_u_J, grd_v_J	= grad_J( I, p, u, v, alpha, beta )
 
 				J					= L2_err/2 + alpha*H1_err/2
 

@@ -205,7 +205,8 @@ function generate_wave_op(n, T, dt, alpha, beta)
     LT	= copy(L)
 	R	= 2*Id
 	R2	= -Id
-    for k = 2:T-1
+	# thr
+    for k = 3:T-2
         LT	= blkdiag(LT, L)
         R	= blkdiag(R, 2*Id)
         R2	= blkdiag(R2, -Id)
@@ -239,6 +240,6 @@ function generate_wave_op(n, T, dt, alpha, beta)
 	#return WaveOpLU, GradNormOp, CostNormOp
 end
 
-#const WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+const WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
 
 

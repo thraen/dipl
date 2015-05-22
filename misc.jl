@@ -54,7 +54,8 @@ end
 function H1_norm_beta(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
-	return  dx*dx* u_'*CostNormOp*u_ + v_'*CostNormOp*v_
+	ret	= dx*dx* u_'*CostNormOp*u_ + v_'*CostNormOp*v_
+	return  ret[1]
 end
 
 function l2norm(s)
