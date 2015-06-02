@@ -19,8 +19,8 @@ function delete_output()
 end
 
 @everywhere function save_image(im, pref, t)
-	imshow(im[:,:,t], interpolation="none", origin="lower")
-	#surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
+	#imshow(im[:,:,t], interpolation="none", origin="lower")
+	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
 	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
 	clf()
 end

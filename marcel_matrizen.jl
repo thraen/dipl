@@ -232,14 +232,14 @@ function generate_wave_op(n, T, dt, alpha, beta)
     CostNormOp = (alpha * LT + beta * R)/dt
 
 	println("factorize")
-	WaveOpLU	= factorize(WaveOp)
+	#WaveOpLU	= factorize(WaveOp)
 	#WaveOpLU	= lufact(WaveOp)
+	WaveOpLU	= WaveOp
 	println("factorized")
 
-	return WaveOp, GradNormOp, CostNormOp
+	return WaveOp, WaveOpLU, GradNormOp, CostNormOp
 	#return WaveOpLU, GradNormOp, CostNormOp
 end
 
-const WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
-
+#const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
 

@@ -35,7 +35,7 @@ function H1_norm_riemann(u, v)
 end
 
 # Integral genaehert durch Integral einer Stueckweise linearen Interpolation
-function H1_norm_lin(u, v)
+function H1_norm_nobeta(u, v)
 	ret = 0
 	for t=1:T-1
 		u_ = reshape(u[:,:,t], n*m)
@@ -94,10 +94,10 @@ function sample_err_l2(I, s, norm_s)
 	return l2err, err
 end
 
-function L2norm(s)
-	return Xnorm(s,B)
+#function L2norm(s)
+	#return Xnorm(s,B)
 	#return Xnorm(s,Id)
-end
+#end
 
 #  laplace(u) = -f
 #

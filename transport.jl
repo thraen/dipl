@@ -1,22 +1,24 @@
-const r			= dt/(dx*dx) # thr! marcel hat hier nur /dx
+
+@everywhere const r			= dt/(dx*dx) # thr! marcel hat hier nur /dx
 
 #const infts = [999999.0, 999999.0, 999999.0, 999999.0]
-const infts = 999999
-const oness = 1
-const twos	= 2
-const zeross= 0
 
-function fluss_lxw1( a, u, v )
+@everywhere const infts = 999999
+@everywhere const oness = 1
+@everywhere const twos	= 2
+@everywhere const zeross= 0
+
+@everywhere function fluss_lxw1( a, u, v )
 	return 0.5* ( a*(u+v) + r*a*a*(u-v) )
 end
 
-function fluss_upw1( a, u, v )
+@everywhere function fluss_upw1( a, u, v )
 	# wenn u bzw v <0 wird von ausserhalb -u bzw -v uebergeben, daher ist die Unterscheidung hier unnoetig
 	#return (a>=0) ? (a*u) : (a*v)
 	return a*u
 end
 
-function theta( um, u, up )
+@everywhere function theta( um, u, up )
 	if ( (up-u) == 0 )
 		return infts
 	else
@@ -24,11 +26,11 @@ function theta( um, u, up )
 	end
 end
 
-function sbee( thet )
+@everywhere function sbee( thet )
 	return max( zeross, max( min(oness, 2*thet), min(thet, twos) ) );
 end
 
-function fluss_lim1( a, um, u, up )
+@everywhere function fluss_lim1( a, um, u, up )
 	thet = theta(um, u, up)
 	ret = (1- sbee( thet ) )* fluss_upw1(a, u, up ) +     sbee( thet )  * fluss_lxw1(a, u, up )
 	return 	  ret
@@ -100,5 +102,6 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 			end
 		end
 	end
+
 	return p
 end
