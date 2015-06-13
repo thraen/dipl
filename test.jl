@@ -18,7 +18,7 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.01
 @everywhere const beta	= 0.01
 
-maxsteps 			= 1000
+maxsteps 			= 1
 
 #@everywhere rootdir = "$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
 @everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
