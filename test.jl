@@ -1,7 +1,8 @@
 @everywhere const m					= 60
 @everywhere const n					= 60
 
-@everywhere const n_samples			=  5
+# fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
+@everywhere const n_samples			= 5
 @everywhere const n_zwischensamples	= 40    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*n_zwischensamples+1
@@ -36,11 +37,13 @@ s		= inits(rot_circle)
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
 
+beta > 0 && using IterativeSolvers
+#beta > 0 && using KrylovMethods
+
 #H1_norm	= H1_norm_beta
 H1_norm		= beta == 0 && H1_norm_nobeta	|| H1_norm_beta
 grad_J		= beta == 0 && grad_J_nobeta	|| grad_J_beta_parallel
 
-beta > 0 && using IterativeSolvers
 
 sample_err	= sample_err_L2
 L2norm		= function(s) return Xnorm(s, B) end
@@ -50,5 +53,8 @@ I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
 #I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(s, u, v)
 #save_all()
 #save_images_(s, "s")
+
+#pygui(true)
+#include("multigrid.jl")
 
 _="fertig"

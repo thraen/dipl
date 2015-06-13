@@ -129,15 +129,17 @@ function poissolv(f, gu, gd, gl, gr)
 	return reshape(u, m, n)
 end
 
-# hier wird in b schon zusammengesetzt aus f und g uebergeben
-function poissolv_(f,m, n)
+# hier wird b zusammengesetzt aus f und g uebergeben
+function poissolv_(b,m, n)
 	# where LU is either precalculated LU-Decomposition of A or A itself, both work
-	u 			= LU\f 
+	u 			= LU\b 
 	return reshape(u, m, n)
 end
 
+# thr
 # L*f ~= ∆f !
 # am Rand stimmt's nicht! in unseren Beispielen egal, da dort und in der Naehe eh alles 0 ist
+# das passiert in grad_J_beta, und grad_J_beta_parallel
 function laplace(f)
 	# Lf		= L*f # wrong on boundary 
 	# corrected = extrapolate inner values to boundary # geht allerdings von stetigem ∆f
