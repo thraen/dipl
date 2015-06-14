@@ -237,10 +237,10 @@ end
 function generate_block_laplace(m,n,T,dx)
 	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
 	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
-	block_ndiagl1		= [ ndiagl1/2; 0; repmat(ndiagl1, T-3) ; 0; ndiagl1/2 ]
-	block_ndiagr1		= [ ndiagr1/2; 0; repmat(ndiagr1, T-3) ; 0; ndiagr1/2 ]
-	block_ndiagl2		= [ ndiagl2/2; zeros(4) ; repmat(ndiagl2, T-3) ; zeros(4) ; ndiagl2/2 ]
-	block_ndiagr2		= [ ndiagr2/2; zeros(4) ; repmat(ndiagr2, T-3) ; zeros(4) ; ndiagr2/2 ]
+	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
+	block_ndiagr1		= [ ndiagr1/2; repmat([0;ndiagr1], T-3); 0; ndiagr1/2 ]
+	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(n) ; ndiagl2], T-3) ; zeros(n) ; ndiagl2/2 ]
+	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(n) ; ndiagr2], T-3) ; zeros(n) ; ndiagr2/2 ]
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
@@ -251,7 +251,7 @@ end
 #need_redefine() && const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
 
 const L					= generate_laplace(m, n, dx) 
-#const L_				= __generate_laplace(m, n, dx) 
+const L_				= __generate_laplace(m, n, dx) 
 
 const LU				= factorize(L)
 const B					= generateB(m, dx)
@@ -262,6 +262,7 @@ function generate_wave_op(n, T, dt, alpha, beta)
 
 	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
 	R_ndiag	= -ones(m*n*(T-2))
+
 	R		= spdiagm( (R_ndiag, R_diag, R_ndiag), (-(m*n), 0, m*n) )
 
     WaveOp = LT + R
@@ -277,7 +278,8 @@ function generate_wave_op(n, T, dt, alpha, beta)
 	WaveOpLU	= WaveOp
 	println("factorized")
 
-	return WaveOp, WaveOpLU, GradNormOp, CostNormOp
+	#return WaveOp, WaveOpLU, GradNormOp, CostNormOp
+	return WaveOp, WaveOpLU, GradNormOp, CostNormOp, LT, R
 end
 
 function __generate_wave_op(n, T, dt, alpha, beta)
@@ -291,7 +293,7 @@ function __generate_wave_op(n, T, dt, alpha, beta)
 	R2	= -Id
 	# thr
     for k = 3:T-2
-	print(k)
+		print(k)
         LT	= blkdiag(LT, L)
         R	= blkdiag(R, 2*Id)
         R2	= blkdiag(R2, -Id)
@@ -327,10 +329,5 @@ end
 #need_redefine() && 
 @time const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
 #@time const WaveOp_, WaveOpLU_, GradNormOp_, CostNormOp_	= __generate_wave_op(n, T, dt, alpha, beta)
-
-#echo(WaveOp ==WaveOp_)
-#echo(WaveOpLU ==WaveOpLU_)
-#echo(GradNormOp ==GradNormOp_)
-#echo(CostNormOp ==CostNormOp_	)
 
 1

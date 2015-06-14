@@ -42,7 +42,8 @@ end
 
 function transport(I0, u, v, schritte)
 	m, n	= size(I0)
-	I		= cat( 3, I0, zeros( m, n, schritte ) )
+	I		= zeros(m, n, schritte+1)
+	I[:,:,1]= I0
 	println("==============Transport=================$n x $m x $T")
 
 	for t = 1:schritte

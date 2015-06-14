@@ -18,7 +18,7 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.01
 @everywhere const beta	= 0.01
 
-maxsteps 			= 1
+maxsteps 			= 10
 
 #@everywhere rootdir = "$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
 @everywhere rootdir = "/tmp/out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)/"
@@ -48,7 +48,7 @@ grad_J		= beta == 0 && grad_J_nobeta	|| grad_J_beta_parallel
 sample_err	= sample_err_L2
 L2norm		= function(s) return Xnorm(s, B) end
 
-I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
 
 #I, u, v, p, L2_err, H1_err, J, steps = verfahren_direkt(s, u, v)
 #save_all()

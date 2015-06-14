@@ -147,14 +147,14 @@ function verfahren_grad(s, u, v)
 
 	H1_err		= H1_norm( u, v )
 
-	I			= transport(s0, u, v, T-1)
+	@time I			= transport(s0, u, v, T-1)
 
-	p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	@time p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	echo("initial L2_err", L2_err)
 
-	grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 	H1_J_w				= H1_norm(grd_u_J, grd_v_J)
 	#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
 	#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
@@ -182,7 +182,7 @@ function verfahren_grad(s, u, v)
 			H1_err_next			= H1_norm(u_next, v_next)
 			H1_J_w				= H1_norm(grd_u_J, grd_v_J)
 
-			I_next				= transport( s0, u_next, v_next, T-1 )
+			@time I_next				= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
 			J_next 				= L2_err_next/2 + alpha*H1_err_next/2
@@ -210,10 +210,10 @@ function verfahren_grad(s, u, v)
 				H1_err				= H1_err_next
 				L2_err				= L2_err_next
 
-				p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
+				@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 
 				tic()
-				grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 				toc()
 
 				J					= L2_err/2 + alpha*H1_err/2
