@@ -1,11 +1,6 @@
 # Cx, Cy zentrale finite Differenzen
 # Dx, Dy ?
 
-function need_redefine()
-	return !(isdefined(:L) && size(L) == (m*n, m*n) && L[1,1]==dx*dx)
-	#return !(isdefined(:WaveOp) && size(WaveOp) == (m*n*T)^2 && L[1,1]==dx*dx)
-end
-
 function  generateMatrices3(n, h)
 	nDOF= n^2
 	cy	= sparse(diagm(vec([-ones(n-2,1);0]),-1)+diagm(vec([0;ones(n-2,1)]),1))
@@ -117,7 +112,6 @@ function generateB(n, h)
 	NE[1, end-1] = 1
 	NE[1, end] = 2
 
-
 	Links		= spzeros(n, 2*n)
 
 	Links[1, 1:n+1] = SW
@@ -134,7 +128,6 @@ function generateB(n, h)
 	end
 	Mitte[n, 1:3*n] = N
 
-
 	Rechts = spzeros(n, 3*n)
 
 	Rechts[end, end-2*n+1:end] = NE
@@ -150,70 +143,6 @@ function generateB(n, h)
 	B[end-n+1:end, end-3*n+1:end] = Rechts
 
 	return B * h^2/24
-end
-
-function _generate_laplace(m,n,dx) 
-	ind_i_diag	= 1:m*n
-	ind_j_diag 	= 1:m*n
-
-	diag_seg	= [ 1; repmat([4], n-2) / (dx*dx); 1]
-	diag		= [ ones(n); repmat(diag_seg, m-2); ones(n) ]
-
-	ind_j_ndiag = zeros(1:(n-2)*(m-2)*4) # das hier ist nur zur Deklaration der Variablen
-	ind_i_ndiag = zeros(1:(n-2)*(m-2)*4) # als Index (Integerarray) in der gewuenschten Groesse
-	lap_ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
-
-	ndiag	 	= -ones( (n-2)*(m-2)*4 )/ (dx*dx)
-
-	ind_i		= [ind_i_diag; ind_i_ndiag]
-	ind_j		= [ind_j_diag; ind_j_ndiag]
-	val			= [diag; ndiag]
-
-	return sparse(ind_i, ind_j, val, m*n, m*n) 
-end
-
-# die Eintraege fuer den Rand stimmen nicht, die duerfen nicht durch dx^2 geteilt werden.
-function __generate_laplace(m,n,dx)
-	ind_i_diag	= 1:m*n
-	ind_j_diag 	= 1:m*n
-
-	diag_seg	= [ 1; repmat([4], n-2) ; 1]
-	diag		= [ ones(n); repmat(diag_seg, m-2); ones(n) ]
-
-	ind_j_ndiag = zeros(1:(n-2)*(m-2)*4) # das hier ist nur zur Deklaration der Variablen
-	ind_i_ndiag = zeros(1:(n-2)*(m-2)*4) # als Index (Integerarray) in der gewuenschten Groesse
-	lap_ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
-
-	ndiag	 	= -ones( (n-2)*(m-2)*4 )
-
-	ind_i		= [ind_i_diag; ind_i_ndiag]
-	ind_j		= [ind_j_diag; ind_j_ndiag]
-	val			= [diag; ndiag]
-
-	return sparse(ind_i, ind_j, val, m*n, m*n) / (dx*dx)
-end
-
-function lap_ndiag_ind!(ind_i_ndiag, ind_j_ndiag, m, n)
-	for i = 2:m-1
-		for j = 2:n-1
-			off	= ((i-2)*(n-2)+j-2)*4
-			diag= (i-1)*n+j
-			#println( ((i-2)*(n-2)+j-2)*4,' ', (i-1)*n+j )
-
-			#ind_j_ndiag[ off+1:off+4  ] = [(i-1)*n+j-n, (i-1)*n+j-1, (i-1)*n+j+1,(i-1)*n+j+n]
-			#ind_i_ndiag[ off+1:off+4  ] = [(i-1)*n+j,   (i-1)*n+j,   (i-1)*n+j,  (i-1)*n+j  ]
-			
-			ind_j_ndiag[ off+1 ] = diag -n
-			ind_j_ndiag[ off+2 ] = diag -1
-			ind_j_ndiag[ off+3 ] = diag +1
-			ind_j_ndiag[ off+4 ] = diag +n
-
-			ind_i_ndiag[ off+1 ] = diag
-			ind_i_ndiag[ off+2 ] = diag
-			ind_i_ndiag[ off+3 ] = diag
-			ind_i_ndiag[ off+4 ] = diag
-		end
-	end
 end
 
 function laplace_diags(m,n)
@@ -244,19 +173,6 @@ function generate_block_laplace(m,n,T,dx)
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-#need_redefine() && println("matrizen neu machen")
-#need_redefine() && const L	= generate_laplace(m, n, dx) 
-#need_redefine() && const LU	= factorize(L)
-#need_redefine() && const B	= generateB(m, dx)
-#need_redefine() && const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
-
-const L					= generate_laplace(m, n, dx) 
-const L_				= __generate_laplace(m, n, dx) 
-
-const LU				= factorize(L)
-const B					= generateB(m, dx)
-const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
-
 function generate_wave_op(n, T, dt, alpha, beta)
 	LT		= generate_block_laplace(m,n,T,dx)
 
@@ -282,52 +198,9 @@ function generate_wave_op(n, T, dt, alpha, beta)
 	return WaveOp, WaveOpLU, GradNormOp, CostNormOp, LT, R
 end
 
-function __generate_wave_op(n, T, dt, alpha, beta)
-	nDOF		= n^2
+const L					= generate_laplace(m, n, dx) 
+const LU				= factorize(L)
+const B					= generateB(m, dx)
+const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
+const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
 
-	Id	= speye(nDOF)
-
-	# thr langsam. mit repmat geht das wohl besser
-    LT	= copy(L)
-	R	= 2*Id
-	R2	= -Id
-	# thr
-    for k = 3:T-2
-		print(k)
-        LT	= blkdiag(LT, L)
-        R	= blkdiag(R, 2*Id)
-        R2	= blkdiag(R2, -Id)
-    end
-
-    LT	= blkdiag(L/2,LT,L/2)*dt^2
-
-    To	= blkdiag(-Id, R2)
-    Tu	= blkdiag(R2, -Id)
-    R	= blkdiag(Id, R, Id)
-       
-    R[nDOF+1:end, 1:end-nDOF] = R[nDOF+1:end, 1:end-nDOF] + Tu
-    R[1:end-nDOF, nDOF+1:end] = R[1:end-nDOF, nDOF+1:end] + To
-
-    # hae?
-	#R[nDOF+1:end-nDOF,:] = R[nDOF+1:end-nDOF,:]
-
-    WaveOp = LT + R
-    #%GradNormOp = WaveOp / sTime.dt;
-    #%CostNormOp = WaveOp / sTime.dt * sRegParam.alpha;
-    GradNormOp = (LT + R )/dt
-    CostNormOp = (alpha * LT + beta * R)/dt
-
-	println("factorize")
-	#WaveOpLU	= factorize(WaveOp)
-	#WaveOpLU	= lufact(WaveOp)
-	WaveOpLU	= WaveOp
-	println("factorized")
-
-	return WaveOp, WaveOpLU, GradNormOp, CostNormOp
-end
-
-#need_redefine() && 
-@time const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
-#@time const WaveOp_, WaveOpLU_, GradNormOp_, CostNormOp_	= __generate_wave_op(n, T, dt, alpha, beta)
-
-1

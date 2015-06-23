@@ -1,11 +1,4 @@
-#Base.Multimedia.writemime(stream,::MIME"text/plain",x::Float64)=@printf("%1.2f",x)
-
 include("marcel_matrizen.jl")
-
-function echo(args...)
-	for x in args print( x, '\t') end 
-	print('\n')
-end
 
 function central_diff_y( a )
 	m, n = size(a)

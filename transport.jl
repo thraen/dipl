@@ -1,5 +1,6 @@
 
-@everywhere const r			= dt/(dx*dx) # thr! marcel hat hier nur /dx
+@everywhere const r			= dt/(dx*dx) # thr marcel hat hier nur /dx
+#@everywhere const r			= dt/dx # thr marcel hat hier nur /dx
 
 #const infts = [999999.0, 999999.0, 999999.0, 999999.0]
 
@@ -58,7 +59,7 @@ function transport(I0, u, v, schritte)
 				anteily = (v[i,j,t] >= 0) ? fluss_lim1(  v[i,j,t], I[i-1,j,t], I[i,j,t], I[i+1,j,t] ) - fluss_lim1(  v[i,j,t], I[i-2,j,t], I[i-1,j,t], I[i,j,t] ) : fluss_lim1( -v[i,j,t], I[i+1,j,t], I[i,j,t], I[i-1,j,t] ) - fluss_lim1( -v[i,j,t], I[i+2,j,t], I[i+1,j,t], I[i,j,t] ) 
 
 				#I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily ) 
-				I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily )  + I[i,j,t]*dt/2*(diffx+diffy) ## ausklammer1n
+				I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily )  + I[i,j,t]*dt/2*(diffx+diffy) ## ausklammern
 
 				#if abs(I[i,j,t]) > 1
 					#echo(t,i,j, anteilx, anteily, u[i,j,t], v[i,j,t])

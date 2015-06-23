@@ -12,16 +12,16 @@
 #suff=".svg"
 @everywhere vsuff=".dlm"
 
-run(`mkdir -p $rootdir`)
 
 function delete_output()
 	run( `find $rootdir -name *$isuff -delete` )
 end
 
 @everywhere function save_image(im, pref, t)
-	#imshow(im[:,:,t], interpolation="none", origin="lower")
+	imshow(im[:,:,t], interpolation="none", origin="lower")
+	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff)
 	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
-	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
+	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff)
 	clf()
 end
 
@@ -33,6 +33,7 @@ end
 
 function save_quivers_(u,v, pref)
 	tic()
+	run(`mkdir -p $rootdir`)
 	m, n, T = size(u)
 	run(`mkdir -p $rootdir/$pref`)
 
@@ -46,6 +47,7 @@ end
 
 function save_images_(im, pref)
 	tic()
+	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
 
@@ -57,6 +59,7 @@ function save_images_(im, pref)
 end
 
 function save_images(im, pref)
+	run(`mkdir -p $rootdir`)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
@@ -91,7 +94,8 @@ function save_values(M, pref)
 	end
 end
 
-function report(I, s, L2, H1, J, alpha, norm_s)
+function report()
+	
 end
 
 

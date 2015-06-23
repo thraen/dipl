@@ -1,8 +1,9 @@
+include("echo.jl")
 include("misc.jl")
 include("transport.jl")
 
 function grad_J_nobeta(I, p, u, v)
-	println( "================calculate gradient $m x $n" )
+	echo( "================calculate gradient $m x $n" )
 	grd_u_J	= zeros( m, n, T-1 )
 	grd_v_J	= zeros( m, n, T-1 )
 	#thr parallelisieren
@@ -18,7 +19,7 @@ function grad_J_nobeta(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-@everywhere function parallel_dim(I, p, uv, Cxy, L, WaveOp, gmres)
+@everywhere function parallel_dim(I, p, uv, Cxy, L, WaveOp)
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		Luv				= L*  reshape(uv[:,:,t], n*m)
@@ -28,20 +29,20 @@ end
 			rhs[:,:,t] /= 2
 		end
 	end
-	grd_uv_J, conv_hist	= gmres(WaveOp, reshape(rhs, (T-1)*n*m))
+	grd_uv_J, conv_hist	= gmres(WaveOp, reshape(rhs, (T-1)*n*m), restart=5)
 	return grd_uv_J
 end
 
 function grad_J_beta_parallel(I, p, u, v)
-	println( "================calculate gradient $m x $n" )
-	grd_u_J = @spawn parallel_dim(I, p, u, Cx, L, WaveOp, gmres)
-	grd_v_J	= @spawn parallel_dim(I, p, v, Cy, L, WaveOp, gmres)
+	echo( "================calculate gradient $m x $n" )
+	grd_u_J = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
+	grd_v_J	= @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
 
 	return reshape(fetch(grd_u_J), m, n, T-1), reshape(fetch(grd_v_J), m, n, T-1)
 end
 
 function grad_J_beta(I, p, u, v)
-	println( "================calculate gradient $m x $n" )
+	echo( "================calculate gradient $m x $n" )
 	rhs_x	= zeros( m, n, T-1 )
 	rhs_y	= zeros( m, n, T-1 )
 
@@ -70,7 +71,7 @@ function grad_J_beta(I, p, u, v)
 end
 
 function grad_J_alt(I, p, u, v, alpha)
-	println( "================calculate gradient $m x $n" )
+	echo( "================calculate gradient $m x $n" )
 	grd_u_J	= zeros( m, n, T-1 )
 	grd_v_J	= zeros( m, n, T-1 )
 	#thr parallelisieren
@@ -108,7 +109,7 @@ function next_w!(I, p, u, v, alpha)
 end
 
 function verfahren_direkt(s, u, v)
-	println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dy=$dy, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
 
@@ -140,7 +141,7 @@ function verfahren_direkt(s, u, v)
 end
 
 function verfahren_grad(s, u, v)
-	println("=============START $n x $m x Aufloesung $T ($n_samples samples $n_zwischensamples zwischsamples)")
+	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dy=$dy, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
 	echo("norm_s", norm_s)
