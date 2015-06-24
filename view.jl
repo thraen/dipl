@@ -95,7 +95,8 @@ function save_values(M, pref)
 end
 
 function report()
-	
+	#f		= open(rootdir *"report.txt")
+	#write(f, 
 end
 
 

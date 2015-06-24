@@ -1,4 +1,3 @@
-
 @everywhere const r			= dt/(dx*dx) # thr marcel hat hier nur /dx
 #@everywhere const r			= dt/dx # thr marcel hat hier nur /dx
 

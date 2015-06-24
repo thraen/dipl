@@ -22,23 +22,28 @@ end
 @everywhere function parallel_dim(I, p, uv, Cxy, L, WaveOp)
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
-		Luv				= L*  reshape(uv[:,:,t], n*m)
-		pI_xy			= Cxy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
+		Luv			= L*  reshape(uv[:,:,t], n*m)
+		pI_xy		= Cxy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
 		rhs[:,:,t]	= (beta-alpha)* Luv + pI_xy 
 		if (t==1) || (t==T-1)
 			rhs[:,:,t] /= 2
 		end
 	end
-	grd_uv_J, conv_hist	= gmres(WaveOp, reshape(rhs, (T-1)*n*m), restart=5)
-	return grd_uv_J
+
+	zuv, conv_hist	= gmres(WaveOp, reshape(rhs, (T-1)*n*m), restart=5)
+	return zuv
 end
 
 function grad_J_beta_parallel(I, p, u, v)
 	echo( "================calculate gradient $m x $n" )
-	grd_u_J = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
-	grd_v_J	= @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
+	zu = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
+	zv = @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
+	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 
-	return reshape(fetch(grd_u_J), m, n, T-1), reshape(fetch(grd_v_J), m, n, T-1)
+	#falsch, Ruecksubst vergessen
+	#grd_u_J = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
+	#grd_v_J	= @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
+	#return reshape(fetch(grd_u_J), m, n, T-1), reshape(fetch(grd_v_J), m, n, T-1)
 end
 
 function grad_J_beta(I, p, u, v)
@@ -61,13 +66,13 @@ function grad_J_beta(I, p, u, v)
 		end
 	end
 
-	#grd_u_J	= WaveOpLU \ reshape(rhs_x, (T-1)*n*m)
-	#grd_v_J	= WaveOpLU \ reshape(rhs_y, (T-1)*n*m)
+	#zu	= WaveOpLU \ reshape(rhs_x, (T-1)*n*m)
+	#zv	= WaveOpLU \ reshape(rhs_y, (T-1)*n*m)
+	zu, conv_hist		= gmres(WaveOp, reshape(rhs_x, (T-1)*n*m))
+	zv, conv_hist		= gmres(WaveOp, reshape(rhs_y, (T-1)*n*m))
 
-	grd_u_J, conv_hist	= gmres(WaveOp, reshape(rhs_x, (T-1)*n*m))
-	grd_v_J, conv_hist	= gmres(WaveOp, reshape(rhs_y, (T-1)*n*m))
-
-	return reshape(grd_u_J, m, n, T-1), reshape(grd_v_J, m, n, T-1)
+	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
+	return grd_u_J, grd_v_J
 end
 
 function grad_J_alt(I, p, u, v, alpha)
@@ -141,7 +146,7 @@ function verfahren_direkt(s, u, v)
 end
 
 function verfahren_grad(s, u, v)
-	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dy=$dy, alpha=$alpha, beta=$beta")
+	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
 	echo("norm_s", norm_s)
