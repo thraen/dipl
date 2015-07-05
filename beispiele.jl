@@ -41,3 +41,19 @@ function inits(f)
 	end
 	return s
 end
+
+function readtaxi()
+	taxi = zeros(256+4,256+4,41)
+	for i=1:41
+		#@show a	= Images.imread("../taxi/taxi$(i).bmp")
+		#a_	= convert(Array, a)
+		#a_	= convert(Array, float64(a))
+		#taxi[3:190+2,3:256+2,i]= a_[:,:]
+
+		# von daheim vorbereitet, weil die Imagemagick-Bibliothek auf dem Uniserver zu alt ist fuer Julia
+		a_	= readdlm("../taxi/taxi$(i).dlm")
+		taxi[:,:,i] = a_[:,:]'
+	end
+	return taxi
+end
+

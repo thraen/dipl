@@ -14,7 +14,7 @@
 
 
 function delete_output()
-	run( `find $rootdir -name *$isuff -delete` )
+	run(`rm $rootdir -r`)
 end
 
 @everywhere function save_image(im, pref, t)
@@ -94,13 +94,11 @@ function save_values(M, pref)
 	end
 end
 
-function report()
-	#f		= open(rootdir *"report.txt")
-	#write(f, 
+function extract_convergence_history()
+	run( pipe(`grep L2err  $(rootdir)log`, `awk '{print $2}' `) )
 end
 
-
-#x = linspace(0,2*pi,1000); y = sin(3*x + 4*cos(2*x));
-#plot(x, y, color="red", linewidth=2.0, linestyle="--")
-#title("A sinusoidally modulated sinusoid")
-
+#function report()
+	#f		= open(rootdir *"report.txt")
+	#write(f, 
+#end

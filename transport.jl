@@ -1,5 +1,8 @@
-@everywhere const r			= dt/(dx*dx) # thr marcel hat hier nur /dx
-#@everywhere const r			= dt/dx # thr marcel hat hier nur /dx
+#@everywhere const r		= dt*dt/(dx*dx) # thr marcel hat hier nur /dx
+
+@everywhere const r		= dt/(dx*dx) # thr marcel hat hier nur /dx
+
+#@everywhere const r		= dt/dx # thr marcel hat hier nur /dx
 
 #const infts = [999999.0, 999999.0, 999999.0, 999999.0]
 
@@ -49,22 +52,14 @@ function transport(I0, u, v, schritte)
 	for t = 1:schritte
 		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
 			for i = 3:m-2
-				diffx = u[i,j+1,t] - u[i,j-1,t]
-				diffy = v[i+1,j,t] - v[i-1,j,t]
-
-				#echo(diffx, diffy)
-
 				anteilx = (u[i,j,t] >= 0) ? fluss_lim1(  u[i,j,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] ) - fluss_lim1(  u[i,j,t], I[i,j-2,t], I[i,j-1,t], I[i,j,t] ) : fluss_lim1( -u[i,j,t], I[i,j+1,t], I[i,j,t], I[i,j-1,t] ) - fluss_lim1( -u[i,j,t], I[i,j+2,t], I[i,j+1,t], I[i,j,t] ) 
 				anteily = (v[i,j,t] >= 0) ? fluss_lim1(  v[i,j,t], I[i-1,j,t], I[i,j,t], I[i+1,j,t] ) - fluss_lim1(  v[i,j,t], I[i-2,j,t], I[i-1,j,t], I[i,j,t] ) : fluss_lim1( -v[i,j,t], I[i+1,j,t], I[i,j,t], I[i-1,j,t] ) - fluss_lim1( -v[i,j,t], I[i+2,j,t], I[i+1,j,t], I[i,j,t] ) 
 
-				#I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily ) 
-				I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily )  + I[i,j,t]*dt/2*(diffx+diffy) ## ausklammern
+				I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily ) 
 
-				#if abs(I[i,j,t]) > 1
-					#echo(t,i,j, anteilx, anteily, u[i,j,t], v[i,j,t])
-					#echo(I[i,j,t], I[i,j,t+1])
-					#bla()
-				#end
+				#divx = u[i,j+1,t] - u[i,j-1,t]
+				#divy = v[i+1,j,t] - v[i-1,j,t]
+				#I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily )  - I[i,j,t]*(r/2)*(divx+divy) ## ausklammern
 			end
 		end
 	end
@@ -99,7 +94,12 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 				anteilx = (a >= 0) ? fluss_lim1(  a, p[i,j-1,t], p[i,j,t], p[i,j+1,t] ) - fluss_lim1(  a, p[i,j-2,t], p[i,j-1,t], p[i,j,t] ) : fluss_lim1( -a, p[i,j+1,t], p[i,j,t], p[i,j-1,t] ) - fluss_lim1( -a, p[i,j+2,t], p[i,j+1,t], p[i,j,t] ) 
 				anteily = (b >= 0) ? fluss_lim1(  b, p[i-1,j,t], p[i,j,t], p[i+1,j,t] ) - fluss_lim1(  b, p[i-2,j,t], p[i-1,j,t], p[i,j,t] ) : fluss_lim1( -b, p[i+1,j,t], p[i,j,t], p[i-1,j,t] ) - fluss_lim1( -b, p[i+2,j,t], p[i+1,j,t], p[i,j,t] ) 
 
-				p[i,j,t-1] = p[i,j,t] - r* (anteilx + anteily)
+				p[i,j,t-1] = p[i,j,t] - r* (anteilx + anteily) 
+
+				# thr: - oder + divergenzterm?
+				#divx = u[i,j+1,t-1] - u[i,j-1,t-1]
+				#divy = v[i+1,j,t-1] - v[i-1,j,t-1]
+				#p[i,j,t-1] = p[i,j,t] - r* (anteilx + anteily) - p[i,j,t]*(r/2)*(divx + divy)
 			end
 		end
 	end

@@ -1,6 +1,8 @@
+using HDF5, JLD
 include("echo.jl")
 include("misc.jl")
 include("transport.jl")
+#include("transport_dxfalsch_divfalsch.jl")
 
 function grad_J_nobeta(I, p, u, v)
 	echo( "================calculate gradient $m x $n" )
@@ -125,7 +127,7 @@ function verfahren_direkt(s, u, v)
 	H1_err		= H1_norm( u, v )
 	J			= L2_err/2 + alpha*H1_err/2
 
-	steps 		= 0
+	steps 		= 1
 	while steps < maxsteps
 		I			= transport(s0, u, v, T-1)
 		p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
@@ -162,8 +164,6 @@ function verfahren_grad(s, u, v)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 	H1_J_w				= H1_norm(grd_u_J, grd_v_J)
-	#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-	#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
 
 	J	= L2_err/2 + alpha*H1_err/2
 	J0	= J
@@ -172,7 +172,7 @@ function verfahren_grad(s, u, v)
 
 	# Armijo-Schrittweite
 	armijo_exp = 0
-	steps = 0
+	steps = 1
 	while steps < maxsteps
 		while (armijo_exp < 40)
 			t 					= armijo_bas^armijo_exp
@@ -188,7 +188,7 @@ function verfahren_grad(s, u, v)
 			H1_err_next			= H1_norm(u_next, v_next)
 			H1_J_w				= H1_norm(grd_u_J, grd_v_J)
 
-			@time I_next				= transport( s0, u_next, v_next, T-1 )
+			@time I_next		= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
 			J_next 				= L2_err_next/2 + alpha*H1_err_next/2
@@ -199,8 +199,7 @@ function verfahren_grad(s, u, v)
 			#echo("max v\t", maximum(abs(v)), "max v_next", maximum(abs(v_next)))
 			#echo("max I\t", maximum(abs(I)), "max I_next", maximum(abs(I_next)))
 
-			echo("L2errors",  L2_err, L2_err_next, L2_err-L2_err_next)
-			echo("H1_errors", H1_err, H1_err_next, H1_err-H1_err_next)
+			echo("L2errors",  		L2_err, L2_err_next, L2_err-L2_err_next)
 			echo("alpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next))
 			echo("J        ", J, J_next,J-J_next)
 			echo("H1_J_w", H1_J_w)
@@ -227,16 +226,30 @@ function verfahren_grad(s, u, v)
 				armijo_exp = 0
 				echo("\n****** NEW GRADIENT *****")
 				echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-				echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( max( (grd_u_J), (grd_v_J)) ) )
+				echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( min( (grd_u_J), (grd_v_J)) ) )
 				break 
 			end
 			
 			armijo_exp += 1
 		end
 
+		if steps % save_every == 0 
+			try
+				info("\n zwischenspeichern\n")
+				save("$(rootdir)zwischenergebnis_$steps.jld", 
+						"I", I, 
+						"p", p,
+						"u", u,
+						"v", v, 
+						"grd_u_J", grd_u_J, 
+						"grd_v_J", grd_v_J, )	
+			catch e
+				warn("ZWISCHENERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
+			end
+		end
+
 		steps +=1
 	end
-	#save_images_(s, "s")
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end

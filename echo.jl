@@ -6,10 +6,14 @@ end
 
 function _echolog(args...)
 	_echo(args...)
-	log = open(rootdir * "log", "a")
-	for x in args write(log,  string(x), '\t') end 
-	write(log, ('\n'))
-	close(log)
+	try
+		log = open(rootdir * "log", "a")
+		for x in args write(log,  string(x), '\t') end 
+		write(log, ('\n'))
+		close(log)
+	catch e
+		warn(e)
+	end
 end
 
 echo=_echolog
