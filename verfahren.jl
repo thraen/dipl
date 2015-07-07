@@ -147,7 +147,7 @@ function verfahren_direkt(s, u, v)
 	return I, u, v, p, L2_err, H1_err, J, steps
 end
 
-function verfahren_grad(s, u, v)
+function verfahren_grad(s, u, v, steps=1)
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
@@ -172,7 +172,6 @@ function verfahren_grad(s, u, v)
 
 	# Armijo-Schrittweite
 	armijo_exp = 0
-	steps = 1
 	while steps < maxsteps
 		while (armijo_exp < 40)
 			t 					= armijo_bas^armijo_exp
@@ -242,7 +241,7 @@ function verfahren_grad(s, u, v)
 						"u", u,
 						"v", v, 
 						"grd_u_J", grd_u_J, 
-						"grd_v_J", grd_v_J, )	
+						"grd_v_J", grd_v_J)	
 			catch e
 				warn("ZWISCHENERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
 			end
@@ -253,4 +252,3 @@ function verfahren_grad(s, u, v)
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
-

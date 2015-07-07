@@ -61,6 +61,10 @@ v		= 0* ones( m, n, T-1 )
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 run(`mkdir -p $rootdir`)
 
+#u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
+#u, v	= load("$(rootdir)zwischenergebnis.jld", "u", "v")
+#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 3800)
+
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
 
 _="fertig"
