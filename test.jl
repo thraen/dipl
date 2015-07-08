@@ -63,7 +63,7 @@ run(`mkdir -p $rootdir`)
 
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
 #u, v	= load("$(rootdir)zwischenergebnis.jld", "u", "v")
-#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 3800)
+#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 0)
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
 
