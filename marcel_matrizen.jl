@@ -163,7 +163,7 @@ function generate_laplace(m,n,dx)
 	return spdiagm( laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
 end
 
-function generate_block_laplace(m,n,T,dx)
+function generate_block_laplace(m, n, T, dt, dx)
 	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
 	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
 	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
@@ -173,8 +173,8 @@ function generate_block_laplace(m,n,T,dx)
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-function generate_wave_op(n, T, dt, alpha, beta)
-	LT		= generate_block_laplace(m,n,T,dx)
+function generate_wave_op(n, T, dt, dx, alpha, beta)
+	LT		= generate_block_laplace(m,n,T,dt, dx)
 
 	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
 	R_ndiag	= -ones(m*n*(T-2))
@@ -202,5 +202,5 @@ const L					= generate_laplace(m, n, dx)
 const LU				= factorize(L)
 const B					= generateB(m, dx)
 const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
-const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, alpha, beta)
+const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, dx, alpha, beta)
 

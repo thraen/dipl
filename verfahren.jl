@@ -41,37 +41,12 @@ function grad_J_beta_parallel(I, p, u, v)
 	zu = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
 	zv = @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
 	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
-
-	#falsch, Ruecksubst vergessen
-	#grd_u_J = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
-	#grd_v_J	= @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
-	#return reshape(fetch(grd_u_J), m, n, T-1), reshape(fetch(grd_v_J), m, n, T-1)
 end
 
 function grad_J_beta(I, p, u, v)
 	echo( "================calculate gradient $m x $n" )
-	rhs_x	= zeros( m, n, T-1 )
-	rhs_y	= zeros( m, n, T-1 )
-
-	for t= 1:T-1
-		# thr STOP! reshape ordnet Spalten vor Zeilen
-		Lu				= L* reshape(u[:,:,t], n*m)
-		Lv				= L* reshape(v[:,:,t], n*m)
-		pI_x			= Cx*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
-		pI_y			= Cy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
-		# Cx, Cy setzen schon 0-Randbedingungen auf dem Rand, 0-setzen der Raender nicht noetig
-		rhs_x[:,:,t]	= (beta-alpha)* Lu + pI_x 
-		rhs_y[:,:,t]	= (beta-alpha)* Lv + pI_y
-		if (t==1) || (t==T-1)
-			rhs_x[:,:,t] /= 2
-			rhs_y[:,:,t] /= 2
-		end
-	end
-
-	#zu	= WaveOpLU \ reshape(rhs_x, (T-1)*n*m)
-	#zv	= WaveOpLU \ reshape(rhs_y, (T-1)*n*m)
-	zu, conv_hist		= gmres(WaveOp, reshape(rhs_x, (T-1)*n*m))
-	zv, conv_hist		= gmres(WaveOp, reshape(rhs_y, (T-1)*n*m))
+	zu = parallel_dim(I, p, u, Cx, L, WaveOp)
+	zv = parallel_dim(I, p, v, Cy, L, WaveOp)
 
 	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
 	return grd_u_J, grd_v_J
@@ -236,6 +211,11 @@ function verfahren_grad(s, u, v, steps=1)
 			try
 				info("\n zwischenspeichern\n")
 				save("$(rootdir)zwischenergebnis_$steps.jld", 
+					 	"dx", dx,
+						"dt", dt,
+					 	"alpha", alpha,
+						"beta", beta,
+					 	"s", s,
 						"I", I, 
 						"p", p,
 						"u", u,
