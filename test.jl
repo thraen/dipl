@@ -1,11 +1,11 @@
-@everywhere const m					= 256+4
-@everywhere const n					= 256+4
+#@everywhere const m					= 256+4
+#@everywhere const n					= 256+4
+
+@everywhere const m					= 60
+@everywhere const n					= 60
 
 @everywhere const n_samples			= 5
 @everywhere const n_zwischensamples	= 40    # duerfen nicht zu wenige sein? abhaengig von dt?
-
-#@everywhere const m					= 60
-#@everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 #@everywhere const n_samples			= 5
@@ -16,24 +16,31 @@
 sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
 
 armijo_bas			= 0.5
-armijo_sig			= 0.0
+armijo_sig			= 0.4
 
-@everywhere const dx			= 0.25
-@everywhere const dt			= 0.28
+#goldstein sigma <0.5
+sig					= 0.0000002
+
+#@everywhere const dt			= 0.2
+#@everywhere const dx			= 0.4
 
 # super mit r=dt/dx^2 und 60x60x5_40
-#@everywhere const dx			= 0.25
-#@everywhere const dt			= 0.28
+@everywhere const dt			= 0.28
+@everywhere const dx			= 0.25
 
 # die hier haben mit falscher Gitterkonstante ganz gut funktioniert
-#@everywhere const dx			= 0.5
 #@everywhere const dt			= 0.28 
+#@everywhere const dx			= 0.5
 
 @everywhere const alpha	= 0.001
-@everywhere const beta	= 0.001
+@everywhere const beta	= 0.0
+
+#@everywhere const alpha	= 0.00005
+#@everywhere const beta	= 0.00005
+
 
 maxsteps 			= 100000
-save_every			= 200
+save_every			= 0
 
 include("beispiele.jl")
 include("verfahren.jl")
@@ -51,22 +58,34 @@ grad_J		= beta == 0 ? grad_J_nobeta		: grad_J_beta_parallel
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-#s		= inits(quadrat)
+s		= inits(quadrat)
 #s		= inits(rot_circle)
-s		= readtaxi()[:,:, 1:10:end]
+#s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
 
+# load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 run(`mkdir -p $rootdir`)
 
-#u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
-#u, v	= load("$(rootdir)zwischenergebnis.jld", "u", "v")
-#I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 0)
+include("pyamgtest.jl")
+#ml			= construct_mgsolv(WaveOp)
+#mlfunc = function() return ml end
+#grad_J		= grad_J_beta_multig_parallel
+#grad_J		= grad_J_beta_multig
 
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v)
+
+steps=1
+#u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
+
+#change alpha, beta and run
+
+#@everywhere const alpha= 0.001
+#@everywhere const beta	= 0.001
+#@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
+
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+#@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_goldstein(s, u, v, steps)
 
 _="fertig"
-
-

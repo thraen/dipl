@@ -6,10 +6,10 @@
 
 #const infts = [999999.0, 999999.0, 999999.0, 999999.0]
 
-@everywhere const infts = 999999
-@everywhere const oness = 1
-@everywhere const twos	= 2
-@everywhere const zeross= 0
+@everywhere const infts = 999999.0
+@everywhere const oness = 1.0
+@everywhere const twos	= 2.0
+@everywhere const zeross= 0.0
 
 @everywhere function fluss_lxw1( a, u, v )
 	return 0.5* ( a*(u+v) + r*a*a*(u-v) )

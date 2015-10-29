@@ -2,6 +2,7 @@
 # Dx, Dy ?
 
 function  generateMatrices3(n, h)
+	println("generate central differences Matrices")
 	nDOF= n^2
 	cy	= sparse(diagm(vec([-ones(n-2,1);0]),-1)+diagm(vec([0;ones(n-2,1)]),1))
 	cx	= sparse(diagm(vec([0; ones(n-2,1);0])))
@@ -46,6 +47,7 @@ function  generateMatrices3(n, h)
 end
 
 function generateB(n, h)
+	println("generate B")
 	nDOF		= n^2
 	B			= spzeros(nDOF, nDOF)
 
@@ -160,6 +162,7 @@ function laplace_diags(m,n)
 end
 
 function generate_laplace(m,n,dx)
+	println("generate Laplace Matrix")
 	return spdiagm( laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
 end
 
@@ -174,6 +177,7 @@ function generate_block_laplace(m, n, T, dt, dx)
 end
 
 function generate_wave_op(n, T, dt, dx, alpha, beta)
+	println("elliptischer Operatormatrix")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 
 	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
@@ -194,13 +198,12 @@ function generate_wave_op(n, T, dt, dx, alpha, beta)
 	WaveOpLU	= WaveOp
 	println("factorized")
 
-	#return WaveOp, WaveOpLU, GradNormOp, CostNormOp
-	return WaveOp, WaveOpLU, GradNormOp, CostNormOp, LT, R
+	return WaveOp, WaveOpLU, GradNormOp, CostNormOp
 end
 
-const L					= generate_laplace(m, n, dx) 
-const LU				= factorize(L)
-const B					= generateB(m, dx)
-const Cx, Cy, Dx, Dy	= generateMatrices3(n, dx) #thr
-const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, dx, alpha, beta)
+(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L = generate_laplace(m, n, dx))
+const LU						= factorize(L)
+(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B											= generateB(m, dx))
+(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy, Dx, Dy							= generateMatrices3(n, dx) )
+(isdefined(:WaveOp) && (m*n*(T-1)==size(WaveOp,1))) || (const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, dx, alpha, beta))
 
