@@ -32,8 +32,8 @@ sig					= 0.0000002
 #@everywhere const dt			= 0.28 
 #@everywhere const dx			= 0.5
 
-@everywhere const alpha	= 0.001
-@everywhere const beta	= 0.0
+@everywhere const alpha	= 0.01
+@everywhere const beta	= 0.01
 
 #@everywhere const alpha	= 0.00005
 #@everywhere const beta	= 0.00005
@@ -70,10 +70,9 @@ v		= 0* ones( m, n, T-1 )
 run(`mkdir -p $rootdir`)
 
 include("pyamgtest.jl")
-#ml			= construct_mgsolv(WaveOp)
-#mlfunc = function() return ml end
+ml			= construct_mgsolv(WaveOp)
 #grad_J		= grad_J_beta_multig_parallel
-#grad_J		= grad_J_beta_multig
+grad_J		= grad_J_beta_multig
 
 
 steps=1
