@@ -44,7 +44,7 @@ H1_norm_w	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_w
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-include("pyamgtest.jl")
+include("pyamg.jl")
 ml			= construct_mgsolv(ellipOp)
 #grad_J		= grad_J_beta_multig_parallel
 grad_J		= grad_J_beta_multig
