@@ -22,7 +22,7 @@ function grad_J_nobeta(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-@everywhere function parallel_dim(I, p, uv, Cxy, L, WaveOp)
+@everywhere function parallel_dim(I, p, uv, Cxy, L, ellOp)
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		Luv			= L*  reshape(uv[:,:,t], n*m)
@@ -32,13 +32,12 @@ end
 		#thr!!
 		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) #* dt^2
 
-
 		if (t==1) || (t==T-1)
 			rhs[:,:,t] /= 2
 		end
 	end
 
-	zuv, conv_hist	= gmres(WaveOp, reshape(rhs, (T-1)*n*m), restart=5)
+	zuv, conv_hist	= gmres(ellOp, reshape(rhs, (T-1)*n*m), restart=5)
 	return zuv
 end
 
@@ -52,7 +51,6 @@ end
 		#thr!!
 		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) #* dt^2
 
-
 		if (t==1) || (t==T-1)
 			rhs[:,:,t] /= 2
 		end
@@ -62,6 +60,11 @@ end
 	zuv			= ml[:solve](reshape(rhs, (T-1)*n*m), tol=1e-3)
 	return zuv
 end
+
+#function grad_J_zellgrenzen_multig(I, p, u, v)
+	#echo( "================Calculate gradient $m x $n" )
+	#zu	= parallel_dim_pymultig(I, p, u, Cx, L
+#end
 
 function grad_J_beta_multig(I, p, u, v)
 	echo( "================Calculate gradient $m x $n" )
@@ -80,15 +83,15 @@ end
 
 function grad_J_beta_parallel(I, p, u, v)
 	echo( "================Calculate gradient $m x $n" )
-	zu = @spawn parallel_dim(I, p, u, Cx, L, WaveOp)
-	zv = @spawn parallel_dim(I, p, v, Cy, L, WaveOp)
+	zu = @spawn parallel_dim(I, p, u, Cx, L, ellOp)
+	zv = @spawn parallel_dim(I, p, v, Cy, L, ellOp)
 	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 end
 
 function grad_J_beta(I, p, u, v)
 	echo( "================Calculate gradient $m x $n" )
-	zu = parallel_dim(I, p, u, Cx, L, WaveOp)
-	zv = parallel_dim(I, p, v, Cy, L, WaveOp)
+	zu = parallel_dim(I, p, u, Cx, L, ellOp)
+	zv = parallel_dim(I, p, v, Cy, L, ellOp)
 
 	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
 	return grd_u_J, grd_v_J
@@ -101,21 +104,12 @@ function grad_J_alt(I, p, u, v, alpha)
 	for t= 1:T-1
 		# p[2:m-1,2:n-1] vielleicht lieber im Voraus fuer alle t berechnen, damit die p[:,:,t] nicht umkopiert werden muessen
 
-		# marcel's Variante
 		pI_x_			= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
 		pI_y_			= reshape(Cy*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
 		phi_x_			= poissolv( pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
 		phi_y_			= poissolv( pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
 		grd_u_J[:,:,t]	= phi_x_+alpha*u[:,:,t] 
 		grd_v_J[:,:,t]	= phi_y_+alpha*v[:,:,t]
-
-		# meine Variante
-		#pI_x			= p[2:m-1,2:n-1,t].*central_diff_x( I[:,:,t] )
-		#pI_y			= p[2:m-1,2:n-1,t].*central_diff_y( I[:,:,t] )
-		#phi_x			= poissolv( pI_x, zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		#phi_y			= poissolv( pI_y, zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		#grd_u_J[:,:,t]	= phi_x+alpha*u[:,:,t] 
-		#grd_v_J[:,:,t]	= phi_y+alpha*v[:,:,t]
 	end
 	return grd_u_J, grd_v_J
 end
@@ -127,7 +121,6 @@ function next_w!(I, p, u, v, alpha)
 		u[:,:,t]	= poissolv( -pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) ) /alpha
 		v[:,:,t]	= poissolv( -pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) ) /alpha
 	end
-
 	return u, v
 end
 
@@ -140,7 +133,7 @@ function verfahren_direkt(s, u, v)
 	p			= zeros(m, n, T)
 
 	L2_err, _	= sample_err(I,s,norm_s)
-	H1_err		= H1_norm( u, v )
+	H1_err		= H1_norm_w( u, v )
 	J			= L2_err/2 + alpha*H1_err/2
 
 	steps 		= 1
@@ -150,7 +143,7 @@ function verfahren_direkt(s, u, v)
 		u, v		= next_w!(I, p, u, v, alpha)
 
 		L2_err, _	= sample_err(I,s,norm_s)
-		H1_err		= H1_norm( u, v )
+		H1_err		= H1_norm_w( u, v )
 		J			= L2_err/2 + alpha*H1_err/2
 
 		echo()
@@ -169,7 +162,7 @@ function verfahren_grad(s, u, v, steps=1)
 	norm_s		= L2norm(s)
 	echo("norm_s", norm_s)
 
-	H1_err		= H1_norm( u, v )
+	H1_err		= H1_norm_w( u, v )
 
 	@time I			= transport(s0, u, v, T-1)
 	@time p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
@@ -178,7 +171,7 @@ function verfahren_grad(s, u, v, steps=1)
 	echo("initial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-	H1_J_w					= H1_norm(grd_u_J, grd_v_J)
+	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
 	J	= L2_err/2 + alpha*H1_err/2
 	J0	= J
@@ -199,9 +192,9 @@ function verfahren_grad(s, u, v, steps=1)
 			u_next				= u - t*grd_u_J
 			v_next				= v - t*grd_v_J
 
-			H1_err_next			= H1_norm(u_next, v_next)
+			H1_err_next			= H1_norm_w(u_next, v_next)
 			# thr, das sollte besser beim gradientenupdate stehen
-			H1_J_w				= H1_norm(grd_u_J, grd_v_J)
+			H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
 
 			@time I_next		= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
@@ -276,7 +269,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 	norm_s		= L2norm(s)
 	echo("norm_s", norm_s)
 
-	H1_err		= H1_norm( u, v )
+	H1_err		= H1_norm_w( u, v )
 
 	@time I		= transport(s0, u, v, T-1)
 	@time p		= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
@@ -285,7 +278,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 	echo("initial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-	H1_J_w					= H1_norm(grd_u_J, grd_v_J)
+	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
 	J	= L2_err/2 + alpha*H1_err/2
 
@@ -300,7 +293,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 		u_next				= u - t*grd_u_J
 		v_next				= v - t*grd_v_J
 
-		H1_err_next			= H1_norm(u_next, v_next)
+		H1_err_next			= H1_norm_w(u_next, v_next)
 
 		@time I_next		= transport( s0, u_next, v_next, T-1 )
 		L2_err_next, _		= sample_err(I_next,s,norm_s)
@@ -323,7 +316,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 		@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 		@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
-		H1_J_w				= H1_norm(grd_u_J, grd_v_J)
+		H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
 		J					= L2_err/2 + alpha*H1_err/2
 		steps += 1
 	end

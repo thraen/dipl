@@ -1,4 +1,4 @@
-include("marcel_matrizen.jl")
+include("matrizen.jl")
 
 function central_diff_y( a )
 	m, n = size(a)
@@ -44,10 +44,17 @@ function H1_norm_nobeta(u, v)
 	return dt* dx*dx*ret[1]
 end
 
-function H1_norm_beta(u,v)
+function H1_norm_beta_w(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* u_'*CostNormOp*u_ + v_'*CostNormOp*v_
+	return  ret[1]
+end
+
+function H1_norm_beta_grd(u,v)
+	u_	= reshape(u, m*n*(T-1))
+	v_	= reshape(v, m*n*(T-1))
+	ret	= dx*dx* u_'*GradNormOp*u_ + v_'*GradNormOp*v_
 	return  ret[1]
 end
 

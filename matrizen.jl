@@ -1,8 +1,14 @@
-# Cx, Cy zentrale finite Differenzen
-# Dx, Dy ?
+include("matrizen_zellgrenzen.jl")
 
-function  generateMatrices3(n, h)
-	println("generate central differences Matrices")
+function generate_differentiation_interf(m,n,dx)
+	println("generate central differences Matrices for cell interfaces")
+	Cx = generate_differentiation_interfx(m,n,dx)
+	Cy = generate_differentiation_interfx(m,n,dx)
+	return Cx, Cy	
+end
+
+function generate_differentiation_central(n, dx)
+	println("generate central differences Matrices for cell centers")
 	nDOF= n^2
 	cy	= sparse(diagm(vec([-ones(n-2,1);0]),-1)+diagm(vec([0;ones(n-2,1)]),1))
 	cx	= sparse(diagm(vec([0; ones(n-2,1);0])))
@@ -22,28 +28,14 @@ function  generateMatrices3(n, h)
 	Cy	= blkdiag(Cy, z)
 
 	Cx	= spzeros(nDOF,nDOF)
-	T	= copy(Cx)
 
 	Cx[n+1:end-n, 1:end-2*n] = -tCx
 	Cx[n+1:end-n, 2*n+1:end] = Cx[n+1:end-n, 2*n+1:end] + tCx
 
-	T[n+1:end-n, n+1:end-n] = -2*tCx
+	Cy	= Cy / 2 / dx
+	Cx	= Cx / 2 / dx
 
-	Dx	= T + abs(Cx)
-	Dy	= T + abs(Cy)
-
-	Cy	= Cy / 2 / h
-	Cx	= Cx / 2 / h
-	Dy	= Dy / 2 / h
-	Dx	= Dx / 2 / h
-
-
-	#println("Cx",  Cx)
-	#println("Cy ", Cy)
-	#println("Dx ", Dx)
-	#println("Dy ", Dy)
-
-	return  Cx, Cy, Dx, Dy
+	return  Cx, Cy
 end
 
 function generateB(n, h)
@@ -69,7 +61,6 @@ function generateB(n, h)
 	NW[1, 2*n-1]= 2
 	NW[1, 2*n]	= 1
 
-
 	S			= spzeros(1, 2*n+1)
 	S[1,1]		= 1
 	S[1,2]		= 2
@@ -86,15 +77,12 @@ function generateB(n, h)
 	C[1, 2*n+1]	= 2
 	C[1, 2*n+2]	= 2
 
-	## bis hier alle gecheckt
-
 	N			= spzeros(1, 3*n)
 	N[1, n]		= 1
 	N[1, 2*n-1]	= 2
 	N[1, 2*n]	= 6
 	N[1, 3*n-1]	= 2
 	N[1, 3*n]	= 1
-
 
 	SE			= spzeros(1, 2*n)
 	SE[1,1] = 1
@@ -176,7 +164,7 @@ function generate_block_laplace(m, n, T, dt, dx)
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-function generate_wave_op(n, T, dt, dx, alpha, beta)
+function generate_ellip_beta(n, T, dt, dx, alpha, beta)
 	println("elliptischer Operatormatrix")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 
@@ -185,25 +173,26 @@ function generate_wave_op(n, T, dt, dx, alpha, beta)
 
 	R		= spdiagm( (R_ndiag, R_diag, R_ndiag), (-(m*n), 0, m*n) )
 
-    WaveOp = LT + R
-    #%GradNormOp = WaveOp / sTime.dt;
-    #%CostNormOp = WaveOp / sTime.dt * sRegParam.alpha;
+    ellOp = LT + R
+	# thr, was hats damit auf sich
+    #GradNormOp = ellOp / sTime.dt;
+    #CostNormOp = ellOp / sTime.dt * sRegParam.alpha;
 
     GradNormOp = (LT + R )/dt
     CostNormOp = (alpha * LT + beta * R)/dt
 
 	println("factorize")
-	#WaveOpLU	= factorize(WaveOp)
-	#WaveOpLU	= lufact(WaveOp)
-	WaveOpLU	= WaveOp
+	#ellOPLU	= factorize(ellOp)
+	#ellOPLU	= lufact(ellOp)
+	ellOPLU	= ellOp
 	println("factorized")
 
-	return WaveOp, WaveOpLU, GradNormOp, CostNormOp
+	return ellOp, ellOPLU, GradNormOp, CostNormOp
 end
 
-(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L = generate_laplace(m, n, dx))
-const LU						= factorize(L)
-(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B											= generateB(m, dx))
-(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy, Dx, Dy							= generateMatrices3(n, dx) )
-(isdefined(:WaveOp) && (m*n*(T-1)==size(WaveOp,1))) || (const WaveOp, WaveOpLU, GradNormOp, CostNormOp	= generate_wave_op(n, T, dt, dx, alpha, beta))
+(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L 	= generate_laplace(m, n, dx))
+(isdefined(:LU)		&& (m*n==size(L,1)))			|| (const LU	= factorize(L))
+(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B		= generateB(m, dx))
+(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy = generate_differentiation_central(n, dx) )
+(isdefined(:ellOp)	&& (m*n*(T-1)==size(ellOp,1)))	|| (const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta))
 
