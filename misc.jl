@@ -47,14 +47,14 @@ end
 function H1_norm_beta_w(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
-	ret	= dx*dx* u_'*CostNormOp*u_ + v_'*CostNormOp*v_
+	ret	= dx*dx* (u_'*CostNormOp*u_ + v_'*CostNormOp*v_)	
 	return  ret[1]
 end
 
 function H1_norm_beta_grd(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
-	ret	= dx*dx* u_'*GradNormOp*u_ + v_'*GradNormOp*v_
+	ret	= dx*dx* (u_'*GradNormOp*u_ + v_'*GradNormOp*v_)
 	return  ret[1]
 end
 

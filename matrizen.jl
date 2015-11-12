@@ -189,10 +189,16 @@ function generate_ellip_beta(n, T, dt, dx, alpha, beta)
 
 	return ellOp, ellOPLU, GradNormOp, CostNormOp
 end
+#(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L 	= generate_laplace(m, n, dx))
+#(isdefined(:LU)		&& (m*n==size(L,1)))			|| (const LU	= factorize(L))
+#(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B		= generateB(m, dx))
+#(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy = generate_differentiation_central(n, dx) )
+#(isdefined(:ellOp)	&& (m*n*(T-1)==size(ellOp,1)))	|| (const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta))
 
-(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L 	= generate_laplace(m, n, dx))
-(isdefined(:LU)		&& (m*n==size(L,1)))			|| (const LU	= factorize(L))
-(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B		= generateB(m, dx))
-(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy = generate_differentiation_central(n, dx) )
-(isdefined(:ellOp)	&& (m*n*(T-1)==size(ellOp,1)))	|| (const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta))
+
+const L 	= generate_laplace(m, n, dx)
+const LU	= factorize(L)
+const B		= generateB(m, dx)
+const Cx, Cy = generate_differentiation_central(n, dx) 
+const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
 

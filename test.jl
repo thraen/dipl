@@ -17,14 +17,17 @@ armijo_sig			= 0.0
 #goldstein sigma <0.5
 sig					= 0.0000002
 
+@everywhere const dt			= 1/m
+@everywhere const dx			= 1/T
+
 # super mit r=dt/dx^2 und 60x60x5_40
-@everywhere const dt			= 0.28
-@everywhere const dx			= 0.25
+#@everywhere const dt			= 0.0028
+#@everywhere const dx			= 0.0025
 
-@everywhere const alpha	= 0.001
-@everywhere const beta	= 0.001
+@everywhere const alpha	= 0.01
+@everywhere const beta	= 0.01
 
-maxsteps 			= 100000
+maxsteps 			= 1000
 save_every			= 0
 
 include("beispiele.jl")
@@ -41,16 +44,16 @@ grad_J		= beta == 0 ? grad_J_nobeta		: grad_J_beta_parallel
 H1_norm_grd	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_grd
 H1_norm_w	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_w
 
+include("pyamg.jl")
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-include("pyamg.jl")
-ml			= construct_mgsolv(ellipOp)
+ml			= construct_mgsolv(ellOp)
 #grad_J		= grad_J_beta_multig_parallel
 grad_J		= grad_J_beta_multig
 
-s		= inits(quadrat)
-#s		= inits(rot_circle)
+#s		= inits(quadrat)
+s		= inits(rot_circle)
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )

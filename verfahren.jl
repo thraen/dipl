@@ -49,7 +49,7 @@ end
 
 		#thr, hier muss eigentlich eigentlich mit dt^2 multipliziert werden
 		#thr!!
-		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) #* dt^2
+		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) * dt^2
 
 		if (t==1) || (t==T-1)
 			rhs[:,:,t] /= 2
@@ -171,12 +171,12 @@ function verfahren_grad(s, u, v, steps=1)
 	echo("initial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
+	@show H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
-	J	= L2_err/2 + alpha*H1_err/2
-	J0	= J
-	H0	= H1_err
-	L0	= L2_err
+	@show J	= L2_err/2 + alpha*H1_err/2
+	@show J0	= J
+	@show H0	= H1_err
+	@show L0	= L2_err
 
 	# Armijo-Schrittweite
 	armijo_exp = 0
