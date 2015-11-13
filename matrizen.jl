@@ -202,3 +202,6 @@ const B		= generateB(m, dx)
 const Cx, Cy = generate_differentiation_central(n, dx) 
 const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
 
+include("pyamg.jl")
+const ml			= construct_mgsolv(ellOp)
+

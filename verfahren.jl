@@ -5,6 +5,23 @@ include("misc.jl")
 include("transport_neu.jl")
 #include("transport_dxfalsch_divfalsch.jl")
 
+function grad_J_zellgrenzen(I, p, u, v)
+	echo( "================Calculate gradient beta =0 $m x $n" )
+	grd_u_J	= zeros( m, n, T-1 )
+	grd_v_J	= zeros( m, n, T-1 )
+	for t= 1:T-1
+		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
+		pI_x__			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
+		pI_y__			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
+		phi_x__			= poissolv_(pI_x__, m, n)
+		phi_y__			= poissolv_(pI_y__, m, n)
+
+		grd_u_J[:,:,t]	= phi_x__+alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= phi_y__+alpha*v[:,:,t] 
+	end
+	return grd_u_J, grd_v_J
+end
+
 function grad_J_nobeta(I, p, u, v)
 	echo( "================Calculate gradient beta =0 $m x $n" )
 	grd_u_J	= zeros( m, n, T-1 )
@@ -22,26 +39,20 @@ function grad_J_nobeta(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-@everywhere function parallel_dim(I, p, uv, Cxy, L, ellOp)
-	rhs	= zeros( m, n, T-1 )
-	for t= 1:T-1
-		Luv			= L*  reshape(uv[:,:,t], n*m)
-		pI_xy		= Cxy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
-
-		#thr, hier muss eigentlich eigentlich mit dt^2 multipliziert werden
-		#thr!!
-		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) #* dt^2
-
-		if (t==1) || (t==T-1)
-			rhs[:,:,t] /= 2
-		end
-	end
-
-	zuv, conv_hist	= gmres(ellOp, reshape(rhs, (T-1)*n*m), restart=5)
-	return zuv
+@everywhere function solve_lin_multig(A,b)
+	# call pyamg 
+	return A[:solve](b, tol=1e-3)
 end
 
-@everywhere function parallel_dim_pymultig(I, p, uv, Cxy, L, ml)
+@everywhere function solve_lin_gmres(A,b)
+	x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
+	return x
+end
+
+solverf = solve_lin_multig
+#solverf = solve_lin_gmres
+
+@everywhere function solve_ellip_beta(I, p, uv, Cxy, L, ellOp)
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		Luv			= L*  reshape(uv[:,:,t], n*m)
@@ -55,63 +66,23 @@ end
 			rhs[:,:,t] /= 2
 		end
 	end
-
-	# call pyamg via python
-	zuv			= ml[:solve](reshape(rhs, (T-1)*n*m), tol=1e-3)
+	zuv = solverf( ellOp, reshape(rhs, (T-1)*n*m) )
 	return zuv
 end
 
-#function grad_J_zellgrenzen_multig(I, p, u, v)
-	#echo( "================Calculate gradient $m x $n" )
-	#zu	= parallel_dim_pymultig(I, p, u, Cx, L
-#end
-
-function grad_J_beta_multig(I, p, u, v)
+function grad_J_beta(I, p, u, v) 
 	echo( "================Calculate gradient $m x $n" )
-	zu = parallel_dim_pymultig(I, p, u, Cx, L, ml)
-	zv = parallel_dim_pymultig(I, p, v, Cy, L, ml)
+	zu = solve_ellip_beta(I, p, u, Cx, L, ml)
+	zv = solve_ellip_beta(I, p, v, Cy, L, ml)
 	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
 	return grd_u_J, grd_v_J
-end
-
-function grad_J_beta_multig_parallel(I, p, u, v)
-	echo( "================Calculate gradient $m x $n" )
-	zu = @spawn parallel_dim_pymultig(I, p, u, Cx, L, ml)
-	zv = @spawn parallel_dim_pymultig(I, p, v, Cy, L, ml)
-	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 end
 
 function grad_J_beta_parallel(I, p, u, v)
 	echo( "================Calculate gradient $m x $n" )
-	zu = @spawn parallel_dim(I, p, u, Cx, L, ellOp)
-	zv = @spawn parallel_dim(I, p, v, Cy, L, ellOp)
+	zu = @spawn solve_ellip_beta(I, p, u, Cx, L, ellOp)
+	zv = @spawn solve_ellip_beta(I, p, v, Cy, L, ellOp)
 	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
-end
-
-function grad_J_beta(I, p, u, v)
-	echo( "================Calculate gradient $m x $n" )
-	zu = parallel_dim(I, p, u, Cx, L, ellOp)
-	zv = parallel_dim(I, p, v, Cy, L, ellOp)
-
-	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
-	return grd_u_J, grd_v_J
-end
-
-function grad_J_alt(I, p, u, v, alpha)
-	echo( "================Calculate gradient $m x $n" )
-	grd_u_J	= zeros( m, n, T-1 )
-	grd_v_J	= zeros( m, n, T-1 )
-	for t= 1:T-1
-		# p[2:m-1,2:n-1] vielleicht lieber im Voraus fuer alle t berechnen, damit die p[:,:,t] nicht umkopiert werden muessen
-
-		pI_x_			= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
-		pI_y_			= reshape(Cy*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
-		phi_x_			= poissolv( pI_x_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		phi_y_			= poissolv( pI_y_[2:m-1,2:n-1], zeros(1,n), zeros(1,n), zeros(m-2), zeros(m-2) )
-		grd_u_J[:,:,t]	= phi_x_+alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y_+alpha*v[:,:,t]
-	end
-	return grd_u_J, grd_v_J
 end
 
 function next_w!(I, p, u, v, alpha)

@@ -15,7 +15,7 @@ armijo_bas			= 0.5
 armijo_sig			= 0.0
 
 #goldstein sigma <0.5
-sig					= 0.0000002
+sig					= 0.4
 
 @everywhere const dt			= 1/m
 @everywhere const dx			= 1/T
@@ -44,13 +44,10 @@ grad_J		= beta == 0 ? grad_J_nobeta		: grad_J_beta_parallel
 H1_norm_grd	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_grd
 H1_norm_w	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_w
 
-include("pyamg.jl")
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-ml			= construct_mgsolv(ellOp)
-#grad_J		= grad_J_beta_multig_parallel
-grad_J		= grad_J_beta_multig
+grad_J		= grad_J_beta
 
 #s		= inits(quadrat)
 s		= inits(rot_circle)

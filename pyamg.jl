@@ -1,4 +1,4 @@
-using PyCall
+@everywhere using PyCall
 @everywhere @pyimport pyamg
 @everywhere @pyimport scipy.sparse as scipy_sparse
 
