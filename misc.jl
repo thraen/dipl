@@ -44,6 +44,22 @@ function H1_norm_nobeta(u, v)
 	return dt* dx*dx*ret[1]
 end
 
+function H1_norm_nobeta_interf(u, v)
+	ret = 0
+	for t=1:T-1
+		u_ = reshape(u[:,:,t], (n-1)*m)
+		v_ = reshape(v[:,:,t], n*(m-1))
+		ret_  = (u_'*Lx*u_) 
+		ret_ += (v_'*Ly*v_) 
+		if t==1 || t==T
+			ret_ /= 2
+		end
+		ret += ret_
+	end
+	# thr! dx steckt auch in L? stimmt das so?
+	return dt* dx*dx*ret[1]
+end
+
 function H1_norm_beta_w(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))

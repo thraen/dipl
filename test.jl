@@ -17,8 +17,14 @@ armijo_sig			= 0.0
 #goldstein sigma <0.5
 sig					= 0.4
 
-@everywhere const dt			= 1/m
-@everywhere const dx			= 1/T
+#@everywhere const dt			= 1/T
+#@everywhere const dx			= 1/m
+
+#@everywhere const dt			= 1/m # thr. warum ist das besser als richtig?
+#@everywhere const dx			= 1/T
+
+@everywhere const dt			= 5.0
+@everywhere const dx			= 0.01
 
 # super mit r=dt/dx^2 und 60x60x5_40
 #@everywhere const dt			= 0.0028
@@ -34,27 +40,34 @@ include("beispiele.jl")
 include("verfahren.jl")
 include("view.jl")
 
-# das gmres aus KrylowMethods ist leider schlechter als das von IterativeSolvers
+# ohne beta
+#grad_J		= grad_J_nobeta_interf
+#H1_norm_grd	= H1_norm_nobeta_interf
+#H1_norm_w	= H1_norm_nobeta_interf
+
+# mit beta
+# das gmres aus KrylowMethods ist leider schlechter (langsamer) als das von IterativeSolvers
 # aber das Gauss-Seidel-Verfahren ist besser.
-beta > 0 && @everywhere using IterativeSolvers
-#beta > 0 && using KrylovMethods  
+#beta > 0 && @everywhere using IterativeSolvers
+#beta > 0 && using KrylovMethods   #thr das spaeter noch mal probieren. es ist langsame
 
-grad_J		= beta == 0 ? grad_J_nobeta		: grad_J_beta_parallel
-
-H1_norm_grd	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_grd
-H1_norm_w	= beta == 0 ? H1_norm_nobeta	: H1_norm_beta_w
+grad_J		= grad_J_beta
+H1_norm_grd	= H1_norm_beta_grd
+H1_norm_w	= H1_norm_beta_w
 
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-grad_J		= grad_J_beta
-
-#s		= inits(quadrat)
-s		= inits(rot_circle)
+s		= inits(quadrat)
+#s		= inits(rot_circle)
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
+
+# bei Zellzwischenwerten
+#u		= 0* ones( m, n-1, T-1 )
+#v		= 0* ones( m-1, n, T-1 )
 
 # load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"

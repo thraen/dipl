@@ -1,4 +1,5 @@
 function generate_differentiation_interfx(m,n,dx)
+	println("differentiationmatrix x")
 	#Knotenpunkte in x und y-Richtung
 	nx = n-1
 	ny = m
@@ -14,6 +15,7 @@ function generate_differentiation_interfx(m,n,dx)
 end
 
 function generate_differentiation_interfy(m,n,dx)
+	println("differentiationmatrix y")
 	#Knotenpunkte in x und y-Richtung
 	nx = n
 	ny = m-1
@@ -28,6 +30,7 @@ function generate_differentiation_interfy(m,n,dx)
 end
 
 function generateLu(m,n,dx)
+	println("Laplace u")
 	#Knotenpunkte in x und y-Richtung
 	nx = n-1
 	ny = m
@@ -62,6 +65,7 @@ function generateLu(m,n,dx)
 end
 
 function generateLv(m,n,dx)
+	println("Laplace v")
 	nx = n
 	ny = m-1
 

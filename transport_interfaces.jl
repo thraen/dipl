@@ -66,8 +66,11 @@ function transport(I0, u, v, schritte)
 	for t = 1:schritte
 		for j = 3:n-2
 			for i = 3:m-2
-				uxph	= (u[i,j,t] + u[i,j+1,t])/2
-				uxmh	= (u[i,j,t] + u[i,j-1,t])/2
+				#uxph	= (u[i,j,t] + u[i,j+1,t])/2
+				#uxmh	= (u[i,j,t] + u[i,j-1,t])/2
+
+				uxph	= u[i,j,t] 
+				uxmh	= u[i,j-1,t]
 				
 				uxph_m	= min( uxph, 0)
 				uxmh_p	= max( uxmh, 0)
@@ -85,8 +88,11 @@ function transport(I0, u, v, schritte)
 		end
 		for j = 3:n-2 
 			for i = 3:m-2
-				vymh	= (v[i-1,j,t] + v[i,j,t])/2
-				vyph	= (v[i+1,j,t] + v[i,j,t])/2
+				#vymh	= (v[i-1,j,t] + v[i,j,t])/2
+				#vyph	= (v[i+1,j,t] + v[i,j,t])/2
+
+				vyph	= v[i,j,t]
+				vymh	= v[i-1,j,t]
 
 				vymh_p	= max( vymh, 0)
 				vyph_m	= min( vyph, 0)
@@ -128,8 +134,12 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 
 		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
 			for i = 3:m-2
-				uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
-				uxmh	= (u[i,j,t-1] + u[i,j-1,t-1])/2
+				#uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
+				#uxmh	= (u[i,j,t-1] + u[i,j-1,t-1])/2
+
+				uxph	= u[i,j,t-1]
+				uxmh	= u[i,j-1,t-1]
+
 				anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
 
 				ph[i,j] = p[i,j,t] - r* anteilx
@@ -138,8 +148,12 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 
 		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
 			for i = 3:m-2
-				vyph	= (v[i+1,j,t-1] + v[i,j,t-1])/2
-				vymh	= (v[i-1,j,t-1] + v[i,j,t-1])/2
+				#vyph	= (v[i+1,j,t-1] + v[i,j,t-1])/2
+				#vymh	= (v[i-1,j,t-1] + v[i,j,t-1])/2
+
+				vyph	= v[i,  j,t-1] 
+				vymh	= v[i-1,j,t-1] 
+
 				anteily = fluss_lim_kons( vyph, p[i-1,j,t], p[i,j,t], p[i+1,j,t], p[i+2,j,t]) - fluss_lim_kons( vymh, p[i-2,j, t], p[i-1,j,t], p[i,j,t], p[i+1,j,t])
 
 				p[i,j,t-1] = ph[i,j] - r* anteily

@@ -1,11 +1,3 @@
-include("matrizen_zellgrenzen.jl")
-
-function generate_differentiation_interf(m,n,dx)
-	println("generate central differences Matrices for cell interfaces")
-	Cx = generate_differentiation_interfx(m,n,dx)
-	Cy = generate_differentiation_interfx(m,n,dx)
-	return Cx, Cy	
-end
 
 function generate_differentiation_central(n, dx)
 	println("generate central differences Matrices for cell centers")
@@ -204,4 +196,10 @@ const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx,
 
 include("pyamg.jl")
 const ml			= construct_mgsolv(ellOp)
+
+include("matrizen_zellgrenzen.jl")
+const Lx	= generateLu(m,n,dx)
+const Ly	= generateLv(m,n,dx)
+const Cx_zg	= generate_differentiation_interfx(m,n,dx)
+const Cy_zg	= generate_differentiation_interfy(m,n,dx)
 

@@ -1,23 +1,52 @@
 using HDF5, JLD
 include("echo.jl")
 include("misc.jl")
+
 #include("transport.jl")
+
 include("transport_neu.jl")
+
+#include("transport_interfaces.jl")
+
 #include("transport_dxfalsch_divfalsch.jl")
 
-function grad_J_zellgrenzen(I, p, u, v)
+@everywhere function solve_lin_multig(A,b)
+	# call pyamg 
+	return A[:solve](b, tol=1e-3)
+end
+
+@everywhere function solve_lin_gmres(A,b)
+	#x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
+	x, conv_hist	= gmres(A, b, restart=5)
+	return x
+end
+
+@everywhere function solve_lin_elim(A,b)
+	return A\b
+end
+
+#solverf = solve_lin_gmres
+solverf = solve_lin_multig
+#solverf = solve_lin_elim
+
+function grad_J_nobeta_interf(I, p, u, v)
 	echo( "================Calculate gradient beta =0 $m x $n" )
-	grd_u_J	= zeros( m, n, T-1 )
-	grd_v_J	= zeros( m, n, T-1 )
+	grd_u_J	= zeros( m, n-1, T-1 )
+	grd_v_J	= zeros( m-1, n, T-1 )
+
+
 	for t= 1:T-1
 		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
-		pI_x__			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
-		pI_y__			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
-		phi_x__			= poissolv_(pI_x__, m, n)
-		phi_y__			= poissolv_(pI_y__, m, n)
+		
+		# thr aehh, das ist nicht assoziativ. p.*I_x == (p.*I)x ?
+		pI_x			= Cx_zg * (reshape(I[:,:,t], m*n) .* reshape(p[:,:,t], m*n) )#*dx^2 #*dt^2 #wtf?
+		pI_y			= Cy_zg * (reshape(I[:,:,t], m*n) .* reshape(p[:,:,t], m*n) )#*dx^2 #*dt^2
 
-		grd_u_J[:,:,t]	= phi_x__+alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y__+alpha*v[:,:,t] 
+		phi_x			= reshape( solverf(Lx, pI_x), m, n-1 )
+		phi_y			= reshape( solverf(Ly, pI_y), m-1, n )
+
+		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
 	end
 	return grd_u_J, grd_v_J
 end
@@ -28,29 +57,16 @@ function grad_J_nobeta(I, p, u, v)
 	grd_v_J	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
-		pI_x__			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
-		pI_y__			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
-		phi_x__			= poissolv_(pI_x__, m, n)
-		phi_y__			= poissolv_(pI_y__, m, n)
+		pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
+		pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
+		phi_x			= poissolv_(pI_x, m, n)
+		phi_y			= poissolv_(pI_y, m, n)
 
-		grd_u_J[:,:,t]	= phi_x__+alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y__+alpha*v[:,:,t] 
+		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
 	end
 	return grd_u_J, grd_v_J
 end
-
-@everywhere function solve_lin_multig(A,b)
-	# call pyamg 
-	return A[:solve](b, tol=1e-3)
-end
-
-@everywhere function solve_lin_gmres(A,b)
-	x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
-	return x
-end
-
-solverf = solve_lin_multig
-#solverf = solve_lin_gmres
 
 @everywhere function solve_ellip_beta(I, p, uv, Cxy, L, ellOp)
 	rhs	= zeros( m, n, T-1 )
@@ -66,6 +82,7 @@ solverf = solve_lin_multig
 			rhs[:,:,t] /= 2
 		end
 	end
+
 	zuv = solverf( ellOp, reshape(rhs, (T-1)*n*m) )
 	return zuv
 end
@@ -142,7 +159,8 @@ function verfahren_grad(s, u, v, steps=1)
 	echo("initial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-	@show H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
+
+	@show H1_J_w			= H1_norm_grd(grd_u_J, grd_v_J)
 
 	@show J	= L2_err/2 + alpha*H1_err/2
 	@show J0	= J
@@ -200,8 +218,8 @@ function verfahren_grad(s, u, v, steps=1)
 
 				armijo_exp = 0
 				echo("\n****** NEW GRADIENT *****")
-				echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-				echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( min( (grd_u_J), (grd_v_J)) ) )
+				#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
+				#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( min( (grd_u_J), (grd_v_J)) ) )
 				break 
 			end
 			
