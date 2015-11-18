@@ -34,16 +34,16 @@ function grad_J_nobeta_interf(I, p, u, v)
 	grd_u_J	= zeros( m, n-1, T-1 )
 	grd_v_J	= zeros( m-1, n, T-1 )
 
-
 	for t= 1:T-1
-		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
-		
-		# thr aehh, das ist nicht assoziativ. p.*I_x == (p.*I)x ?
-		pI_x			= Cx_zg * (reshape(I[:,:,t], m*n) .* reshape(p[:,:,t], m*n) )#*dx^2 #*dt^2 #wtf?
-		pI_y			= Cy_zg * (reshape(I[:,:,t], m*n) .* reshape(p[:,:,t], m*n) )#*dx^2 #*dt^2
+		# p interpolieren
+		p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
+		p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
+	
+		pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
+		pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 
-		phi_x			= reshape( solverf(Lx, pI_x), m, n-1 )
-		phi_y			= reshape( solverf(Ly, pI_y), m-1, n )
+		phi_x			= reshape( solverf(Lx, -pI_x), m, n-1 )
+		phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
 
 		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
 		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 

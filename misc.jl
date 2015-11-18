@@ -57,7 +57,7 @@ function H1_norm_nobeta_interf(u, v)
 		ret += ret_
 	end
 	# thr! dx steckt auch in L? stimmt das so?
-	return dt* dx*dx*ret[1]
+	return -ret[1] *dx*dx *dt
 end
 
 function H1_norm_beta_w(u,v)

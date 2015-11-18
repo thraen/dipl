@@ -23,8 +23,8 @@ sig					= 0.4
 #@everywhere const dt			= 1/m # thr. warum ist das besser als richtig?
 #@everywhere const dx			= 1/T
 
-@everywhere const dt			= 5.0
-@everywhere const dx			= 0.01
+@everywhere const dt			= 0.005
+@everywhere const dx			= 0.0001
 
 # super mit r=dt/dx^2 und 60x60x5_40
 #@everywhere const dt			= 0.0028

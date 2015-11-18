@@ -203,3 +203,7 @@ const Ly	= generateLv(m,n,dx)
 const Cx_zg	= generate_differentiation_interfx(m,n,dx)
 const Cy_zg	= generate_differentiation_interfy(m,n,dx)
 
+# Interpolationsmatrizen
+const P_zgx = abs(Cx_zg)*dx/2
+const P_zgy = abs(Cy_zg)*dx/2
+
