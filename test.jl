@@ -30,8 +30,8 @@ sig					= 0.4
 #@everywhere const dt			= 0.0028
 #@everywhere const dx			= 0.0025
 
-@everywhere const alpha	= 0.00001
-@everywhere const beta	= 0.00001
+@everywhere const alpha	= 0.1
+@everywhere const beta	= 0.1
 
 maxsteps 			= 1000
 save_every			= 0
