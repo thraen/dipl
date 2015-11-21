@@ -26,7 +26,7 @@ end
 	clf()
 end
 
-@everywhere function save_quiver(u,v, pref, t)
+@everywhere function save_quiver(u,v, pref, t, mpad, npad)
 	quiver(u[:,:,t], v[:,:,t])
 	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
 	clf()
@@ -35,13 +35,15 @@ end
 function save_quivers_(u,v, pref)
 	tic()
 	run(`mkdir -p $rootdir`)
-	m, n, T = size(u)
+	mu, nu, T = size(u)
+	mv, nv, T = size(v)
+	mpad = abs(mu-mv)
+	npad = abs(nu-nv)
 	run(`mkdir -p $rootdir/$pref`)
 
 	@sync @parallel for t=1:T 
 		print("$t ")
-		save_quiver(u, v, pref, t)
-		#savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
+		save_quiver(u, v, pref, t, mpad, npad)
 	end
 	toc()
 end

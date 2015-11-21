@@ -30,8 +30,8 @@ sig					= 0.4
 #@everywhere const dt			= 0.0028
 #@everywhere const dx			= 0.0025
 
-@everywhere const alpha	= 0.01
-@everywhere const beta	= 0.01
+@everywhere const alpha	= 0.00001
+@everywhere const beta	= 0.00001
 
 maxsteps 			= 1000
 save_every			= 0
@@ -40,20 +40,18 @@ include("beispiele.jl")
 include("verfahren.jl")
 include("view.jl")
 
+#include("transport.jl")
+#include("transport_neu.jl")
+include("transport_interfaces.jl")
+
 # ohne beta
-#grad_J		= grad_J_nobeta_interf
-#H1_norm_grd	= H1_norm_nobeta_interf
-#H1_norm_w	= H1_norm_nobeta_interf
+grad_J		= grad_J_nobeta_interf
+H1_norm_grd	= H1_norm_nobeta_interf
+H1_norm_w	= H1_norm_nobeta_interf
 
-# mit beta
-# das gmres aus KrylowMethods ist leider schlechter (langsamer) als das von IterativeSolvers
-# aber das Gauss-Seidel-Verfahren ist besser.
-#beta > 0 && @everywhere using IterativeSolvers
-#beta > 0 && using KrylovMethods   #thr das spaeter noch mal probieren. es ist langsame
-
-grad_J		= grad_J_beta
-H1_norm_grd	= H1_norm_beta_grd
-H1_norm_w	= H1_norm_beta_w
+#grad_J		= grad_J_beta
+#H1_norm_grd	= H1_norm_beta_grd
+#H1_norm_w	= H1_norm_beta_w
 
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
@@ -62,12 +60,12 @@ s		= inits(quadrat)
 #s		= inits(rot_circle)
 #s		= readtaxi()[:,:, 1:5:end]
 
-u		= 0* ones( m, n, T-1 )
-v		= 0* ones( m, n, T-1 )
+#u		= 0* ones( m, n, T-1 )
+#v		= 0* ones( m, n, T-1 )
 
 # bei Zellzwischenwerten
-#u		= 0* ones( m, n-1, T-1 )
-#v		= 0* ones( m-1, n, T-1 )
+u		= 0* ones( m, n-1, T-1 )
+v		= 0* ones( m-1, n, T-1 )
 
 # load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"

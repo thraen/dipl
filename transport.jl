@@ -43,7 +43,7 @@ end
 # approximiert u_t = w*grad(u)
 #
 
-function transport(I0, u, v, schritte)
+@everywhere function transport(I0, u, v, schritte)
 	m, n	= size(I0)
 	I		= zeros(m, n, schritte+1)
 	I[:,:,1]= I0

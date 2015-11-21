@@ -200,6 +200,8 @@ const ml			= construct_mgsolv(ellOp)
 include("matrizen_zellgrenzen.jl")
 const Lx	= generateLu(m,n,dx)
 const Ly	= generateLv(m,n,dx)
+const LxLU, LyLU	= factorize(Lx), factorize(Ly)
+
 const Cx_zg	= generate_differentiation_interfx(m,n,dx)
 const Cy_zg	= generate_differentiation_interfy(m,n,dx)
 

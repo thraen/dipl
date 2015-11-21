@@ -2,18 +2,15 @@ using HDF5, JLD
 include("echo.jl")
 include("misc.jl")
 
-#include("transport.jl")
-
-include("transport_neu.jl")
-
-#include("transport_interfaces.jl")
-
-#include("transport_dxfalsch_divfalsch.jl")
-
 @everywhere function solve_lin_multig(A,b)
 	# call pyamg 
 	return A[:solve](b, tol=1e-3)
 end
+
+# das gmres aus KrylowMethods ist leider schlechter (langsamer) als das von IterativeSolvers
+# aber das Gauss-Seidel-Verfahren ist besser.
+#@everywhere using IterativeSolvers
+#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
 
 @everywhere function solve_lin_gmres(A,b)
 	#x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
@@ -26,8 +23,8 @@ end
 end
 
 #solverf = solve_lin_gmres
-solverf = solve_lin_multig
-#solverf = solve_lin_elim
+#solverf = solve_lin_multig
+solverf = solve_lin_elim
 
 function grad_J_nobeta_interf(I, p, u, v)
 	echo( "================Calculate gradient beta =0 $m x $n" )
@@ -42,8 +39,10 @@ function grad_J_nobeta_interf(I, p, u, v)
 		pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
 		pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 
-		phi_x			= reshape( solverf(Lx, -pI_x), m, n-1 )
-		phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
+		#phi_x			= reshape( solverf(Lx, -pI_x), m, n-1 )
+		#phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
+		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
+		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
 
 		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
 		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
@@ -351,6 +350,70 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 		end
 		update()
 	end
+
+	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
+end
+
+function verfahren_grad_try_par(s, u, v, steps=1)
+	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
+	norm_s		= L2norm(s)
+	echo("norm_s", norm_s)
+
+	H1_err		= H1_norm_w( u, v )
+
+	@time I		= transport(s[:,:,1], u, v, T-1)
+	@time p		= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	L2_err, _	= sample_err(I,s,norm_s)
+
+	echo("initial L2_err", L2_err)
+
+	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
+
+	J	= L2_err/2 + alpha*H1_err/2
+
+	function try_J(u, v, t, grd_u_J, grd_v_J, s, norm_s)
+		u_next				= u - t*grd_u_J
+		v_next				= v - t*grd_v_J
+
+		H1_err_next			= H1_norm_w(u_next, v_next)
+
+		I_next				= transport( s[:,:,1], u_next, v_next, T-1 )
+		L2_err_next, _		= sample_err(I_next,s,norm_s)
+
+		J_next 				= L2_err_next/2 + alpha*H1_err_next/2
+		# echo( "try t", t, L2_err_next, H1_err_next, J_next)
+
+		return I_next, L2_err_next, H1_err_next, J_next
+	end
+	
+	function update()
+		echo( "update", L2_err_next, H1_err_next, J_next)
+		I					= I_next
+		u					= u_next
+		v					= v_next
+
+		H1_err				= H1_err_next
+		L2_err				= L2_err_next
+
+		@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
+		@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+
+		H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
+		J					= L2_err/2 + alpha*H1_err/2
+		steps += 1
+	end
+
+	armijo_exp = 0
+	while steps < maxsteps
+		#for proc = 1:nprocs
+			#rc	jkkk
+		#end
+	
+
+		steps +=1
+	end
+
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
