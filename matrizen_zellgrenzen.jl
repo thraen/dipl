@@ -93,3 +93,17 @@ function generateLv(m,n,dx)
 	Lv = spdiagm((dmN_y, dm1, d, d1, dN_y), (-ny, -1, 0, 1, ny), nx*ny, nx*ny)
 	return Lv / dx^2
 end
+
+function generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
+	ndofu	= prod(m*(n-1))
+	ndofv	= prod((m-1)*n)
+
+	S 		= [	Lx						spzeros(ndofu, ndofv)	Cx_zg;
+				spzeros(ndofv, ndofu)	Ly						Cy_zg;
+				Cx_zg'					Cy_zg'					spzeros(m*n, m*n) ]
+
+	S[end, :]	= 0
+	S[end, end] = 1
+
+	return S
+end

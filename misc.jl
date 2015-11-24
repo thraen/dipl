@@ -162,3 +162,20 @@ function laplace(f)
 	# return 	corrected
 end
 
+function checkdiv(u, v)
+	mu, nu, T = size(u)
+	mv, nv, T = size(v)
+	#divx	= 0
+	#divy	= 0
+
+	mdu, ndu	= size( central_diff_x( u[:,:,1] ) )
+	mdv, ndv	= size( central_diff_y( v[:,:,1] ) )
+	divx = zeros( mdu, ndu, T)
+	divy = zeros( mdv, ndv, T)
+	for t=1:T
+		divx[:,:,t] = central_diff_x( u[:,:,t] )
+		divy[:,:,t] = central_diff_y( v[:,:,t] )
+	end
+	
+	return divx , divy
+end

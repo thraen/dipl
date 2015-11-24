@@ -27,7 +27,7 @@ end
 end
 
 @everywhere function save_quiver(u,v, pref, t, mpad, npad)
-	quiver(u[:,:,t], v[:,:,t])
+	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
 	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
 	clf()
 end

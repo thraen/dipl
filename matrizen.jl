@@ -209,3 +209,5 @@ const Cy_zg	= generate_differentiation_interfy(m,n,dx)
 const P_zgx = abs(Cx_zg)*dx/2
 const P_zgy = abs(Cy_zg)*dx/2
 
+const S		= generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
+const SLU	= factorize(S)

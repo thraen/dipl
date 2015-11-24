@@ -23,8 +23,24 @@ end
 end
 
 #solverf = solve_lin_gmres
-#solverf = solve_lin_multig
-solverf = solve_lin_elim
+solverf = solve_lin_multig
+#solverf = solve_lin_elim
+
+function solve_stokes(grd_u_J, grd_v_J)
+	ndofu	= m*(n-1)
+	ndofv	= (m-1)*n
+
+	rhs		= [ Lx*grd_u_J[:] ; Ly*grd_v_J[:] ; zeros(m*m) ]
+	rhs[end]= 1
+	
+	res = SLU\rhs
+
+	u_proj	= res[1              : ndofu]
+	v_proj	= res[ndofu+1        : ndofu+ndofv]
+	p		= res[ndofu+ndofv+1 : end]
+
+	return reshape(u_proj, m, n-1), reshape(v_proj, m-1, n)
+end
 
 function grad_J_nobeta_interf(I, p, u, v)
 	echo( "================Calculate gradient beta =0 $m x $n" )
@@ -43,6 +59,9 @@ function grad_J_nobeta_interf(I, p, u, v)
 		#phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
 		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
 		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
+
+		
+		#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
 
 		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
 		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
