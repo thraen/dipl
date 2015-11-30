@@ -194,9 +194,6 @@ const B		= generateB(m, dx)
 const Cx, Cy = generate_differentiation_central(n, dx) 
 const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
 
-include("pyamg.jl")
-const ml			= construct_mgsolv(ellOp)
-
 include("matrizen_zellgrenzen.jl")
 const Lx	= generateLu(m,n,dx)
 const Ly	= generateLv(m,n,dx)
@@ -211,3 +208,8 @@ const P_zgy = abs(Cy_zg)*dx/2
 
 const S		= generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 const SLU	= factorize(S)
+
+#include("pyamg.jl")
+#const ellOp_ml		= construct_mgsolv(ellOp)
+#const S_ml			= construct_mgsolv(S)
+

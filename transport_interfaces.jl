@@ -154,7 +154,7 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 				vyph	= v[i,  j,t-1] 
 				vymh	= v[i-1,j,t-1] 
 
-				anteily = fluss_lim_kons( vyph, p[i-1,j,t], p[i,j,t], p[i+1,j,t], p[i+2,j,t]) - fluss_lim_kons( vymh, p[i-2,j, t], p[i-1,j,t], p[i,j,t], p[i+1,j,t])
+				anteily = fluss_lim_kons( vyph, ph[i-1,j], ph[i,j], ph[i+1,j], ph[i+2,j]) - fluss_lim_kons( vymh, ph[i-2,j], ph[i-1,j], ph[i,j], ph[i+1,j])
 
 				p[i,j,t-1] = ph[i,j] - r* anteily
 			end
@@ -162,65 +162,5 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 	end
 
 	return p
-end
-
-@everywhere function procchunk!(I, Ih, t, irange, jrange)
-	for j = jrange
-		for i = irange
-			#uxph	= (u[i,j,t] + u[i,j+1,t])/2
-			#uxmh	= (u[i,j,t] + u[i,j-1,t])/2
-
-			uxph	= u[i,j,t] 
-			uxmh	= u[i,j-1,t]
-			
-			uxph_m	= min( uxph, 0)
-			uxmh_p	= max( uxmh, 0)
-
-			Wmh		= I[i,j,t]   - I[i,j-1,t]
-			Wph		= I[i,j+1,t] - I[i,j,t]
-
-			anteil_higmh	= limited_hot( uxmh, I[i,j-2,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] )
-			anteil_higph	= limited_hot( uxph, I[i,j-1,t], I[i,j,t], I[i,j+1,t], I[i,j+2,t] )
-
-			anteil_low	= uxph_m*Wph + uxmh_p*Wmh
-
-			Ih[i,j] = I[i,j,t] - r* anteil_low - r*(anteil_higph - anteil_higmh)
-		end
-	end
-end
-
-@everywhere function _transport(I0, u, v, schritte)
-	m, n	= size(I0)
-	I		= zeros(m, n, schritte+1)
-	I[:,:,1]= I0
-	Ih		= zeros(m, n) #half step buffer for dimension splitting
-	println("==============Transport=================$n x $m x $T")
-	for t = 1:schritte
-		procchunk!(I, Ih, t, 3:n-2, 3:m-2)
-
-		for j = 3:n-2 
-			for i = 3:m-2
-				#vymh	= (v[i-1,j,t] + v[i,j,t])/2
-				#vyph	= (v[i+1,j,t] + v[i,j,t])/2
-
-				vyph	= v[i,j,t]
-				vymh	= v[i-1,j,t]
-
-				vymh_p	= max( vymh, 0)
-				vyph_m	= min( vyph, 0)
-
-				Wmh		= I[i,j,t]   - I[i-1,j,t]
-				Wph		= I[i+1,j,t] - I[i,j,t]
-
-				anteil_low		= vyph_m*Wph + vymh_p*Wmh
-
-				anteil_higmh	= limited_hot( vymh, I[i-2,j,t], I[i-1,j,t], I[i,j,t], I[i+1,j,t] )
-				anteil_higph	= limited_hot( vyph, I[i-1,j,t], I[i,j,t], I[i+1,j,t], I[i+2,j,t] )
-
-				I[i,j,t+1] = Ih[i,j] - r* anteil_low - r*(anteil_higph - anteil_higmh)
-			end
-		end
-	end
-	return I
 end
 

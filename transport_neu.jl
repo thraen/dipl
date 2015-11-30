@@ -124,7 +124,7 @@ function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
 			for i = 3:m-2
 				vyph	= (v[i+1,j,t-1] + v[i,j,t-1])/2
 				vymh	= (v[i-1,j,t-1] + v[i,j,t-1])/2
-				anteily = fluss_lim_kons( vyph, p[i-1,j,t], p[i,j,t], p[i+1,j,t], p[i+2,j,t]) - fluss_lim_kons( vymh, p[i-2,j, t], p[i-1,j,t], p[i,j,t], p[i+1,j,t])
+				anteily = fluss_lim_kons( vyph, ph[i-1,j], ph[i,j], ph[i+1,j], ph[i+2,j]) - fluss_lim_kons( vymh, ph[i-2,j], ph[i-1,j], ph[i,j], ph[i+1,j])
 
 				p[i,j,t-1] = ph[i,j] - r* anteily
 			end

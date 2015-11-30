@@ -35,6 +35,9 @@ function solve_stokes(grd_u_J, grd_v_J)
 	
 	res = SLU\rhs
 
+	# geht leider nicht so schnell, wie erhofft. LU ist fuer Taxi noch bedeutend schneller
+	#res	= solve_lin_multig( S_ml, rhs )
+
 	u_proj	= res[1              : ndofu]
 	v_proj	= res[ndofu+1        : ndofu+ndofv]
 	p		= res[ndofu+ndofv+1 : end]
@@ -60,7 +63,6 @@ function grad_J_nobeta_interf(I, p, u, v)
 		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
 		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
 
-		
 		grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
 
 		#grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
@@ -107,8 +109,8 @@ end
 
 function grad_J_beta(I, p, u, v) 
 	echo( "================Calculate gradient $m x $n" )
-	zu = solve_ellip_beta(I, p, u, Cx, L, ml)
-	zv = solve_ellip_beta(I, p, v, Cy, L, ml)
+	zu = solve_ellip_beta(I, p, u, Cx, L, ellOp_ml)
+	zv = solve_ellip_beta(I, p, v, Cy, L, ellOp_ml)
 	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
 	return grd_u_J, grd_v_J
 end
@@ -188,8 +190,8 @@ function verfahren_grad(s, u, v, steps=1)
 
 	# Armijo-Schrittweite
 	armijo_exp	= 0
-	while steps < maxsteps  &&  armijo_exp < 80  &&  H1_J_w > 1e-8 
-		while (armijo_exp < 80)
+	while steps < maxsteps  &&  armijo_exp < 40  &&  H1_J_w > 1e-8 
+		while (armijo_exp < 40)
 			t 					= armijo_bas^armijo_exp
 
 			echo()

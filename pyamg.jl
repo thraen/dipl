@@ -15,13 +15,18 @@ end
 @everywhere function construct_mgsolv(A)
 	print("load into Python")
 	@time pyA	= pycsr(A)
+	@show size(A)
 	print("construct multig solver")
+
+	# geht nicht fuer die Stokesmatrix
 	@time ml	= pyamg.ruge_stuben_solver(pyA)
-	#@time ml = pyamg.ruge_stuben_solver(pyB, max_levels=10)
-	#@time ml = pyamg.ruge_stuben_solver(pyB, max_coarse=10)
-	#@time ml = pyamg.ruge_stuben_solver(pyB)
-	#ml = pyamg.ruge_stuben_solver(pyB)
-	#@time ml = pyamg.smoothed_aggregation_solver(pyB)
+
+	#@time ml = pyamg.ruge_stuben_solver(pyA, max_levels=10)
+	#@time ml = pyamg.ruge_stuben_solver(pyA, max_coarse=10)
+	#@time ml = pyamg.ruge_stuben_solver(pyA)
+
+	#geht fuer Stokesmatrix, ist aber langsam
+	#@time ml = pyamg.smoothed_aggregation_solver(pyA)
 
 	return ml
 end

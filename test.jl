@@ -1,7 +1,7 @@
-#@everywhere const m					= 256+4
-#@everywhere const n					= 256+4
-@everywhere const m					= 60
-@everywhere const n					= 60
+@everywhere const m					= 256+4
+@everywhere const n					= 256+4
+#@everywhere const m					= 60
+#@everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
@@ -59,9 +59,9 @@ H1_norm_w	= H1_norm_nobeta_interf
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-s		= inits(quadrat)
+#s		= inits(quadrat)
 #s		= inits(rot_circle)
-#s		= readtaxi()[:,:, 1:5:end]
+s		= readtaxi()[:,:, 1:5:end]
 
 #u		= 0* ones( m, n, T-1 )
 #v		= 0* ones( m, n, T-1 )
