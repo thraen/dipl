@@ -23,8 +23,8 @@ end
 end
 
 #solverf = solve_lin_gmres
-solverf = solve_lin_multig
-#solverf = solve_lin_elim
+#solverf = solve_lin_multig
+solverf = solve_lin_elim
 
 function solve_stokes(grd_u_J, grd_v_J)
 	ndofu	= m*(n-1)
@@ -61,10 +61,10 @@ function grad_J_nobeta_interf(I, p, u, v)
 		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
 
 		
-		#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
+		grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
 
-		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
+		#grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
+		#grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
 	end
 	return grd_u_J, grd_v_J
 end
@@ -185,10 +185,11 @@ function verfahren_grad(s, u, v, steps=1)
 	@show H0	= H1_err
 	@show L0	= L2_err
 
+
 	# Armijo-Schrittweite
-	armijo_exp = 0
-	while steps < maxsteps
-		while (armijo_exp < 40)
+	armijo_exp	= 0
+	while steps < maxsteps  &&  armijo_exp < 80  &&  H1_J_w > 1e-8 
+		while (armijo_exp < 80)
 			t 					= armijo_bas^armijo_exp
 
 			echo()
@@ -246,7 +247,7 @@ function verfahren_grad(s, u, v, steps=1)
 
 		if (save_every > 0) && (steps % save_every == 0)
 			try
-				info("\n zwischenspeichern\n")
+				info("\n zwischenspeichern\n $steps")
 				save("$(rootdir)zwischenergebnis_$steps.jld", 
 					 	"dx", dx,
 						"dt", dt,
@@ -263,6 +264,8 @@ function verfahren_grad(s, u, v, steps=1)
 				warn("ZWISCHENERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
 			end
 		end
+
+
 
 		steps +=1
 	end
