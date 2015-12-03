@@ -9,8 +9,8 @@ function quadrat(y,x,t)
 	cl	= cx - 8
 	cr	= cx + 8
 
-	return (x >= cl +t*d).*(x <= cr +t*d).*(y >= cl).*(y <= cr);
-	#return (x >= cl ).*(x <= cr ).*(y >= cl+t*d).*(y <= cr+t*d);
+	#return (x >= cl +t*d).*(x <= cr +t*d).*(y >= cl).*(y <= cr);
+	return (x >= cl ).*(x <= cr ).*(y >= cl+t*d).*(y <= cr+t*d);
 	#return (x >= cl -t*d).*(x <= cr -t*d) .* (y >= cl-t*d).*(y <= cr-t*d);
 end
 
@@ -26,8 +26,8 @@ function rot(t)
 end
 
 function rot_circle(y,x,t) 
-	# vorsicht mit y, x vertauscht!
-	rxy = rot(1*t/pi/2)*[x-n/2;y-m/2]
+	# thr vorsicht mit y, x vertauscht!
+	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
 	return slotted_circle(rxy[2], rxy[1])
 end
 

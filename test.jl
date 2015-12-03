@@ -36,8 +36,8 @@ sig					= 0.4
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 10000
-save_every			= 250
+maxsteps 			= 2
+save_every			= 0
 
 include("beispiele.jl")
 include("verfahren.jl")
@@ -45,7 +45,8 @@ include("view.jl")
 
 #include("transport.jl")
 #include("transport_neu.jl")
-include("transport_interfaces.jl")
+#include("transport_interfaces.jl")
+include("transport_interfaces_par.jl")
 
 # ohne beta
 grad_J		= grad_J_nobeta_interf
@@ -60,8 +61,8 @@ L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
 #s		= inits(quadrat)
-#s		= inits(rot_circle)
-s		= readtaxi()[:,:, 1:5:end]
+s		= inits(rot_circle)
+#s		= readtaxi()[:,:, 1:5:end]
 
 #u		= 0* ones( m, n, T-1 )
 #v		= 0* ones( m, n, T-1 )
@@ -69,6 +70,8 @@ s		= readtaxi()[:,:, 1:5:end]
 # bei Zellzwischenwerten
 u		= 0* ones( m, n-1, T-1 )
 v		= 0* ones( m-1, n, T-1 )
+convert(SharedArray, u)
+convert(SharedArray, v)
 
 # load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"

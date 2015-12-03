@@ -63,10 +63,10 @@ function grad_J_nobeta_interf(I, p, u, v)
 		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
 		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
 
-		grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
+		#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
 
-		#grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		#grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
+		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
 	end
 	return grd_u_J, grd_v_J
 end
