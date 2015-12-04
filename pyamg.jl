@@ -7,16 +7,10 @@
 	return pya[:tocsr]()
 end
 
-# ist nur fuer symmetrische Matrizen richtig? ja
-function _pycsr(A::SparseMatrixCSC)
-	return	scipy_sparse.csr_matrix( (A.nzval, A.rowval-1, A.colptr-1) )
-end
-
 @everywhere function construct_mgsolv(A)
-	print("load into Python")
-	@time pyA	= pycsr(A)
-	@show size(A)
-	print("construct multig solver")
+	#print("load into Python")
+	pyA	= pycsr(A)
+	#print("construct multig solver")
 
 	# geht nicht fuer die Stokesmatrix
 	@time ml	= pyamg.ruge_stuben_solver(pyA)
@@ -32,14 +26,55 @@ end
 end
 
 # generate 2D laplacian
-#N = 1000
-#L1 = spdiagm((-ones(N-1), 2*ones(N), -ones(N-1)), (-1,0,1), N, N) * N^2
-#pyB = kron(speye(N), L1) + kron(L1, speye(N))
+#@everywhere N = 1000
+#@everywhere Ltest = spdiagm((-ones(N-1), 2*ones(N), -ones(N-1)), (-1,0,1), N, N) * N^2
+#@everywhere pyB = kron(speye(N), Ltest) + kron(Ltest, speye(N))
+
+#@everywhere m1	= construct_mgsolv(pyB)
+#@everywhere m2	= construct_mgsolv(pyB)
+
+#@everywhere function solve_lin_test(A,b)
+	#return A[:solve](b, tol=1e-3)
+#end
+
+#@everywhere function solve_lin_test2(b)
+	#return m2[:solve](b, tol=1e-3)
+#end
+
+#@everywhere function solve_lin_test1(b)
+	#return m1[:solve](b, tol=1e-3)
+#end
+
+function test_par(b)
+	#cannot serialize pointer
+	#e1 = @spawn solve_lin_test(m1, b)
+	#e2 = @spawn solve_lin_test(m2, b)
+
+	#cannot serialize pointer
+	#@spawn m1[:solve](b)
+	#@spawn m2[:solve](b)
+
+	#cannot serialize pointer
+	#remotecall(2, solve_lin_test, b)
+	#remotecall(3, solve_lin_test, b)
+
+	e1 = remotecall(2, solve_lin_test1, b)
+	e2 = remotecall(3, solve_lin_test2, b)
+
+	return fetch(e1), fetch(e2)
+
+	#return solve_lin_test1(b), solve_lin_test2(b)
+end
+
+#@time for i=1:10
+	#b = rand(size(pyB,1))
+	#e1, e2 = test_par(b)
+	#@show e1 == e1
+#end
 
 #pyB	= WaveOp
 
 # solve with random RHS
-#b = rand(size(B,1))
 
 #print("pyamg")
 #@time x_py		= ml[:solve](b, tol=1e-4)

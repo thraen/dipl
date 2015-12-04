@@ -1,12 +1,4 @@
-#@everywhere const r			= dt/(dx*dx) # thr marcel hat hier nur /dx
 @everywhere const r			= dt/dx # thr marcel hat hier nur /dx
-
-#const infts = [999999.0, 999999.0, 999999.0, 999999.0]
-
-@everywhere const infts = 999999.0
-@everywhere const oness = 1.0
-@everywhere const twos	= 2.0
-@everywhere const zeross= 0.0
 
 @everywhere function fluss_lxw1( a, u, v )
 	return 0.5* ( a*(u+v) + r*a*a*(u-v) )
@@ -18,20 +10,12 @@ end
 	#return a*u
 end
 
-#@everywhere function theta( um, u, up )
-	#if ( (up-u) == 0 )
-		#return infts
-	#else
-		#return (u - um) / (up - u)
-	#end
-#end
-
 @everywhere function theta( um, u, up )
 	return (u - um +eps()) / (up - u +eps())
 end
 
 @everywhere function sbee( thet )
-	return max( zeross, max( min(oness, 2*thet), min(thet, twos) ) );
+	return max( 0.0, max( min(1.0, 2*thet), min(thet, 2.0) ) );
 end
 
 @everywhere function fluss_lim1( a, um, u, up )

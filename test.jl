@@ -34,8 +34,18 @@ include("verfahren.jl")
 include("view.jl")
 
 #include("transport.jl")
-include("transport_neu.jl")
+#include("transport_neu.jl")
 #include("transport_interfaces.jl")
+
+include("transport_alle.jl")
+procchunk_x_fw!	= procchunk_x_fw_center!
+procchunk_y_fw!	= procchunk_y_fw_center!
+
+procchunk_x_bw!	= procchunk_x_bw_center!
+procchunk_y_bw!	= procchunk_y_bw_center!
+
+transport		= transport_ser
+ruecktransport	= ruecktransport_ser
 
 # ohne beta
 #grad_J		= grad_J_nobeta_interf
