@@ -30,7 +30,8 @@ maxsteps 			= 10000
 save_every			= 0
 
 include("beispiele.jl")
-include("verfahren.jl")
+#include("verfahren.jl")
+include("verfahren_partest.jl")
 include("view.jl")
 
 #include("transport.jl")
@@ -40,9 +41,13 @@ include("view.jl")
 include("transport_alle.jl")
 procchunk_x_fw!	= procchunk_x_fw_center!
 procchunk_y_fw!	= procchunk_y_fw_center!
-
 procchunk_x_bw!	= procchunk_x_bw_center!
 procchunk_y_bw!	= procchunk_y_bw_center!
+
+#procchunk_x_fw!	= procchunk_x_fw_interf!
+#procchunk_y_fw!	= procchunk_y_fw_interf!
+#procchunk_x_bw!	= procchunk_x_bw_interf!
+#procchunk_y_bw!	= procchunk_y_bw_interf!
 
 transport		= transport_ser
 ruecktransport	= ruecktransport_ser
@@ -65,8 +70,8 @@ H1_norm_w	= H1_norm_beta_w
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-#s		= inits(quadrat)
-s		= inits(rot_circle)
+s		= inits(quadrat)
+#s		= inits(rot_circle)
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )

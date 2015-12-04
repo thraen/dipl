@@ -127,7 +127,7 @@ function generateB(n, h)
 	return B * h^2/24
 end
 
-function laplace_diags(m,n)
+@everywhere function laplace_diags(m,n)
 	diag_seg	= [ 1; repmat([4], n-2) ; 1]
 	diag		= [ ones(n); repmat(diag_seg, m-2); ones(n) ]
 
@@ -146,7 +146,7 @@ function generate_laplace(m,n,dx)
 	return spdiagm( laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
 end
 
-function generate_block_laplace(m, n, T, dt, dx)
+@everywhere function generate_block_laplace(m, n, T, dt, dx)
 	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
 	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
 	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
@@ -156,8 +156,8 @@ function generate_block_laplace(m, n, T, dt, dx)
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-function generate_ellip_beta(n, T, dt, dx, alpha, beta)
-	println("elliptischer Operatormatrix")
+@everywhere function generate_ellip_beta(n, T, dt, dx, alpha, beta)
+	println("generate elliptic operator")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 
 	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
@@ -173,20 +173,15 @@ function generate_ellip_beta(n, T, dt, dx, alpha, beta)
     GradNormOp = (LT + R )/dt
     CostNormOp = (alpha * LT + beta * R)/dt
 
-	println("factorize")
-	#ellOPLU	= factorize(ellOp)
-	#ellOPLU	= lufact(ellOp)
-	ellOPLU	= ellOp
-	println("factorized")
-
-	return ellOp, ellOPLU, GradNormOp, CostNormOp
+	return ellOp, GradNormOp, CostNormOp
 end
 
 const L 	= generate_laplace(m, n, dx)
 const LU	= factorize(L)
 const B		= generateB(m, dx)
 const Cx, Cy = generate_differentiation_central(n, dx) 
-const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
+const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
+#const ellOpLU	= factorize(ellOp)
 
 include("matrizen_zellgrenzen.jl")
 const Lx	= generateLu(m,n,dx)

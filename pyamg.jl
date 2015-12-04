@@ -46,17 +46,17 @@ end
 #end
 
 function test_par(b)
+	#	die varianten gehen alle nicht
 	#cannot serialize pointer
 	#e1 = @spawn solve_lin_test(m1, b)
 	#e2 = @spawn solve_lin_test(m2, b)
-
+	#cannot serialize pointer
+	#remotecall(2, solve_lin_test, m1, b)
+	#remotecall(3, solve_lin_test, m2, b)
 	#cannot serialize pointer
 	#@spawn m1[:solve](b)
 	#@spawn m2[:solve](b)
 
-	#cannot serialize pointer
-	#remotecall(2, solve_lin_test, b)
-	#remotecall(3, solve_lin_test, b)
 
 	e1 = remotecall(2, solve_lin_test1, b)
 	e2 = remotecall(3, solve_lin_test2, b)

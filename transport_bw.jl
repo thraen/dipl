@@ -1,0 +1,70 @@
+@everywhere function procchunk_x_bw_center!(p, ph, u, t, irange, jrange)
+	for j = jrange
+		for i = irange
+			@inbounds uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
+			@inbounds uxmh	= (u[i,j,t-1] + u[i,j-1,t-1])/2
+			@inbounds anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
+			@inbounds ph[i,j] = p[i,j,t] - r* anteilx
+		end
+	end
+end
+
+@everywhere function procchunk_y_bw_center!(p, ph, v, t, irange, jrange)
+	for j = jrange
+		for i = irange
+			@inbounds vyph		= (v[i+1,j,t-1] + v[i,j,t-1])/2
+			@inbounds vymh		= (v[i-1,j,t-1] + v[i,j,t-1])/2
+			@inbounds anteily		= fluss_lim_kons( vyph, ph[i-1,j], ph[i,j], ph[i+1,j], ph[i+2,j]) - fluss_lim_kons( vymh, ph[i-2,j], ph[i-1,j], ph[i,j], ph[i+1,j])
+			@inbounds p[i,j,t-1]	= ph[i,j] - r* anteily
+		end
+	end
+end
+
+@everywhere function procchunk_x_bw_interf!(p, ph, u, t, irange, jrange)
+	@inbounds begin
+	for j = jrange
+		for i = irange
+			@inbounds uxph	= u[i,j,t-1]
+			@inbounds uxmh	= u[i,j-1,t-1]
+			@inbounds anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
+
+			@inbounds ph[i,j] = p[i,j,t] - r* anteilx
+		end
+	end
+	end
+end
+
+@everywhere function procchunk_y_bw_interf!(p, ph, v, t, irange, jrange)
+	#@inbounds begin
+	for j = jrange
+		for i = irange
+			@inbounds vyph	= v[i,  j,t-1] 
+			@inbounds vymh	= v[i-1,j,t-1] 
+			@inbounds anteily = fluss_lim_kons( vyph, ph[i-1,j], ph[i,j], ph[i+1,j], ph[i+2,j]) - fluss_lim_kons( vymh, ph[i-2,j], ph[i-1,j], ph[i,j], ph[i+1,j])
+
+			@inbounds p[i,j,t-1] = ph[i,j] - r* anteily
+		end
+	end
+	#end
+end
+
+function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
+	m, n, T = size(I)
+	p		= zeros(m,n,T)
+	ph		= zeros(m,n)
+	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
+	sk		= 0
+	for t = T:-1:2
+		# thr!!! rechter oder linker grenzwert zum diracterm?
+		if mod(t-1, n_zsamp) == 0 then
+			#echo("am sample        ", t, "->", t-1, n_samp-sk)
+			err			= I[:, :, t] - s[:, :, n_samp-sk] 
+			p[:,:,t] 	= p[:,:,t] - err/norm_s
+			sk 			+= 1
+		end
+		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
+		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
+	end
+
+	return p
+end
