@@ -2,10 +2,10 @@
 #s					= convert(Array, img)
 
 function quadrat(y,x,t)
-	cx	= floor(n/2);
-	cy	= floor(m/2);
+	cx	= floor(n/2)
+	cy	= floor(m/2)
 
-	d	= 2;
+	d	= 2
 	cl	= cx - 8
 	cr	= cx + 8
 
@@ -14,10 +14,12 @@ function quadrat(y,x,t)
 	#return (x >= cl -t*d).*(x <= cr -t*d) .* (y >= cl-t*d).*(y <= cr-t*d);
 end
 
-function slotted_circle(y,x)
+function slotted_circle(y,x,cy=0,cx=0)
 	slotd	= -9
 	slotwh	=  5
 	r		= 25
+	y	-= cy
+	x	-= cx
 	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
 end
 
@@ -30,6 +32,14 @@ function rot_circle(y,x,t)
 	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
 	return slotted_circle(rxy[2], rxy[1])
 end
+
+function rot_circle_ex(y,x,t) 
+	# thr vorsicht mit y, x vertauscht!
+	w=3
+	rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
+	return slotted_circle(rxy[2], rxy[1], 40, 0)
+end
+
 
 function inits(f)
 	s	= zeros(m, n, n_samples)

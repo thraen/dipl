@@ -181,12 +181,6 @@ function generate_ellip_beta(n, T, dt, dx, alpha, beta)
 
 	return ellOp, ellOPLU, GradNormOp, CostNormOp
 end
-#(isdefined(:L)		&& (m*n==size(L,1))) 			|| (const L 	= generate_laplace(m, n, dx))
-#(isdefined(:LU)		&& (m*n==size(L,1)))			|| (const LU	= factorize(L))
-#(isdefined(:B)		&& (m*n==size(B,1))) 			|| (const B		= generateB(m, dx))
-#(isdefined(:Cx)		&& (m*n==size(Cx,1))) 			|| (const Cx, Cy = generate_differentiation_central(n, dx) )
-#(isdefined(:ellOp)	&& (m*n*(T-1)==size(ellOp,1)))	|| (const ellOp, ellOPLU, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta))
-
 
 const L 	= generate_laplace(m, n, dx)
 const LU	= factorize(L)
@@ -209,7 +203,7 @@ const P_zgy = abs(Cy_zg)*dx/2
 const S		= generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 const SLU	= factorize(S)
 
-#include("pyamg.jl")
-#const ellOp_ml		= construct_mgsolv(ellOp)
+include("pyamg.jl")
+const ellOp_ml		= construct_mgsolv(ellOp)
 #const S_ml			= construct_mgsolv(S)
 
