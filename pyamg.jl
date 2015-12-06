@@ -37,15 +37,15 @@ end
 	#return A[:solve](b, tol=1e-3)
 #end
 
-#@everywhere function solve_lin_test2(b)
-	#return m2[:solve](b, tol=1e-3)
-#end
+@everywhere function solve_lin_test2(b)
+	return m2[:solve](b, tol=1e-3)
+end
 
-#@everywhere function solve_lin_test1(b)
-	#return m1[:solve](b, tol=1e-3)
-#end
+@everywhere function solve_lin_test1(b)
+	return m1[:solve](b, tol=1e-3)
+end
 
-function test_par(b)
+function do_par(b)
 	#	die varianten gehen alle nicht
 	#cannot serialize pointer
 	#e1 = @spawn solve_lin_test(m1, b)
@@ -58,19 +58,48 @@ function test_par(b)
 	#@spawn m2[:solve](b)
 
 
-	e1 = remotecall(2, solve_lin_test1, b)
-	e2 = remotecall(3, solve_lin_test2, b)
+	@time e1 = remotecall(2, solve_lin_test1, b)
+	@time e2 = remotecall(3, solve_lin_test2, b)
 
-	return fetch(e1), fetch(e2)
+	@time res1 = fetch(e1)
+	@time res2 = fetch(e2)
+
+
+	return res1, res2
+
+	#return fetch(e1), fetch(e2)
 
 	#return solve_lin_test1(b), solve_lin_test2(b)
 end
 
-#@time for i=1:10
-	#b = rand(size(pyB,1))
-	#e1, e2 = test_par(b)
-	#@show e1 == e1
-#end
+function do_ser(b)
+	@time res1 = solve_lin_test1(b)
+	@time res2 = solve_lin_test2(b)
+
+	return res1, res2
+end
+
+function test_mg_ser()
+	for i=1:3
+		b = rand(size(pyB,1))
+		e1, e2 = do_ser(b)
+		@show e1 == e1
+	end
+end
+
+function test_mg_par()
+	for i=1:3
+		b = rand(size(pyB,1))
+		e1, e2 = do_par(b)
+		@show e1 == e1
+	end
+end
+
+#println("\nparallel execution")
+#@time test_mg_par()
+#println("\nserial execution")
+#@time test_mg_ser()
+
 
 #pyB	= WaveOp
 
