@@ -30,12 +30,12 @@ maxsteps 			= 10000
 save_every			= 0
 
 include("beispiele.jl")
-#include("verfahren.jl")
-include("verfahren_partest.jl")
+include("verfahren.jl")
+#include("verfahren_partest.jl")
 include("view.jl")
 
 #include("transport.jl")
-#include("transport_neu.jl")
+include("transport_neu.jl")
 #include("transport_interfaces.jl")
 
 include("transport_alle.jl")
