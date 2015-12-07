@@ -2,9 +2,8 @@ using HDF5, JLD
 include("echo.jl")
 include("misc.jl")
 
-@everywhere function solve_lin_multig(A,b)
-	# call pyamg 
-	return A[:solve](b, tol=1e-3)
+function solve_lin_multig(A,b)
+	return A[:solve](b, tol=mg_tol, accel="cg")
 end
 
 # das gmres aus KrylowMethods ist leider schlechter (langsamer) als das von IterativeSolvers
@@ -12,13 +11,13 @@ end
 #@everywhere using IterativeSolvers
 #@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
 
-@everywhere function solve_lin_gmres(A,b)
+function solve_lin_gmres(A,b)
 	#x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
 	x, conv_hist	= gmres(A, b, restart=5)
 	return x
 end
 
-@everywhere function solve_lin_elim(A,b)
+function solve_lin_elim(A,b)
 	return A\b
 end
 
@@ -88,7 +87,7 @@ function grad_J_nobeta(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-@everywhere function solve_ellip_beta(I, p, uv, Cxy, L, ellOp)
+function grad_J_beta_dim(I, p, uv, Cxy, L, ellOp)
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		Luv			= L*  reshape(uv[:,:,t], n*m)
@@ -109,17 +108,10 @@ end
 
 function grad_J_beta(I, p, u, v) 
 	echo( "================Calculate gradient $m x $n" )
-	zu = solve_ellip_beta(I, p, u, Cx, L, ellOp_ml)
-	zv = solve_ellip_beta(I, p, v, Cy, L, ellOp_ml)
+	zu = grad_J_beta_dim(I, p, u, Cx, L, ellOp_ml)
+	zv = grad_J_beta_dim(I, p, v, Cy, L, ellOp_ml)
 	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
 	return grd_u_J, grd_v_J
-end
-
-function grad_J_beta_parallel(I, p, u, v)
-	echo( "================Calculate gradient $m x $n" )
-	zu = @spawn solve_ellip_beta(I, p, u, Cx, L, ellOp)
-	zv = @spawn solve_ellip_beta(I, p, v, Cy, L, ellOp)
-	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 end
 
 function next_w!(I, p, u, v, alpha)
