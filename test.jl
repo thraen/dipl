@@ -6,7 +6,7 @@
 #@everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 5
+@everywhere const n_samples			= 3
 @everywhere const n_zwischensamples	= 40    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*n_zwischensamples+1
@@ -76,7 +76,7 @@ sample_err	= sample_err_L2
 
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
-s		= inits(rot_circle_ex)
+s		= inits(rot_circle_ex)[:,:,1:3]
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
@@ -91,6 +91,7 @@ v		= 0* ones( m, n, T-1 )
 # load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir`)
+run(`sh -c "cp *jl $rootdir"`)
 
 steps=1
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")

@@ -35,7 +35,7 @@ end
 
 function rot_circle_ex(y,x,t) 
 	# thr vorsicht mit y, x vertauscht!
-	w=3
+	w=1
 	rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
 	return slotted_circle(rxy[2], rxy[1], 40, 0)
 end
