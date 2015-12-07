@@ -12,7 +12,6 @@
 #suff=".svg"
 @everywhere vsuff=".dlm"
 
-
 function delete_output()
 	run(`rm $rootdir -r`)
 end
