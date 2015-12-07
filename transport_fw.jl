@@ -65,8 +65,8 @@ end
 	end
 end
 
-@everywhere proc_chunks_shared_x!(I, Ih, u, t) = procchunk_x!(I, Ih, u, t, range_part_x(Ih)...)
-@everywhere proc_chunks_shared_y!(I, Ih, v, t) = procchunk_y!(I, Ih, v, t, range_part_y(Ih)...)
+@everywhere proc_chunks_shared_x!(I, Ih, u, t) = procchunk_x_fw!(I, Ih, u, t, range_part_x(Ih)...)
+@everywhere proc_chunks_shared_y!(I, Ih, v, t) = procchunk_y_fw!(I, Ih, v, t, range_part_y(Ih)...)
 
 function transport_par(I0, u, v, schritte)
 	m, n	= size(I0)

@@ -1,9 +1,9 @@
 #@everywhere const m					= 256+4
 #@everywhere const n					= 256+4
-#@everywhere const m					= 140
-#@everywhere const n					= 140
-@everywhere const m					= 60
-@everywhere const n					= 60
+@everywhere const m					= 140
+@everywhere const n					= 140
+#@everywhere const m					= 60
+#@everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
@@ -17,10 +17,7 @@ armijo_bas			= 0.5
 armijo_sig			= 0.0
 
 #multigrid solver tolerance
-@everywhere const mg_tol = 1e-3
-
-#goldstein sigma <0.5
-sig					= 0.4
+@everywhere const mg_tol = 1e-1
 
 #@everywhere const dt			= 1/T
 #@everywhere const dx			= 1/m
@@ -31,8 +28,8 @@ sig					= 0.4
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 10000
-save_every			= 0
+maxsteps 			= 100000
+save_every			= 500
 
 include("view.jl")
 include("beispiele.jl")
@@ -44,15 +41,15 @@ include("verfahren_partest.jl")
 #include("transport_interfaces.jl")
 
 include("transport_alle.jl")
-procchunk_x_fw!	= procchunk_x_fw_center!
-procchunk_y_fw!	= procchunk_y_fw_center!
-procchunk_x_bw!	= procchunk_x_bw_center!
-procchunk_y_bw!	= procchunk_y_bw_center!
+@everywhere procchunk_x_fw!	= procchunk_x_fw_center!
+@everywhere procchunk_y_fw!	= procchunk_y_fw_center!
+@everywhere procchunk_x_bw!	= procchunk_x_bw_center!
+@everywhere procchunk_y_bw!	= procchunk_y_bw_center!
 
-#procchunk_x_fw!	= procchunk_x_fw_interf!
-#procchunk_y_fw!	= procchunk_y_fw_interf!
-#procchunk_x_bw!	= procchunk_x_bw_interf!
-#procchunk_y_bw!	= procchunk_y_bw_interf!
+#@everywhere procchunk_x_fw!	= procchunk_x_fw_interf!
+#@everywhere procchunk_y_fw!	= procchunk_y_fw_interf!
+#@everywhere procchunk_x_bw!	= procchunk_x_bw_interf!
+#@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
 
 transport		= transport_ser
 ruecktransport	= ruecktransport_ser
@@ -77,9 +74,9 @@ H1_norm_w	= H1_norm_beta_w
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-s		= inits(quadrat)
+#s		= inits(quadrat)
 #s		= inits(rot_circle)
-#s		= inits(rot_circle_ex)
+s		= inits(rot_circle_ex)
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
@@ -92,10 +89,10 @@ v		= 0* ones( m, n, T-1 )
 #v       = SharedArray(Float64, (m-1, n, T-1))
 
 # load old
-@everywhere rootdir = "../out/par$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
+@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir`)
 
-steps=0
+steps=1
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
 #change alpha, beta and run
 #@everywhere const alpha= 0.001
@@ -103,7 +100,5 @@ steps=0
 #@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-
-#@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_goldstein(s, u, v, steps)
 
 _="fertig"
