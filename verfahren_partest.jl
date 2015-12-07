@@ -90,7 +90,6 @@ end
 
 
 function solve_ellip_beta(b)
-	println("solve with multig")
 	#return ellOp \ b	
 	#x, conv_hist	= gmres(ellOp, b, restart=5)
 	return ellOp_ml[:solve](b, tol=mg_tol, accel="cg")
@@ -100,6 +99,7 @@ end
 @everywhere const ellOp_ml1		= construct_mgsolv(ellOp)
 @everywhere const ellOp_ml2		= construct_mgsolv(ellOp)
 
+# das ist leider notwendig, da die python-handles anders nicht auf die worker-prozesse kopiert werden koennen
 @everywhere function solve_ellip_beta1(b)
 	return ellOp_ml1[:solve](b, tol=mg_tol, accel="cg")
 end
@@ -109,7 +109,6 @@ end
 end
 
 @everywhere function constr_rhs_beta(I, p, uv, Cxy, L)
-	println("constr_rhs_beta")
 	rhs	= zeros( m, n, T-1 )
 	for t= 1:T-1
 		Luv			= L*  reshape(uv[:,:,t], n*m)
@@ -125,14 +124,12 @@ end
 end
 
 @everywhere function _grad_J_beta_dim(I, p, uv, Cxy, L)
-	#println("grad_J_beta_dim")
 	@time rhs = constr_rhs_beta(I, p, uv, Cxy, L)
 	@time zuv = solve_ellip_beta( rhs )
 	return zuv
 end
 
 @everywhere function grad_J_beta_dim(I, p, uv, Cxy, L, ellOp)
-	#println("grad_J_beta_dim")
 	@time rhs = constr_rhs_beta(I, p, uv, Cxy, L)
 
 	#@time zuv = solve_ellip_beta( rhs )
