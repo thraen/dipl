@@ -96,7 +96,7 @@ end
 end
 
 function grad_J_nobeta_par(I, p, u, v)
-	echo( "================Calculate gradient beta =0 $m x $n" )
+	echo( "================Calculate gradient, no timereg $m x $n   parallel")
 	grd_u_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
 	grd_v_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
 

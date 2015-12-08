@@ -42,7 +42,6 @@ function rot_circle_ex(y,x,t)
 	return slotted_circle(rxy[2], rxy[1], 40, 0)
 end
 
-
 function inits(f)
 	s	= zeros(m, n, n_samples)
 	for t = 0:n_samples-1
@@ -55,7 +54,23 @@ function inits(f)
 	return s
 end
 
-function readtaxi()
+# thr entfernen. so wurden die alten Taxidlms erstellt. 
+function taxi_bmp2dlm_images_alt!() 
+	taxi = zeros(256+4,256+4,41)
+	for i=1:41
+		#raus kommt ein fixedpoint grauwert bild
+		a	= Images.imread("../taxi/taxi$(i).bmp")
+		
+		a_	= convert(Array, float64(a))
+		a_	= Array{Float64}(a_)
+		
+		taxi[3:190+2,3:256+2,i]= a_[:,:]
+		writedlm("../taxi/taxi$(i).dlm", taxi[:,:,i])
+	end
+end
+
+# thr entfernen. so wurden die alten Taxidlms eingelesen
+function readtaxi_alt()
 	taxi = zeros(256+4,256+4,41)
 	for i=1:41
 		#@show a	= Images.imread("../taxi/taxi$(i).bmp")
@@ -64,9 +79,70 @@ function readtaxi()
 		#taxi[3:190+2,3:256+2,i]= a_[:,:]
 
 		# von daheim vorbereitet, weil die Imagemagick-Bibliothek auf dem Uniserver zu alt ist fuer Julia
-		a_	= readdlm("../taxi/taxi$(i).dlm")
-		taxi[:,:,i] = a_[:,:]'
+		a_	= readdlm("../taxialt/taxi$(i).dlm")
+		#taxi[:,:,i] = a_[:,:]' #thr deshalb waren die Bilder gedreht. weiss nicht, warum ich das gemacht habe.
+		taxi[:,:,i] = a_[:,:]
 	end
 	return taxi
 end
+
+# thr entfernen: die alte Methode zur Erstellung der DLMs ohne auffuellen auf 260x260
+function taxi_bmp2dlm_images!()
+	for i=1:41
+		#raus kommt ein fixedpoint grauwert bild
+		a	= Images.imread("../taxi/taxi$(i).bmp")
+		a_	= convert(Array, float64(a))
+		a_	= Array{Float64}(a_)
+		writedlm("../taxi/taxi$(i).dlm", a_)
+	end
+end
+
+function taxi_bmp2dlm_pyplot!()
+	for i=1:41
+		#raus kommt ein Uint8 rgb-bild normalisiert auf 0-255,
+		#wobei r, g, b-Komponenten gleich sind
+		a	= PyPlot.imread("../taxi/taxi$(i).bmp")
+
+		# Da die Daten aus Bildern stammen, ist der Ursprung links OBEN
+		# wir drehen die y-Achse um, damit die Image-Plots mit surf-Plots
+		# kompatibel sind.
+		a	= a[end:-1:1,:,1] # wir nehmen nur die erste Komponente und invertieren die y-Achse 
+		a_	= Array{Float64}(a)/255
+		writedlm("../taxi/taxi$(i).dlm", a_)
+	end
+end
+
+# erwartet auf [0,1] normierte und von 1-T numerierte dlm-Dateien
+# die Graustufenbilder enthalten. 
+function image_seq_from_dlm(dir, pref, T, padu=0, padd=0, padl=0, padr=0)
+	@show (dir, pref, T, padl, padr, padu, padd)
+	m,n = size( readdlm(dir*pref*"1.dlm") )
+	res = zeros(m+padu+padd, n+padl+padr,T)
+	for i=1:T
+		a_	= readdlm(dir*pref*"$(i).dlm")
+		#res[:,:,i] = a_
+
+		res[padd+1 : padd+m , padl+1 : padl+n , i]= a_[:,:]
+	end
+	return res
+end
+
+
+function load_taxi(m,n,T)
+	taxi = image_seq_from_dlm("../taxi/", "taxi", T)
+	@show tm, tn, tT = size(taxi)
+	taxi = image_seq_from_dlm("../taxi/", "taxi", T, 2, (m-2)-tm, 2, 2)
+	return taxi
+end
+
+#taxi_bmp2dlm_pyplot!()
+
+#taxipad = load_taxi(260, 260, 5)
+#imshow(taxipad[:,:,1], origin="lower")
+#@show size(taxipad)
+#_ ="fertig"
+
+#PyPlot.imshow(taxi_neu, origin="lower")
+#PyPlot.imshow(taxi_alt, origin="lower")
+#maximum(abs(taxi_neu-taxi_alt))
 

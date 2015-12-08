@@ -31,7 +31,7 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 10
+maxsteps 			= 10000
 save_every			= 500
 
 #include("view.jl")
@@ -63,8 +63,8 @@ ruecktransport	= ruecktransport_ser
 #H1_norm_w	= H1_norm_nobeta_interf
 
 # ohne beta
-#grad_J		= grad_J_nobeta_par
-grad_J		= grad_J_nobeta
+grad_J		= grad_J_nobeta_par
+#grad_J		= grad_J_nobeta
 H1_norm_grd	= H1_norm_nobeta
 H1_norm_w	= H1_norm_nobeta
 
@@ -80,7 +80,7 @@ sample_err	= sample_err_L2
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
 s		= inits(rot_circle_ex)#[:,:,1:3]
-#s		= readtaxi()[:,:, 1:5:end]
+#s		= load_taxi(m,n,T)[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
 v		= 0* ones( m, n, T-1 )
@@ -94,7 +94,7 @@ v		= 0* ones( m, n, T-1 )
 # load old
 @everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir`)
-run(`sh -c "cp *jl $rootdir"`)
+#run(`sh -c "cp *jl $rootdir"`)
 
 steps=1
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
