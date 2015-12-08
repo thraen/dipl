@@ -5,8 +5,11 @@
 #@everywhere const m					= 60
 #@everywhere const n					= 60
 
+#@everywhere const m					= 30
+#@everywhere const n					= 30
+
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 3
+@everywhere const n_samples			= 5
 @everywhere const n_zwischensamples	= 40    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*n_zwischensamples+1
@@ -28,10 +31,10 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 100000
+maxsteps 			= 10
 save_every			= 500
 
-include("view.jl")
+#include("view.jl")
 include("beispiele.jl")
 #include("verfahren.jl")
 include("verfahren_partest.jl")
@@ -60,23 +63,23 @@ ruecktransport	= ruecktransport_ser
 #H1_norm_w	= H1_norm_nobeta_interf
 
 # ohne beta
-#grad_J		= grad_J_nobeta
-#H1_norm_grd	= H1_norm_nobeta
-#H1_norm_w	= H1_norm_nobeta
+#grad_J		= grad_J_nobeta_par
+grad_J		= grad_J_nobeta
+H1_norm_grd	= H1_norm_nobeta
+H1_norm_w	= H1_norm_nobeta
 
 #mit beta
 #grad_J		= grad_J_beta
-grad_J		= grad_J_beta_parallel
-
-H1_norm_grd	= H1_norm_beta_grd
-H1_norm_w	= H1_norm_beta_w
+#grad_J		= grad_J_beta_parallel
+#H1_norm_grd	= H1_norm_beta_grd
+#H1_norm_w	= H1_norm_beta_w
 
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
-s		= inits(rot_circle_ex)[:,:,1:3]
+s		= inits(rot_circle_ex)#[:,:,1:3]
 #s		= readtaxi()[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )

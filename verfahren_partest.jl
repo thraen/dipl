@@ -23,8 +23,8 @@ end
 end
 
 #solverf = solve_lin_gmres
-solverf = solve_lin_multig
-#solverf = solve_lin_elim
+#solverf = solve_lin_multig
+@everywhere solverf = solve_lin_elim
 
 function solve_stokes(grd_u_J, grd_v_J)
 	ndofu	= m*(n-1)
@@ -58,8 +58,6 @@ function grad_J_nobeta_interf(I, p, u, v)
 		pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
 		pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 
-		#phi_x			= reshape( solverf(Lx, -pI_x), m, n-1 )
-		#phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
 		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
 		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
 
@@ -75,19 +73,44 @@ function grad_J_nobeta(I, p, u, v)
 	echo( "================Calculate gradient beta =0 $m x $n" )
 	grd_u_J	= zeros( m, n, T-1 )
 	grd_v_J	= zeros( m, n, T-1 )
-	for t= 1:T-1
-		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
-		pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
-		pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
-		phi_x			= poissolv_(pI_x, m, n)
-		phi_y			= poissolv_(pI_y, m, n)
 
-		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
+	for t= 1:T-1
+		pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+		pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+		phi_x			= solverf(LU, pI_x)
+		phi_y			= solverf(LU, pI_y)
+
+		grd_u_J[:,:,t]	= reshape(phi_x, m,n) + alpha*u[:,:,t] 
+		grd_v_J[:,:,t]	= reshape(phi_y, m,n) + alpha*v[:,:,t] 
 	end
 	return grd_u_J, grd_v_J
 end
 
+@everywhere function nobeta_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+	phi_x			= solverf(LU, pI_x)
+	phi_y			= solverf(LU, pI_y)
+	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
+	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
+end
+
+function grad_J_nobeta_par(I, p, u, v)
+	echo( "================Calculate gradient beta =0 $m x $n" )
+	grd_u_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
+	grd_v_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
+
+	#convert(SharedArray{Float64}, I)
+	#convert(SharedArray{Float64}, p)
+	#convert(SharedArray{Float64}, u)
+	#convert(SharedArray{Float64}, v)
+
+	@sync @parallel for t= 1:T-1
+		nobeta_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+	end
+
+	return grd_u_J, grd_v_J
+end
 
 function solve_ellip_beta(b)
 	#return ellOp \ b	
@@ -95,9 +118,9 @@ function solve_ellip_beta(b)
 	return ellOp_ml[:solve](b, tol=mg_tol, accel="cg")
 end
 
-@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
-@everywhere const ellOp_ml1		= construct_mgsolv(ellOp)
-@everywhere const ellOp_ml2		= construct_mgsolv(ellOp)
+#@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
+#@everywhere const ellOp_ml1		= construct_mgsolv(ellOp)
+#@everywhere const ellOp_ml2		= construct_mgsolv(ellOp)
 
 # das ist leider notwendig, da die python-handles anders nicht auf die worker-prozesse kopiert werden koennen
 @everywhere function solve_ellip_beta1(b)
