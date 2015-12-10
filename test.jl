@@ -31,40 +31,37 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 10000
-save_every			= 500
+maxsteps 			= 5
+save_every			= 0
+
+#velocities_at		= "interfaces"
+velocities_at		= "centers"
+
+transport_method	= "serial"
+grad_method			= "parallel"
+
+time_regularization	= "true"
 
 #include("view.jl")
+
 include("beispiele.jl")
-#include("verfahren.jl")
-include("verfahren_partest.jl")
 
-#include("transport.jl")
-#include("transport_neu.jl")
-#include("transport_interfaces.jl")
+include("transport.jl")
 
-include("transport_alle.jl")
-@everywhere procchunk_x_fw!	= procchunk_x_fw_center!
-@everywhere procchunk_y_fw!	= procchunk_y_fw_center!
-@everywhere procchunk_x_bw!	= procchunk_x_bw_center!
-@everywhere procchunk_y_bw!	= procchunk_y_bw_center!
+include("verfahren.jl")
 
-#@everywhere procchunk_x_fw!	= procchunk_x_fw_interf!
-#@everywhere procchunk_y_fw!	= procchunk_y_fw_interf!
-#@everywhere procchunk_x_bw!	= procchunk_x_bw_interf!
-#@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
-
-transport		= transport_ser
-ruecktransport	= ruecktransport_ser
+#include("verfahren_partest.jl")
 
 # ohne beta
-#grad_J		= grad_J_nobeta_interf
+#grad_J		= grad_J_nobeta_interf_ser
+#grad_J		= grad_J_nobeta_interf_par
 #H1_norm_grd	= H1_norm_nobeta_interf
 #H1_norm_w	= H1_norm_nobeta_interf
 
 # ohne beta
-grad_J		= grad_J_nobeta_par
-#grad_J		= grad_J_nobeta
+grad_J		= grad_J_nobeta
+#grad_J		= grad_J_nobeta_par
+#grad_J		= grad_J_nobeta_ser
 H1_norm_grd	= H1_norm_nobeta
 H1_norm_w	= H1_norm_nobeta
 
@@ -79,7 +76,7 @@ sample_err	= sample_err_L2
 
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
-s		= inits(rot_circle_ex)#[:,:,1:3]
+s		= inits(rot_circle_ex)[:,:,1:5]
 #s		= load_taxi(m,n,T)[:,:, 1:5:end]
 
 u		= 0* ones( m, n, T-1 )
@@ -92,9 +89,9 @@ v		= 0* ones( m, n, T-1 )
 #v       = SharedArray(Float64, (m-1, n, T-1))
 
 # load old
-@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+@everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir`)
-#run(`sh -c "cp *jl $rootdir"`)
+run(`sh -c "cp *jl $rootdir"`)
 
 steps=1
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")

@@ -1,36 +1,19 @@
-#@everywhere const r		= dt*dt/(dx*dx) # thr marcel hat hier nur /dx
-
-@everywhere const r		= dt/(dx*dx) # thr marcel hat hier nur /dx
-
-#@everywhere const r		= dt/dx # thr marcel hat hier nur /dx
-
-#const infts = [999999.0, 999999.0, 999999.0, 999999.0]
-
-@everywhere const infts = 999999.0
-@everywhere const oness = 1.0
-@everywhere const twos	= 2.0
-@everywhere const zeross= 0.0
+@everywhere const r			= dt/dx # thr marcel hat hier nur /dx
 
 @everywhere function fluss_lxw1( a, u, v )
 	return 0.5* ( a*(u+v) + r*a*a*(u-v) )
 end
 
 @everywhere function fluss_upw1( a, u, v )
-	# wenn u bzw v <0 wird von ausserhalb -u bzw -v uebergeben, daher ist die Unterscheidung hier unnoetig
-	#return (a>=0) ? (a*u) : (a*v)
-	return a*u
+	return (a>=0) ? (a*u) : (a*v)
 end
 
 @everywhere function theta( um, u, up )
-	if ( (up-u) == 0 )
-		return infts
-	else
-		return (u - um) / (up - u)
-	end
+	return (u - um +eps()) / (up - u +eps())
 end
 
 @everywhere function sbee( thet )
-	return max( zeross, max( min(oness, 2*thet), min(thet, twos) ) );
+	return max( 0.0, max( min(1.0, 2*thet), min(thet, 2.0) ) );
 end
 
 @everywhere function fluss_lim1( a, um, u, up )
@@ -39,70 +22,85 @@ end
 	return 	  ret
 end
 
-#
-# approximiert u_t = w*grad(u)
-#
-
-@everywhere function transport(I0, u, v, schritte)
-	m, n	= size(I0)
-	I		= zeros(m, n, schritte+1)
-	I[:,:,1]= I0
-	println("==============Transport=================$n x $m x $T")
-
-	for t = 1:schritte
-		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
-			for i = 3:m-2
-				anteilx = (u[i,j,t] >= 0) ? fluss_lim1(  u[i,j,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] ) - fluss_lim1(  u[i,j,t], I[i,j-2,t], I[i,j-1,t], I[i,j,t] ) : fluss_lim1( -u[i,j,t], I[i,j+1,t], I[i,j,t], I[i,j-1,t] ) - fluss_lim1( -u[i,j,t], I[i,j+2,t], I[i,j+1,t], I[i,j,t] ) 
-				anteily = (v[i,j,t] >= 0) ? fluss_lim1(  v[i,j,t], I[i-1,j,t], I[i,j,t], I[i+1,j,t] ) - fluss_lim1(  v[i,j,t], I[i-2,j,t], I[i-1,j,t], I[i,j,t] ) : fluss_lim1( -v[i,j,t], I[i+1,j,t], I[i,j,t], I[i-1,j,t] ) - fluss_lim1( -v[i,j,t], I[i+2,j,t], I[i+1,j,t], I[i,j,t] ) 
-
-				I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily ) 
-
-				#divx = u[i,j+1,t] - u[i,j-1,t]
-				#divy = v[i+1,j,t] - v[i-1,j,t]
-				#I[i,j,t+1] = I[i,j,t] - r* ( anteilx + anteily )  - I[i,j,t]*(r/2)*(divx+divy) ## ausklammern
-			end
-		end
+@everywhere function fluss_lim_kons( a, umm, um, u, up )
+	# donor cell flux as lower order flux
+	anteil_low = fluss_upw1(a, um, u)
+	# ratio of gradient of the current cell face and gradient of the next face 
+	# in opposite upwind direction
+	if a>=0 
+		thet = (um - umm +eps()) / (u - um +eps())
+	else
+		thet = (up - u   +eps()) / (u - um +eps())
 	end
-
-	return I
+	# this is the difference between lax-wendroff and donor cell fluxes, 
+	# weightened by flux limiter dependent on gradient ratio
+	anteil_antidiff	= sbee(thet) * 0.5*abs(a) * (1-r*abs(a)) * (u-um)
+	return 	  anteil_low + anteil_antidiff
 end
 
-function ruecktransport(s, I, u, v, n_samp, n_zsamp, norm_s)
-	m, n, T = size(I)
-	p		= zeros(m,n,T)
-	#p		= SharedArray(typeof(I[1,1,1]), size(I), init=false)
-	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
-
-	# thr!!! rechter oder linker grenzwert zum diracterm?
-	sk		= 0
-
-	for t = T:-1:2
-		# thr!!! rechter oder linker grenzwert zum diracterm?
-		if mod(t-1, n_zsamp) == 0 then
-			#echo("am sample        ", t, "->", t-1, n_samp-sk)
-			err			= I[:, :, t] - s[:, :, n_samp-sk] 
-			p[:,:,t] 	= p[:,:,t] - err/norm_s
-			sk 			+= 1
-		#else
-			#echo("zwischen samples ", t, "->", t-1)
-		end
-
-		for j = 3:n-2  # zuerst die spalten. ist etwas schneller
-			for i = 3:m-2
-				a = u[i,j,t-1]
-				b = v[i,j,t-1]
-				anteilx = (a >= 0) ? fluss_lim1(  a, p[i,j-1,t], p[i,j,t], p[i,j+1,t] ) - fluss_lim1(  a, p[i,j-2,t], p[i,j-1,t], p[i,j,t] ) : fluss_lim1( -a, p[i,j+1,t], p[i,j,t], p[i,j-1,t] ) - fluss_lim1( -a, p[i,j+2,t], p[i,j+1,t], p[i,j,t] ) 
-				anteily = (b >= 0) ? fluss_lim1(  b, p[i-1,j,t], p[i,j,t], p[i+1,j,t] ) - fluss_lim1(  b, p[i-2,j,t], p[i-1,j,t], p[i,j,t] ) : fluss_lim1( -b, p[i+1,j,t], p[i,j,t], p[i-1,j,t] ) - fluss_lim1( -b, p[i+2,j,t], p[i+1,j,t], p[i,j,t] ) 
-
-				p[i,j,t-1] = p[i,j,t] - r* (anteilx + anteily) 
-
-				# thr: - oder + divergenzterm?
-				#divx = u[i,j+1,t-1] - u[i,j-1,t-1]
-				#divy = v[i+1,j,t-1] - v[i-1,j,t-1]
-				#p[i,j,t-1] = p[i,j,t] - r* (anteilx + anteily) - p[i,j,t]*(r/2)*(divx + divy)
-			end
-		end
+@everywhere function limited_hot(a, umm, um, u, up)
+	if a>=0 
+		thet = (um - umm +eps()) / (u - um +eps())
+	else
+		thet = (up - u   +eps()) / (u - um +eps())
 	end
+	anteil_hig	= 0.5*abs(a) * (1-r*abs(a)) * sbee(thet) * (u-um)
 
-	return p
+	return 	  anteil_hig
 end
+
+
+@everywhere function range_part_x(I::SharedArray)
+    idx = indexpids(I)
+    if idx == 0
+        # This worker is not assigned a piece
+        return 1:0, 1:0
+    end
+    nchunks = length(procs(I))
+    splits = [round(Int, s) for s in linspace(2,size(I,2)-2,nchunks+1)]
+    return 1:size(I,1), splits[idx]+1:splits[idx+1]
+end
+
+@everywhere function range_part_y(I::SharedArray)
+    idx = indexpids(I)
+    if idx == 0
+        # This worker is not assigned a piece
+        return 1:0, 1:0
+    end
+    nchunks = length(procs(I))
+	# thr die Randbedinungen sind hier anders!
+    splits = [round(Int, s) for s in linspace(0,size(I,2),nchunks+1)]
+    return 3:size(I,1)-2, splits[idx]+1:splits[idx+1]
+end
+
+include("transport_fw.jl")
+include("transport_bw.jl")
+
+velocities_at == "centers" && begin
+	@everywhere procchunk_x_fw!	= procchunk_x_fw_center!
+	@everywhere procchunk_y_fw!	= procchunk_y_fw_center!
+	@everywhere procchunk_x_bw!	= procchunk_x_bw_center!
+	@everywhere procchunk_y_bw!	= procchunk_y_bw_center!
+end
+
+velocities_at == "interfaces" && begin
+	@everywhere procchunk_x_fw!	= procchunk_x_fw_interf!
+	@everywhere procchunk_y_fw!	= procchunk_y_fw_interf!
+	@everywhere procchunk_x_bw!	= procchunk_x_bw_interf!
+	@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
+end
+
+transport_method == "parallel" && begin
+	transport		= transport_ser
+	ruecktransport	= ruecktransport_ser
+end
+
+transport_method == "serial" && begin
+	transport		= transport_ser
+	ruecktransport	= ruecktransport_ser
+end
+
+
+
+
+

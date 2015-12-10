@@ -45,48 +45,45 @@ function solve_stokes(grd_u_J, grd_v_J)
 	return reshape(u_proj, m, n-1), reshape(v_proj, m-1, n)
 end
 
-function grad_J_nobeta_interf(I, p, u, v)
-	echo( "================Calculate gradient beta =0 $m x $n" )
+@everywhere function grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
+	# p interpolieren
+	p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
+	p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
+
+	pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
+	pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
+
+	phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
+	phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
+
+	#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
+
+	grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
+	grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
+end
+
+function grad_J_nobeta_interf_ser(I, p, u, v)
+	echo( "================Calculate gradient no time reg serial $m x $n" )
 	grd_u_J	= zeros( m, n-1, T-1 )
 	grd_v_J	= zeros( m-1, n, T-1 )
-
 	for t= 1:T-1
-		# p interpolieren
-		p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
-		p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
-	
-		pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
-		pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
-
-		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
-		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
-
-		#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
-
-		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
+		grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
 	end
 	return grd_u_J, grd_v_J
 end
 
-function grad_J_nobeta(I, p, u, v)
-	echo( "================Calculate gradient beta =0 $m x $n" )
-	grd_u_J	= zeros( m, n, T-1 )
-	grd_v_J	= zeros( m, n, T-1 )
-
-	for t= 1:T-1
-		pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
-		pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
-		phi_x			= solverf(LU, pI_x)
-		phi_y			= solverf(LU, pI_y)
-
-		grd_u_J[:,:,t]	= reshape(phi_x, m,n) + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= reshape(phi_y, m,n) + alpha*v[:,:,t] 
+function grad_J_nobeta_interf_par(I, p, u, v)
+	echo( "================Calculate gradient no time reg parallel $m x $n" )
+	grd_u_J	= SharedArray(Float64, (m, n-1, T-1), init= S -> S[localindexes(S)] = 0.0)
+	grd_v_J	= SharedArray(Float64, (m-1, n, T-1), init= S -> S[localindexes(S)] = 0.0)
+	@sync @parallel for t= 1:T-1
+		grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
 	end
 	return grd_u_J, grd_v_J
 end
 
-@everywhere function nobeta_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+
+@everywhere function grad_nobeta_center_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	phi_x			= solverf(LU, pI_x)
@@ -96,7 +93,7 @@ end
 end
 
 function grad_J_nobeta_par(I, p, u, v)
-	echo( "================Calculate gradient, no timereg $m x $n   parallel")
+	echo( "================Calculate gradient, no time reg $m x $n   parallel")
 	grd_u_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
 	grd_v_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
 
@@ -106,9 +103,20 @@ function grad_J_nobeta_par(I, p, u, v)
 	#convert(SharedArray{Float64}, v)
 
 	@sync @parallel for t= 1:T-1
-		nobeta_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+		grad_nobeta_center_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	end
 
+	return grd_u_J, grd_v_J
+end
+
+function grad_J_nobeta_ser(I, p, u, v)
+	echo( "================Calculate gradient beta =0 $m x $n" )
+	grd_u_J	= zeros( m, n, T-1 )
+	grd_v_J	= zeros( m, n, T-1 )
+
+	for t= 1:T-1
+		grad_nobeta_center_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+	end
 	return grd_u_J, grd_v_J
 end
 

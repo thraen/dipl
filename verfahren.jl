@@ -22,8 +22,8 @@ function solve_lin_elim(A,b)
 end
 
 #solverf = solve_lin_gmres
-solverf = solve_lin_multig
-#solverf = solve_lin_elim
+#solverf = solve_lin_multig
+solverf = solve_lin_elim
 
 function solve_stokes(grd_u_J, grd_v_J)
 	ndofu	= m*(n-1)
