@@ -29,7 +29,7 @@ function generate_differentiation_interfy(m,n,dx)
 	return Cy /dx
 end
 
-function generateLu(m,n,dx)
+@everywhere function generateLu(m,n,dx)
 	println("Laplace u")
 	#Knotenpunkte in x und y-Richtung
 	nx = n-1
@@ -64,7 +64,7 @@ function generateLu(m,n,dx)
 	return Lu / dx^2
 end
 
-function generateLv(m,n,dx)
+@everywhere function generateLv(m,n,dx)
 	println("Laplace v")
 	nx = n
 	ny = m-1

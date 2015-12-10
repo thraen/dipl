@@ -1,7 +1,6 @@
 include("matrizen_zellgrenzen.jl")
-const Lx	= generateLu(m,n,dx)
-const Ly	= generateLv(m,n,dx)
-const LxLU, LyLU	= factorize(Lx), factorize(Ly)
+@everywhere const Lx	= generateLu(m,n,dx)
+@everywhere const Ly	= generateLv(m,n,dx)
 
 const Cx_zg	= generate_differentiation_interfx(m,n,dx)
 const Cy_zg	= generate_differentiation_interfy(m,n,dx)
@@ -10,7 +9,36 @@ const Cy_zg	= generate_differentiation_interfy(m,n,dx)
 const P_zgx = abs(Cx_zg)*dx/2
 const P_zgy = abs(Cy_zg)*dx/2
 
-function H1_norm_nobeta_interf(u, v)
+poisson_solver == "lufact" && begin
+	# die Cholesky-Zerlegung kann nicht zu anderen Prozessen kopiert werden. 
+	# daher muss man die Zerlegungen auf den anderen Prozessen generieren
+	@everywhere const LxFact, LyFact	= factorize(Lx), factorize(Ly)
+	@everywhere function solve_poisson_x(b) 
+		return LxFact\b
+	end
+	@everywhere function solve_poisson_y(b) 
+		return LyFact\b
+	end
+end
+
+poisson_solver == "gmres" && begin
+	#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
+	@everywhere using IterativeSolvers
+	@everywhere function solve_poisson_x(b)
+		x, conv_hist	= gmres(L, b, restart=5)
+		return x
+	end
+	@everywhere function solve_poisson_y(b)
+		x, conv_hist	= gmres(Ly, b, restart=5)
+		return x
+	end
+end
+
+poisson_solver == "multig" && begin
+	error("Zwischenzellgeschwindigkeiten koennen nich mit Multigridverfahren benutzt werden")
+end
+
+function H1_norm(u, v)
 	ret = 0
 	for t=1:T-1
 		u_ = reshape(u[:,:,t], (n-1)*m)
@@ -26,6 +54,9 @@ function H1_norm_nobeta_interf(u, v)
 	return -ret[1] *dx*dx *dt
 end
 
+H1_norm_w	= H1_norm
+H1_norm_grd	= H1_norm
+
 project_divfree	== true && const S		= generate_stokes(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 project_divfree	== true && const SLU	= factorize(S)
 
@@ -33,7 +64,7 @@ project_divfree	== true && const SLU	= factorize(S)
 # include("pyamg.jl")
 # const S_ml			= construct_mgsolv(S)
 
-function solve_stokes(grd_u_J, grd_v_J)
+@everywhere function solve_stokes(grd_u_J, grd_v_J)
 	ndofu	= m*(n-1)
 	ndofv	= (m-1)*n
 
@@ -52,7 +83,11 @@ function solve_stokes(grd_u_J, grd_v_J)
 	return reshape(u_proj, m, n-1), reshape(v_proj, m-1, n)
 end
 
-@everywhere @inline function grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
+@everywhere macro do_stokes_when_defined()
+	return :(grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] ))
+end
+
+@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, t)
 	# p interpolieren
 	p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
 	p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
@@ -60,32 +95,25 @@ end
 	pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
 	pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 
-	phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
-	phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
+	phi_x			= reshape( solve_poisson_x(-pI_x), m, n-1 )
+	phi_y			= reshape( solve_poisson_y(-pI_y), m-1, n )
 
-	# thr makro einfuegen
 	#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
+	#@do_stokes_when_defined
 
 	grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
 end
 
-function grad_J_nobeta_interf_ser(I, p, u, v)
-	echo( "================Calculate gradient no time reg serial $m x $n" )
-	grd_u_J	= zeros( m, n-1, T-1 )
-	grd_v_J	= zeros( m-1, n, T-1 )
-	for t= 1:T-1
-		grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
-	end
-	return grd_u_J, grd_v_J
-end
+function grad_J(I, p, u, v)
+	echo( "================Calculate gradient no time reg $m x $n  parallel=$(grad_parallel)" )
+	grd_u_J	= @init_grad( m, n-1, T-1 )
+	grd_v_J	= @init_grad( m-1, n, T-1 )
 
-function grad_J_nobeta_interf_par(I, p, u, v)
-	echo( "================Calculate gradient no time reg parallel $m x $n" )
-	grd_u_J	= SharedArray(Float64, (m, n-1, T-1), init= S -> S[localindexes(S)] = 0.0)
-	grd_v_J	= SharedArray(Float64, (m-1, n, T-1), init= S -> S[localindexes(S)] = 0.0)
-	@sync @parallel for t= 1:T-1
-		grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
+	@show typeof(grd_u_J)
+
+	@do_par_when_defined for t= 1:T-1
+		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, t)
 	end
 	return grd_u_J, grd_v_J
 end

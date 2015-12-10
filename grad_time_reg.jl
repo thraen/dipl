@@ -8,7 +8,6 @@
 #@everywhere const ellOp_ml1		= construct_mgsolv(ellOp)
 #@everywhere const ellOp_ml2		= construct_mgsolv(ellOp)
 
-
 function H1_norm_beta_w(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))

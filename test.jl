@@ -34,15 +34,8 @@ armijo_sig			= 0.0
 maxsteps 			= 5
 save_every			= 0
 
-
-# vielleicht lieber so
-#method	= "time_regularization__center_velocies"
-#method	= "no_time_regularization__center_velocies"
-#method	= "no_time_regularization__interf_velocies"
-#method	= "no_time_regularization__interf_velocies_project"
-
-velocities_at		= "centers"
-#velocities_at		= "interfaces"
+#velocities_at		= "centers"
+velocities_at		= "interfaces"
 
 transport_paralell	= false
 grad_parallel		= true
@@ -77,12 +70,15 @@ include("verfahren.jl")
 s		= inits(rot_circle_ex)[:,:,1:5]
 #s		= load_taxi(m,n,T)[:,:, 1:5:end]
 
-u		= 0* ones( m, n, T-1 )
-v		= 0* ones( m, n, T-1 )
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end || begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
 
 # bei Zellzwischenwerten
-#u		= 0* ones( m, n-1, T-1 )
-#v		= 0* ones( m-1, n, T-1 )
 #u       = SharedArray(Float64, (m, n-1, T-1))#, init= S -> S[localindexes(S)] = 0.0)
 #v       = SharedArray(Float64, (m-1, n, T-1))
 

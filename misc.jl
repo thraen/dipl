@@ -1,5 +1,20 @@
 include("matrizen.jl")
 
+macro init_grad(m,n,T)
+	if grad_parallel 
+		echo("***** init grad parallel *****")
+		return :( SharedArray(Float64, ($m, $n, T-1), init= S -> S[localindexes(S)] = 0.0) )
+	else
+		echo("***** init grad serial *****")
+		return :( zeros( $m, $n, T-1 ) )
+	end
+end
+
+macro do_par_when_defined(forloop)
+	#print(forloop, "\n")
+	return grad_parallel ? :( @sync @parallel $(forloop) ) : forloop
+end
+
 function central_diff_y( a )
 	m, n = size(a)
 	d = zeros(m-2, n-2)

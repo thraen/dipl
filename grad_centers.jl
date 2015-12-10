@@ -51,7 +51,7 @@ end
 H1_norm_w	= H1_norm
 H1_norm_grd	= H1_norm
 
-@everywhere @inline function grad_tslice(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
@@ -62,45 +62,25 @@ H1_norm_grd	= H1_norm
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
 end
 
-macro init_grad(m,n,T)
-	if grad_parallel 
-		echo("***** init grad parallel *****")
-		return :( SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0) )
-	else
-		echo("***** init grad serial *****")
-		return :( zeros( m, n, T-1 ) )
-	end
-end
-
-macro do_par_when_defined(forloop)
-	#print(forloop, "\n")
-	return grad_parallel ? :( @sync @parallel $(forloop) ) : forloop
-end
-
-
 function grad_J(I, p, u, v)
-	echo( "================Calculate gradient, no time reg $m x $n   parallel")
+	echo( "================Calculate gradient, no time reg $m x $n  parallel=$(grad_parallel)")
 	grd_u_J	= @init_grad(m,n,T)
 	grd_v_J	= @init_grad(m,n,T)
-
-	#grd_u_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
-	#grd_v_J	= SharedArray(Float64, (m, n, T-1), init= S -> S[localindexes(S)] = 0.0)
 
 	#convert(SharedArray{Float64}, I)
 	#convert(SharedArray{Float64}, p)
 	#convert(SharedArray{Float64}, u)
 	#convert(SharedArray{Float64}, v)
+	#=
+		@show macroexpand(:(
+		@do_par_when_defined for t= 1:T-1
+			grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+		end
+		))
+	=#
 
-#=
-	@show macroexpand(:(
 	@do_par_when_defined for t= 1:T-1
-		grad_tslice(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
-	end
-	))
-=#
-
-	@do_par_when_defined for t= 1:T-1
-		grad_tslice(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	end
 
 	return grd_u_J, grd_v_J
