@@ -45,7 +45,7 @@ function solve_stokes(grd_u_J, grd_v_J)
 	return reshape(u_proj, m, n-1), reshape(v_proj, m-1, n)
 end
 
-@everywhere function grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
+@everywhere @inline function grad_nobeta_interf_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx_zg, Cy_zg, P_zgx, P_zgy, LxLU, LyLU, t)
 	# p interpolieren
 	p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
 	p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
@@ -82,8 +82,7 @@ function grad_J_nobeta_interf_par(I, p, u, v)
 	return grd_u_J, grd_v_J
 end
 
-
-@everywhere function grad_nobeta_center_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+@everywhere @inline function grad_nobeta_center_time_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	phi_x			= solverf(LU, pI_x)
@@ -542,4 +541,5 @@ function verfahren_grad_try_par(s, u, v, steps=1)
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
+
 

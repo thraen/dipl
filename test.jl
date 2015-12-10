@@ -38,7 +38,7 @@ save_every			= 0
 velocities_at		= "centers"
 
 transport_method	= "serial"
-grad_method			= "parallel"
+grad_method			= "serial"
 
 time_regularization	= "true"
 
@@ -48,9 +48,8 @@ include("beispiele.jl")
 
 include("transport.jl")
 
-include("verfahren.jl")
-
-#include("verfahren_partest.jl")
+#include("verfahren.jl")
+include("verfahren_partest.jl")
 
 # ohne beta
 #grad_J		= grad_J_nobeta_interf_ser
@@ -59,9 +58,9 @@ include("verfahren.jl")
 #H1_norm_w	= H1_norm_nobeta_interf
 
 # ohne beta
-grad_J		= grad_J_nobeta
+#grad_J		= grad_J_nobeta
 #grad_J		= grad_J_nobeta_par
-#grad_J		= grad_J_nobeta_ser
+grad_J		= grad_J_nobeta_ser
 H1_norm_grd	= H1_norm_nobeta
 H1_norm_w	= H1_norm_nobeta
 

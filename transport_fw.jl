@@ -1,5 +1,5 @@
 #@everywhere function procchunk_x_fw_interf!(I::SharedArray, Ih::SharedArray, u::SharedArray, t, irange, jrange)
-@everywhere function procchunk_x_fw_interf!(I, Ih, u, t, irange, jrange)
+@everywhere @inline function procchunk_x_fw_interf!(I, Ih, u, t, irange, jrange)
 	#@inbounds begin
 	for j = jrange
 		for i = irange
@@ -23,7 +23,7 @@
 	#end
 end
 
-@everywhere function procchunk_y_fw_interf!(I, Ih, v, t, irange, jrange)
+@everywhere @inline function procchunk_y_fw_interf!(I, Ih, v, t, irange, jrange)
 	#@inbounds begin
 	for j = jrange
 		for i = irange
@@ -47,7 +47,7 @@ end
 	#end
 end
 
-@everywhere function procchunk_x_fw_center!(I, Ih, u, t, irange, jrange)
+@everywhere @inline function procchunk_x_fw_center!(I, Ih, u, t, irange, jrange)
 	for j = jrange
 		for i = irange
 			@inbounds anteilx = (u[i,j,t] >= 0) 	? fluss_lim1(  u[i,j,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] ) - fluss_lim1(  u[i,j,t], I[i,j-2,t], I[i,j-1,t], I[i,j,t] ) : fluss_lim1( -u[i,j,t], I[i,j+1,t], I[i,j,t], I[i,j-1,t] ) - fluss_lim1( -u[i,j,t], I[i,j+2,t], I[i,j+1,t], I[i,j,t] ) 
@@ -56,7 +56,7 @@ end
 	end
 end
 
-@everywhere function procchunk_y_fw_center!(I, Ih, v, t, irange, jrange)
+@everywhere @inline function procchunk_y_fw_center!(I, Ih, v, t, irange, jrange)
 	for j = jrange
 		for i = irange
 			@inbounds anteily = (v[i,j,t] >= 0) 	? fluss_lim1(  v[i,j,t], Ih[i-1,j], Ih[i,j], Ih[i+1,j] ) - fluss_lim1(  v[i,j,t], Ih[i-2,j], Ih[i-1,j], Ih[i,j] ) : fluss_lim1( -v[i,j,t], Ih[i+1,j], Ih[i,j], Ih[i-1,j] ) - fluss_lim1( -v[i,j,t], Ih[i+2,j], Ih[i+1,j], Ih[i,j] ) 

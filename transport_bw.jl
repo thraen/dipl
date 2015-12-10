@@ -1,4 +1,4 @@
-@everywhere function procchunk_x_bw_center!(p, ph, u, t, irange, jrange)
+@everywhere @inline function procchunk_x_bw_center!(p, ph, u, t, irange, jrange)
 	for j = jrange
 		for i = irange
 			@inbounds uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
@@ -9,7 +9,7 @@
 	end
 end
 
-@everywhere function procchunk_y_bw_center!(p, ph, v, t, irange, jrange)
+@everywhere @inline function procchunk_y_bw_center!(p, ph, v, t, irange, jrange)
 	for j = jrange
 		for i = irange
 			@inbounds vyph		= (v[i+1,j,t-1] + v[i,j,t-1])/2
@@ -20,7 +20,7 @@ end
 	end
 end
 
-@everywhere function procchunk_x_bw_interf!(p, ph, u, t, irange, jrange)
+@everywhere @inline function procchunk_x_bw_interf!(p, ph, u, t, irange, jrange)
 	@inbounds begin
 	for j = jrange
 		for i = irange
@@ -34,7 +34,7 @@ end
 	end
 end
 
-@everywhere function procchunk_y_bw_interf!(p, ph, v, t, irange, jrange)
+@everywhere @inline function procchunk_y_bw_interf!(p, ph, v, t, irange, jrange)
 	#@inbounds begin
 	for j = jrange
 		for i = irange
