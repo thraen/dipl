@@ -175,30 +175,3 @@ end
 
 	return ellOp, GradNormOp, CostNormOp
 end
-
-const L 	= generate_laplace(m, n, dx)
-const LU	= factorize(L)
-const B		= generateB(m, dx)
-const Cx, Cy = generate_differentiation_central(n, dx) 
-#const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
-#const ellOpLU	= factorize(ellOp)
-
-include("matrizen_zellgrenzen.jl")
-const Lx	= generateLu(m,n,dx)
-const Ly	= generateLv(m,n,dx)
-const LxLU, LyLU	= factorize(Lx), factorize(Ly)
-
-const Cx_zg	= generate_differentiation_interfx(m,n,dx)
-const Cy_zg	= generate_differentiation_interfy(m,n,dx)
-
-# Interpolationsmatrizen
-const P_zgx = abs(Cx_zg)*dx/2
-const P_zgy = abs(Cy_zg)*dx/2
-
-#const S		= generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
-#const SLU	= factorize(S)
-
-#include("pyamg.jl")
-#const ellOp_ml		= construct_mgsolv(ellOp)
-#const S_ml			= construct_mgsolv(S)
-

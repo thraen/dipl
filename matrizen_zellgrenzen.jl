@@ -94,7 +94,7 @@ function generateLv(m,n,dx)
 	return Lv / dx^2
 end
 
-function generateS(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
+function generate_stokes(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 	ndofu	= prod(m*(n-1))
 	ndofv	= prod((m-1)*n)
 

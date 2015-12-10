@@ -1,118 +1,18 @@
 using HDF5, JLD
 include("echo.jl")
+
+include("matrizen.jl")
+const B		= generateB(m, dx)
+
 include("misc.jl")
+L2norm		= function(s) return Xnorm(s, B) end
+sample_err	= sample_err_L2
 
-function solve_lin_multig(A,b)
-	return A[:solve](b, tol=mg_tol, accel="cg")
-end
+#time_regularization == true		&& include("grad_time_reg.jl")  ||
+#velocities_at == "centers"		&& include("grad_centers.jl") 	||
+#velocities_at == "interfaces"	&& include("grad_centers.jl")
 
-# das gmres aus KrylowMethods ist leider schlechter (langsamer) als das von IterativeSolvers
-# aber das Gauss-Seidel-Verfahren ist besser.
-#@everywhere using IterativeSolvers
-#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
-
-function solve_lin_gmres(A,b)
-	#x, conv_hist	= gmres(A, reshape(b, (T-1)*n*m), restart=5)
-	x, conv_hist	= gmres(A, b, restart=5)
-	return x
-end
-
-function solve_lin_elim(A,b)
-	return A\b
-end
-
-#solverf = solve_lin_gmres
-#solverf = solve_lin_multig
-solverf = solve_lin_elim
-
-function solve_stokes(grd_u_J, grd_v_J)
-	ndofu	= m*(n-1)
-	ndofv	= (m-1)*n
-
-	rhs		= [ Lx*grd_u_J[:] ; Ly*grd_v_J[:] ; zeros(m*m) ]
-	rhs[end]= 1
-	
-	res = SLU\rhs
-
-	# geht leider nicht so schnell, wie erhofft. LU ist fuer Taxi noch bedeutend schneller
-	#res	= solve_lin_multig( S_ml, rhs )
-
-	u_proj	= res[1              : ndofu]
-	v_proj	= res[ndofu+1        : ndofu+ndofv]
-	p		= res[ndofu+ndofv+1 : end]
-
-	return reshape(u_proj, m, n-1), reshape(v_proj, m-1, n)
-end
-
-function grad_J_nobeta_interf(I, p, u, v)
-	echo( "================Calculate gradient beta =0 $m x $n" )
-	grd_u_J	= zeros( m, n-1, T-1 )
-	grd_v_J	= zeros( m-1, n, T-1 )
-
-	for t= 1:T-1
-		# p interpolieren
-		p_zgx			= P_zgx * reshape(p[:,:,t], m*n)
-		p_zgy			= P_zgy * reshape(p[:,:,t], m*n)
-	
-		pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
-		pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
-
-		#phi_x			= reshape( solverf(Lx, -pI_x), m, n-1 )
-		#phi_y			= reshape( solverf(Ly, -pI_y), m-1, n )
-		phi_x			= reshape( solverf(LxLU, -pI_x), m, n-1 )
-		phi_y			= reshape( solverf(LyLU, -pI_y), m-1, n )
-
-		#grd_u_J[:,:,t], grd_v_J[:,:,t]	 = solve_stokes( phi_x + alpha*u[:,:,t] , phi_y + alpha*v[:,:,t] )
-
-		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
-	end
-	return grd_u_J, grd_v_J
-end
-
-function grad_J_nobeta(I, p, u, v)
-	echo( "================Calculate gradient beta =0 $m x $n" )
-	grd_u_J	= zeros( m, n, T-1 )
-	grd_v_J	= zeros( m, n, T-1 )
-	for t= 1:T-1
-		#thr hier auch *dt^2? schau noch mal nach! es geht besser mit. vielleicht ist hier auch ein dx^2 irgendwo zuviel
-		pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2 #wtf?
-		pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n) #*dx^2 #*dt^2
-		phi_x			= poissolv_(pI_x, m, n)
-		phi_y			= poissolv_(pI_y, m, n)
-
-		grd_u_J[:,:,t]	= phi_x + alpha*u[:,:,t] 
-		grd_v_J[:,:,t]	= phi_y + alpha*v[:,:,t] 
-	end
-	return grd_u_J, grd_v_J
-end
-
-function grad_J_beta_dim(I, p, uv, Cxy, L, ellOp)
-	rhs	= zeros( m, n, T-1 )
-	for t= 1:T-1
-		Luv			= L*  reshape(uv[:,:,t], n*m)
-		pI_xy		= Cxy*reshape(I[:,:,t], n*m) .* reshape(p[:,:,t], n*m)
-
-		#thr, hier muss eigentlich eigentlich mit dt^2 multipliziert werden
-		#thr!!
-		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) * dt^2
-
-		if (t==1) || (t==T-1)
-			rhs[:,:,t] /= 2
-		end
-	end
-
-	zuv = solverf( ellOp, reshape(rhs, (T-1)*n*m) )
-	return zuv
-end
-
-function grad_J_beta(I, p, u, v) 
-	echo( "================Calculate gradient $m x $n" )
-	zu = grad_J_beta_dim(I, p, u, Cx, L, ellOp_ml)
-	zv = grad_J_beta_dim(I, p, v, Cy, L, ellOp_ml)
-	grd_u_J, grd_v_J	= reshape(zu, m, n, T-1)+beta*u, reshape(zv, m, n, T-1)+beta*v
-	return grd_u_J, grd_v_J
-end
+velocities_at == "centers"		&& include("grad_centers.jl")
 
 function next_w!(I, p, u, v, alpha)
 	for t= 1:T-1
@@ -179,9 +79,9 @@ function verfahren_grad(s, u, v, steps=1)
 	@show H0	= H1_err
 	@show L0	= L2_err
 
-
 	# Armijo-Schrittweite
 	armijo_exp	= 0
+
 	while steps < maxsteps  &&  armijo_exp < 40  &&  H1_J_w > 1e-8 
 		while (armijo_exp < 40)
 			t 					= armijo_bas^armijo_exp
@@ -433,4 +333,5 @@ function verfahren_grad_try_par(s, u, v, steps=1)
 
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
+
 

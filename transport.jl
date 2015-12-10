@@ -90,12 +90,12 @@ velocities_at == "interfaces" && begin
 	@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
 end
 
-transport_method == "parallel" && begin
+transport_paralell || begin
 	transport		= transport_ser
 	ruecktransport	= ruecktransport_ser
 end
 
-transport_method == "serial" && begin
+transport_paralell && begin
 	transport		= transport_ser
 	ruecktransport	= ruecktransport_ser
 end

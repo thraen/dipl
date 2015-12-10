@@ -34,13 +34,28 @@ armijo_sig			= 0.0
 maxsteps 			= 5
 save_every			= 0
 
-#velocities_at		= "interfaces"
 velocities_at		= "centers"
+#velocities_at		= "interfaces"
 
-transport_method	= "serial"
-grad_method			= "serial"
+transport_paralell	= false
+grad_parallel		= true
 
-time_regularization	= "true"
+time_regularization	= false
+
+project_divfree		= false
+
+#poisson_solver	= "multig" 
+#poisson_solver	= "gmres"
+poisson_solver	= "lufact" #fur gegebene Probleme am besten
+
+#stokes_solver	= "multig"
+#stokes_solver	= "gmres"
+stokes_solver	= "lufact" #fur gegebene Probleme am besten
+
+timereg_solver	= "multig" #fur gegebene Probleme am besten
+#timereg_solver	= "gmres"
+#timereg_solver	= "lufact"
+
 
 #include("view.jl")
 
@@ -48,30 +63,7 @@ include("beispiele.jl")
 
 include("transport.jl")
 
-#include("verfahren.jl")
-include("verfahren_partest.jl")
-
-# ohne beta
-#grad_J		= grad_J_nobeta_interf_ser
-#grad_J		= grad_J_nobeta_interf_par
-#H1_norm_grd	= H1_norm_nobeta_interf
-#H1_norm_w	= H1_norm_nobeta_interf
-
-# ohne beta
-#grad_J		= grad_J_nobeta
-#grad_J		= grad_J_nobeta_par
-grad_J		= grad_J_nobeta_ser
-H1_norm_grd	= H1_norm_nobeta
-H1_norm_w	= H1_norm_nobeta
-
-#mit beta
-#grad_J		= grad_J_beta
-#grad_J		= grad_J_beta_parallel
-#H1_norm_grd	= H1_norm_beta_grd
-#H1_norm_w	= H1_norm_beta_w
-
-L2norm		= function(s) return Xnorm(s, B) end
-sample_err	= sample_err_L2
+include("verfahren.jl")
 
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
