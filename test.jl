@@ -34,6 +34,13 @@ armijo_sig			= 0.0
 maxsteps 			= 5
 save_every			= 0
 
+
+# vielleicht lieber so
+#method	= "time_regularization__center_velocies"
+#method	= "no_time_regularization__center_velocies"
+#method	= "no_time_regularization__interf_velocies"
+#method	= "no_time_regularization__interf_velocies_project"
+
 velocities_at		= "centers"
 #velocities_at		= "interfaces"
 
