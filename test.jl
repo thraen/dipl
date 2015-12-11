@@ -94,8 +94,8 @@ end
 
 # load old
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
-run(`mkdir -p $rootdir`)
-run(`sh -c "cp *jl $rootdir"`)
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
 run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
 
 steps=1
