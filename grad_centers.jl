@@ -19,6 +19,7 @@ poisson_solver == "gmres" && begin
 end
 
 poisson_solver == "multig" && begin
+	grad_parallel info( "Verfahren ohne Zeitregularisierung und Multigrid geht nicht parallel" ) #thr vielleicht doch
 	include("pyamg.jl")
 	const L_mg		= construct_mgsolv(L)
 	@everywhere function solve_poisson(b)

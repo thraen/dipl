@@ -137,3 +137,4 @@ function checkdiv(u, v)
 	
 	return divx , divy
 end
+

@@ -1,45 +1,60 @@
-#const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
-#const ellOpLU	= factorize(ellOp)
+@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
+const L			= generate_laplace(m, n, dx)
+const Cx, Cy	= generate_differentiation_central(n, dx) 
 
-#include("pyamg.jl")
-#const ellOp_ml		= construct_mgsolv(ellOp)
+timereg_solver == "lufact" && begin
+	info("Vorsicht: LU-Zerlegung fuer den Zeitregularisierungsoperator braucht sehr viel RAM!")
+	info("LU-Zerlegung fuer Zeitregularisierung funktioniert nicht parallel")
+	const ellOpLU	= factorize(ellOp)
+	function solve_timereg_x(b)
+		return ellOpLU\b
+	end
+	function solve_timereg_y(b)
+		return ellOpLU\b
+	end
+end
 
-#@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
-#@everywhere const ellOp_ml1		= construct_mgsolv(ellOp)
-#@everywhere const ellOp_ml2		= construct_mgsolv(ellOp)
+timereg_solver == "gmres" && begin
+	@everywhere using IterativeSolvers
+	#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
+	@everywhere function solve_timereg_x(b)
+		x, conv_hist	= gmres(ellOp, b, restart=5) 
+		return x
+	end
+	@everywhere function solve_timereg_y(b)
+		x, conv_hist	= gmres(ellOp, b, restart=5) 
+		return x
+	end
+end
 
-function H1_norm_beta_w(u,v)
+timereg_solver == "multig" && begin
+	include("pyamg.jl")
+	# fuer die Parallelausfuehrung in den beiden Dimensionen ist es wichtig, dass die 
+	# zwei verschiedene Multigrid-Objekte angelegt werden, weil der Zustand zur Laufzeit jeweils 
+	# darin steckt. Wenn dann verschiedene Prozesse denselben MG-Solver benutzen geht es schief.
+
+	@everywhere const ellOp_mg_x		= construct_mgsolv(ellOp)
+	@everywhere const ellOp_mg_y		= construct_mgsolv(ellOp)
+	@everywhere function solve_timereg_x(b)
+		return ellOp_mg_x[:solve](b, tol=mg_tol, accel="cg")
+	end
+	@everywhere function solve_timereg_y(b)
+		return ellOp_mg_y[:solve](b, tol=mg_tol, accel="cg")
+	end
+end
+
+function H1_norm_w(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* (u_'*CostNormOp*u_ + v_'*CostNormOp*v_)	
 	return  ret[1]
 end
 
-function H1_norm_beta_grd(u,v)
+function H1_norm_grd(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* (u_'*GradNormOp*u_ + v_'*GradNormOp*v_)
 	return  ret[1]
-end
-
-@everywhere function solve_lin_multig(A,b)
-	# call pyamg 
-	return A[:solve](b, tol=mg_tol, accel="cg")
-end
-
-function solve_ellip_beta(b)
-	#return ellOp \ b	
-	#x, conv_hist	= gmres(ellOp, b, restart=5)
-	return ellOp_ml[:solve](b, tol=mg_tol, accel="cg")
-end
-
-# das ist leider notwendig, da die python-handles anders nicht auf die worker-prozesse kopiert werden koennen
-@everywhere function solve_ellip_beta1(b)
-	return ellOp_ml1[:solve](b, tol=mg_tol, accel="cg")
-end
-
-@everywhere function solve_ellip_beta2(b)
-	return ellOp_ml2[:solve](b, tol=mg_tol, accel="cg")
 end
 
 @everywhere function constr_rhs_beta(I, p, uv, Cxy, L)
@@ -57,73 +72,22 @@ end
 	return reshape(rhs, (T-1)*n*m)
 end
 
-@everywhere function _grad_J_beta_dim(I, p, uv, Cxy, L)
-	@time rhs = constr_rhs_beta(I, p, uv, Cxy, L)
-	@time zuv = solve_ellip_beta( rhs )
-	return zuv
-end
-
-@everywhere function grad_J_beta_dim(I, p, uv, Cxy, L, ellOp)
-	@time rhs = constr_rhs_beta(I, p, uv, Cxy, L)
-
-	#thr closure testen.
-	#@time zuv = solve_ellip_beta( rhs )
-	@time zuv = solverf( ellOp,  reshape(rhs, (T-1)*n*m)  )
-	return zuv
-end
-
-function grad_J_beta(I, p, u, v) 
-	echo( "================Calculate gradient serial $m x $n" )
-	#@time zu = _grad_J_beta_dim(I, p, u, Cx, L)
-	#@time zv = _grad_J_beta_dim(I, p, v, Cy, L)
-
-	@time zu = grad_J_beta_dim(I, p, u, Cx, L, ellOp_ml)
-	@time zv = grad_J_beta_dim(I, p, v, Cy, L, ellOp_ml)
-
-	grd_u_J = reshape(zu, m, n, T-1)+beta*u
-	grd_v_J	= reshape(zv, m, n, T-1)+beta*v
-	return grd_u_J, grd_v_J
-end
-
-@everywhere function grad_J_beta_dim1(I, p, uv, Cxy, L)
+@everywhere function grad_J_beta_dim_x(I, p, uv, Cxy, L)
 	rhs	= constr_rhs_beta(I, p, uv, Cxy, L)
-	zuv = solve_ellip_beta1( rhs )
+	zuv = solve_timereg_x( rhs )
 	return zuv
 end
 
-@everywhere function grad_J_beta_dim2(I, p, uv, Cxy, L)
+@everywhere function grad_J_beta_dim_y(I, p, uv, Cxy, L)
 	rhs	= constr_rhs_beta(I, p, uv, Cxy, L)
-	zuv = solve_ellip_beta2( rhs )
+	zuv = solve_timereg_y( rhs )
 	return zuv
 end
 
-function grad_J_beta_parallel(I, p, u, v)
-	echo( "================Calculate gradient parallel $m x $n" )
-	#zu = @spawn grad_J_beta_dim(I, p, u, Cx, L, solve_ellip_beta1)
-	#zv = @spawn grad_J_beta_dim(I, p, v, Cy, L, solve_ellip_beta2)
-	
-	zu = @spawn grad_J_beta_dim1( I, p, u, Cx, L )
-	zv = @spawn grad_J_beta_dim2( I, p, v, Cy, L )
-
-	#rhsx	= constr_rhs_beta(I, p, u, Cx, L)
-	#rhsy	= constr_rhs_beta(I, p, u, Cy, L)
-	#zu		= @spawn solve_ellip_beta1( reshape(rhsx, (T-1)*n*m)  )
-	#zv		= @spawn solve_ellip_beta2( reshape(rhsy, (T-1)*n*m)  )
-
-	#zu = remotecall(2, grad_J_beta_dim1, I, p, u, Cx, L)
-	#zv = remotecall(3, grad_J_beta_dim2, I, p, v, Cy, L)
-
-	#@time rhsx	= reshape( constr_rhs_beta(I, p, u, Cx, L), (T-1)*n*m )
-	#@time rhsy	= reshape( constr_rhs_beta(I, p, u, Cy, L), (T-1)*n*m )
-
-	#@time zu		= remotecall(2, solve_ellip_beta1, rhsx )
-	#@time zv		= remotecall(3, solve_ellip_beta2, rhsy )
-
-	#@time resu	= fetch(zu)
-	#@time resv	= fetch(zv)
-
-	#return reshape(resu, m, n, T-1) +beta*u, reshape(resv, m, n, T-1)+beta*v
-
+function grad_J(I, p, u, v)
+	echo( "================Calculate gradient with time regularization $m x $n parallel=$grad_parallel" )
+	zu = @spawn grad_J_beta_dim_x( I, p, u, Cx, L )
+	zv = @spawn grad_J_beta_dim_y( I, p, v, Cy, L )
 	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 end
 

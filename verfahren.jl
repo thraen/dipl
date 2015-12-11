@@ -8,11 +8,9 @@ include("misc.jl")
 L2norm		= function(s) return Xnorm(s, B) end
 sample_err	= sample_err_L2
 
-#time_regularization == true		&& include("grad_time_reg.jl")  ||
-#velocities_at == "centers"		&& include("grad_centers.jl") 	||
-velocities_at == "interfaces"	&& include("grad_interfaces.jl")
-
-#velocities_at == "centers"		&& include("grad_centers.jl")
+time_regularization == true		&& include("grad_time_reg.jl")  
+~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
+~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces.jl")
 
 function next_w!(I, p, u, v, alpha)
 	for t= 1:T-1

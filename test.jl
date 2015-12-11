@@ -1,7 +1,11 @@
-#@everywhere const m					= 256+4
-#@everywhere const n					= 256+4
-@everywhere const m					= 140
-@everywhere const n					= 140
+#rmprocs( procs()[2:end] )
+#addprocs(1)
+#addprocs(5)
+
+@everywhere const m					= 256+4
+@everywhere const n					= 256+4
+#@everywhere const m					= 140
+#@everywhere const n					= 140
 #@everywhere const m					= 60
 #@everywhere const n					= 60
 
@@ -19,9 +23,6 @@ sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
 armijo_bas			= 0.5
 armijo_sig			= 0.0
 
-#multigrid solver tolerance
-@everywhere const mg_tol = 1e-1
-
 #@everywhere const dt			= 1/T
 #@everywhere const dx			= 1/m
 
@@ -31,38 +32,44 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 5
+maxsteps 			= 2
 save_every			= 0
 
-#velocities_at		= "centers"
+# das Verfahren mit Zeitregularisierung parallelisiert 
+# automatisch die Dimensionen, wenn mehr als ein Worker existiert
+time_regularization	= true  # geht nicht mit velocities_at interfaces
+
 velocities_at		= "interfaces"
+#velocities_at		= "centers"
 
 transport_paralell	= false
-grad_parallel		= true
-
-time_regularization	= false
+grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
 
 project_divfree		= false
 
-#poisson_solver	= "multig" 
-#poisson_solver	= "gmres"
-poisson_solver	= "lufact" #fur gegebene Probleme am besten
+#thr diese Optionen funktionieren nicht alle und die meisten sind sowieso unsinnvoll.
+#poisson_solver	= "multig"  #geht nicht parallel
+#poisson_solver	= "gmres"	#ungenau
+poisson_solver	= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-Faktorisierung fuer die interfaces und LU-Faktorisierung fuer center
 
-#stokes_solver	= "multig"
-#stokes_solver	= "gmres"
-stokes_solver	= "lufact" #fur gegebene Probleme am besten
+#stokes_solver	= "multig"	#schlecht geeignet, langsam
+#stokes_solver	= "gmres"	#ungenau
+stokes_solver	= "lufact"#fur gegebene Probleme am besten
 
-timereg_solver	= "multig" #fur gegebene Probleme am besten
-#timereg_solver	= "gmres"
-#timereg_solver	= "lufact"
+timereg_solver	= "multig"#fur gegebene Probleme am besten
+#timereg_solver	= "gmres"	#ungenau
+#timereg_solver	= "lufact"	#nur fuer sehr kleine Probleme benutzbar
 
+#multigrid solver tolerance
+@everywhere const mg_tol = 1e-1 
+
+# Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
+# diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
+velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 #include("view.jl")
-
 include("beispiele.jl")
-
 include("transport.jl")
-
 include("verfahren.jl")
 
 #s		= inits(quadrat)
@@ -73,7 +80,8 @@ s		= inits(rot_circle_ex)[:,:,1:5]
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
 	v		= 0* ones( m, n, T-1 )
-end || begin
+end 
+velocities_at == "interfaces" && begin
 	u		= 0* ones( m, n-1, T-1 )
 	v		= 0* ones( m-1, n, T-1 )
 end
