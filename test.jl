@@ -40,7 +40,7 @@ time_regularization	= false  # geht nicht mit velocities_at interfaces
 velocities_at		= "interfaces"
 #velocities_at		= "centers"
 
-transport_parallel	= true # geht nicht gut, verbesserungswuerdig
+transport_parallel	= false # geht nicht gut, verbesserungswuerdig
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
@@ -96,6 +96,7 @@ end
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir`)
 run(`sh -c "cp *jl $rootdir"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
 
 steps=1
 #u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
