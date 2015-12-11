@@ -68,11 +68,20 @@ end
 @everywhere proc_chunks_shared_x!(I, Ih, u, t) = procchunk_x_fw!(I, Ih, u, t, range_part_x(Ih)...)
 @everywhere proc_chunks_shared_y!(I, Ih, v, t) = procchunk_y_fw!(I, Ih, v, t, range_part_y(Ih)...)
 
+#instabil
 function transport_par(I0, u, v, schritte)
+	@time begin
 	m, n	= size(I0)
 	I		= SharedArray(Float64, (m,n,schritte+1))
 	I[:,:,1]= I0
 	Ih		= SharedArray(Float64, (m,n))
+
+	u = convert(SharedArray{Float64}, u)
+	v = convert(SharedArray{Float64}, v)
+	end
+
+	@show typeof(u)
+
 	println("==============Transport=================$n x $m x $T")
 	for t = 1:schritte
 		@sync begin

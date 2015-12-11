@@ -40,13 +40,12 @@ time_regularization	= false  # geht nicht mit velocities_at interfaces
 velocities_at		= "interfaces"
 #velocities_at		= "centers"
 
-transport_parallel	= false # geht nicht gut, verbesserungswuerdig
+transport_parallel	= true # geht nicht gut, verbesserungswuerdig
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
 
 grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
-
 
 project_divfree		= false
 
@@ -77,7 +76,8 @@ include("verfahren.jl")
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
 #s		= inits(rot_circle_ex)[:,:,1:5]
-s		= load_taxi(m,n,41)[:,:, 1:5:end]
+#s		= load_taxi(m,n,41)[:,:, 1:5:end]
+s		= readtaxi_alt()[:,:, 1:5:end]
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )

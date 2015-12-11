@@ -91,18 +91,12 @@ velocities_at == "interfaces" && begin
 end
 
 transport_parallel || begin
-	echo("****initialize transport serial*****")
 	transport		= transport_ser
 	ruecktransport	= ruecktransport_ser
 end
 
 transport_parallel && begin
-	echo("****initialize transport parallel****")
 	transport		= transport_par
 	ruecktransport	= ruecktransport_par
 end
-
-
-
-
 
