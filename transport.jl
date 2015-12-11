@@ -90,14 +90,16 @@ velocities_at == "interfaces" && begin
 	@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
 end
 
-transport_paralell || begin
+transport_parallel || begin
+	echo("****initialize transport serial*****")
 	transport		= transport_ser
 	ruecktransport	= ruecktransport_ser
 end
 
-transport_paralell && begin
-	transport		= transport_ser
-	ruecktransport	= ruecktransport_ser
+transport_parallel && begin
+	echo("****initialize transport parallel****")
+	transport		= transport_par
+	ruecktransport	= ruecktransport_par
 end
 
 

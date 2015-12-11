@@ -1,6 +1,8 @@
 using HDF5, JLD
 include("echo.jl")
 
+include("transport.jl")
+
 include("matrizen.jl")
 const B		= generateB(m, dx)
 

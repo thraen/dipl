@@ -68,3 +68,6 @@ function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
 
 	return p
 end
+
+#thr!
+ruecktransport_par = ruecktransport_ser

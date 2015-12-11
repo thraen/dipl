@@ -17,4 +17,5 @@ function _echolog(args...)
 	end
 end
 
-echo=_echo
+#echo=_echo
+echo=_echolog

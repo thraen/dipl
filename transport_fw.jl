@@ -95,7 +95,7 @@ function transport_ser(I0, u, v, schritte)
 	I		= zeros(m, n, schritte+1)
 	I[:,:,1]= I0
 	Ih		= zeros(m, n) #half step buffer for dimension splitting
-	println("==============Transport=================$n x $m x $T")
+	println("==============Transport=================$n x $m x $T parallel=$(transport_parallel)")
 	for t = 1:schritte
 		procchunk_x_fw!(I, Ih, u, t, 3:m-2, 3:n-2 )
 		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 3:n-2 )

@@ -32,18 +32,21 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 2
-save_every			= 0
+maxsteps 			= 100000
+save_every			= 500
 
-# das Verfahren mit Zeitregularisierung parallelisiert 
-# automatisch die Dimensionen, wenn mehr als ein Worker existiert
-time_regularization	= true  # geht nicht mit velocities_at interfaces
+time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 velocities_at		= "interfaces"
 #velocities_at		= "centers"
 
-transport_paralell	= false
+transport_parallel	= false # geht nicht gut, verbesserungswuerdig
+
+# das Verfahren mit Zeitregularisierung parallelisiert 
+# automatisch die Dimensionen, wenn mehr als ein Worker existiert
+
 grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
+
 
 project_divfree		= false
 
@@ -69,13 +72,12 @@ velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 #include("view.jl")
 include("beispiele.jl")
-include("transport.jl")
 include("verfahren.jl")
 
 #s		= inits(quadrat)
 #s		= inits(rot_circle)
-s		= inits(rot_circle_ex)[:,:,1:5]
-#s		= load_taxi(m,n,T)[:,:, 1:5:end]
+#s		= inits(rot_circle_ex)[:,:,1:5]
+s		= load_taxi(m,n,41)[:,:, 1:5:end]
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
