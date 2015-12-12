@@ -1,5 +1,25 @@
 include("matrizen.jl")
 
+function save_jld(steps, dx, dt, alpha, beta, s, I, p, u, v, grd_u_J, grd_v_J)
+	try
+		info("\n zwischenspeichern\n $steps")
+		save("$(rootdir)zwischenergebnis_$steps.jld", 
+				"dx", dx,
+				"dt", dt,
+				"alpha", alpha,
+				"beta", beta,
+				"s", s,
+				"I", I, 
+				"p", p,
+				"u", u,
+				"v", v, 
+				"grd_u_J", grd_u_J, 
+				"grd_v_J", grd_v_J)	
+	catch e
+		warn("ZWISCHENERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
+	end
+end
+
 macro init_grad(m,n,T)
 	if grad_parallel 
 		echo("***** init grad parallel *****")
@@ -137,4 +157,5 @@ function checkdiv(u, v)
 	
 	return divx , divy
 end
+
 

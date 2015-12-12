@@ -140,26 +140,8 @@ function verfahren_grad(s, u, v, steps=1)
 		end
 
 		if (save_every > 0) && (steps % save_every == 0)
-			try
-				info("\n zwischenspeichern\n $steps")
-				save("$(rootdir)zwischenergebnis_$steps.jld", 
-					 	"dx", dx,
-						"dt", dt,
-					 	"alpha", alpha,
-						"beta", beta,
-					 	"s", s,
-						"I", I, 
-						"p", p,
-						"u", u,
-						"v", v, 
-						"grd_u_J", grd_u_J, 
-						"grd_v_J", grd_v_J)	
-			catch e
-				warn("ZWISCHENERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
-			end
+			save_jld(steps, dx, dt, alpha, beta, s, I, p, u, v, grd_u_J, grd_v_J)
 		end
-
-
 
 		steps +=1
 	end
