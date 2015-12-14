@@ -19,7 +19,7 @@ poisson_solver == "gmres" && begin
 end
 
 poisson_solver == "multig" && begin
-	grad_parallel info( "Verfahren ohne Zeitregularisierung und Multigrid geht nicht parallel" ) #thr vielleicht doch
+	grad_parallel && error( "Verfahren ohne Zeitregularisierung und Multigrid geht nicht parallel" ) #thr vielleicht doch
 	include("pyamg.jl")
 	const L_mg		= construct_mgsolv(L)
 	@everywhere function solve_poisson(b)
@@ -56,6 +56,10 @@ H1_norm_grd	= H1_norm
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
+# 	if t==1
+# 		imshow(reshape( pI_y, m, n )
+# 	end
+
 	phi_x			= solve_poisson(LU, pI_x)
 	phi_y			= solve_poisson(LU, pI_y)
 
@@ -83,6 +87,10 @@ function grad_J(I, p, u, v)
 	@do_par_when_defined for t= 1:T-1
 		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	end
+
+	#clf()
+	#quiver(grd_u_J[:,:,1], grd_v_J[:,:,1])
+	#sleep(1)
 
 	return grd_u_J, grd_v_J
 end 

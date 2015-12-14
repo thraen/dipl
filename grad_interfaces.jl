@@ -40,6 +40,9 @@ end
 
 function H1_norm(u, v)
 	ret = 0
+	@show m,n
+	@show size(u)
+	@show size(v)
 	for t=1:T-1
 		u_ = reshape(u[:,:,t], (n-1)*m)
 		v_ = reshape(v[:,:,t], n*(m-1))
