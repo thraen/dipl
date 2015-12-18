@@ -97,8 +97,19 @@ function save_values(M, pref)
 end
 
 function extract_convergence_history()
-	run( pipe(`grep L2err  $(rootdir)log`, `awk '{print $2}' `) )
+# 	run( `sh -c "grep L2err  $(rootdir)/log | awk '{print $2}' "`)
+	run( `sh -c "grep H1_J_  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/H1hist"`)
+	run( `sh -c "grep L2err  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/L2hist"`)
+	run( `sh -c "grep 'J\s'  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/Jhist"`)
+
+	L2hist	= readdlm("$rootdir/L2hist")
+	H1hist	= readdlm("$rootdir/H1hist")
+	Jhist	= readdlm("$rootdir/Jhist")
+	return L2hist, H1hist, Jhist
 end
+
+L2hist, H1hist, Jhist = extract_convergence_history()
+
 
 #function report()
 	#f		= open(rootdir *"report.txt")

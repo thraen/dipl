@@ -30,6 +30,28 @@ function generate_differentiation_central(n, dx)
 	return  Cx, Cy
 end
 
+function L2diag(m, n, dx)
+	return [4; 6*ones(m-2); 2;   repmat([6; 12*ones(m-2); 6], n-2);     2; 6*ones(m-2); 4]* (dx^2/24)
+end
+
+function L2diagM(m, n, dx)
+	return repmat([1; 2*ones(m-2); 1], n-1)* (dx^2/24)
+end
+
+function L2diag1(m, n, dx)
+	return [ ones(m-1); 0;  repmat([2*ones(m-1); 0], n-2); ones(m-1) ]* (dx^2/24)
+end
+
+function L2diagMp1(m, n, dx)
+  	return [ repmat([2*ones(m-1); 0], n-2); 2*ones(m-1) ]* (dx^2/24)
+end
+
+function generate_L2(m, n, dx)
+	diags = (L2diagMp1(m, n, dx), L2diagM(m, n, dx), L2diag1(m, n, dx), L2diag(m, n, dx), L2diag1(m,n,dx), L2diagM(m,n,dx), L2diagMp1(m,n,dx))
+	return spdiagm( diags, ( -m-1, -m, -1, 0, 1, m, m+1 ) )
+end
+
+
 function generateB(n, h)
 	println("generate B")
 	nDOF		= n^2

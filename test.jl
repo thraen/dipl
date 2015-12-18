@@ -4,17 +4,17 @@
 
 # @everywhere const m					= 256+4
 # @everywhere const n					= 256+4
-@everywhere const m					= 140
-@everywhere const n					= 140
-# @everywhere const m					= 60
-# @everywhere const n					= 60
+# @everywhere const m					= 140
+# @everywhere const n					= 140
+@everywhere const m					= 60
+@everywhere const n					= 50
 
 #@everywhere const m					= 30
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 3
-@everywhere const n_zwischensamples	= 6    # duerfen nicht zu wenige sein? abhaengig von dt?
+@everywhere const n_samples			= 5
+@everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
 @show T
@@ -37,15 +37,15 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-# maxsteps 			= 5
+# maxsteps 			= 2
 maxsteps 			= 100000
 
 save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-#velocities_at		= "interfaces"
-velocities_at		= "centers"
+velocities_at		= "interfaces"
+# velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, verbesserungswuerdig
 
@@ -81,9 +81,9 @@ velocities_at		= ~time_regularization ? velocities_at : "centers"
 #include("view.jl")
 include("beispiele.jl")
 
-# s		= inits(quadrat)
+s		= inits(quadrat)
 # s		= inits(rot_circle)
-s		= inits(rot_circle_ex)[:,:,1:n_samples]
+# s		= inits(rot_circle_ex)[:,:,1:n_samples]
 # s		= load_taxi(m,n,41)[:,:, 1:5:end]
 # s		= readtaxi_alt()[:,:, 1:5:5*n_samples+1]
 

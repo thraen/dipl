@@ -4,7 +4,8 @@ include("echo.jl")
 include("transport.jl")
 
 include("matrizen.jl")
-const B		= generateB(m, dx)
+const B		= generate_L2(m, n, dx)
+# const B		= generateB(m, dx)
 
 include("misc.jl")
 L2norm		= function(s) return Xnorm(s, B) end

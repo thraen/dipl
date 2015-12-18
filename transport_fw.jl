@@ -94,7 +94,7 @@ function transport_par(I0, u, v, schritte)
 	v = convert(SharedArray{Float64}, v)
 	end
 
-	@show typeof(u)
+# 	@show typeof(u)
 
 	println("==============Transport=================$n x $m x $T")
 	for t = 1:schritte
