@@ -102,13 +102,13 @@ function extract_convergence_history()
 	run( `sh -c "grep L2err  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/L2hist"`)
 	run( `sh -c "grep 'J\s'  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/Jhist"`)
 
-	L2hist	= readdlm("$rootdir/L2hist")
-	H1hist	= readdlm("$rootdir/H1hist")
-	Jhist	= readdlm("$rootdir/Jhist")
+# 	L2hist	= readdlm("$rootdir/L2hist")
+# 	H1hist	= readdlm("$rootdir/H1hist")
+# 	Jhist	= readdlm("$rootdir/Jhist")
 	return L2hist, H1hist, Jhist
 end
 
-L2hist, H1hist, Jhist = extract_convergence_history()
+# L2hist, H1hist, Jhist = extract_convergence_history()
 
 
 #function report()
