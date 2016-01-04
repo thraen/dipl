@@ -43,19 +43,22 @@ timereg_solver == "multig" && begin
 	end
 end
 
-function H1_norm_w(u,v)
+function H1_norm_w_timereg(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* (u_'*CostNormOp*u_ + v_'*CostNormOp*v_)	
 	return  ret[1]
 end
 
-function H1_norm_grd(u,v)
+function H1_norm_grd_timereg(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* (u_'*GradNormOp*u_ + v_'*GradNormOp*v_)
 	return  ret[1]
 end
+
+H1_norm_w   = H1_norm_w_timereg
+H1_norm_grd = H1_norm_grd_timereg
 
 @everywhere function constr_rhs_beta(I, p, uv, Cxy, L)
 	rhs	= zeros( m, n, T-1 )

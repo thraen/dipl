@@ -2,23 +2,21 @@
 #addprocs(1)
 #addprocs(5)
 
-# @everywhere const m					= 256+4
-# @everywhere const n					= 256+4
+@everywhere const m					= 256+4
+@everywhere const n					= 256+4
 # @everywhere const m					= 140
 # @everywhere const n					= 140
-@everywhere const m					= 60
-@everywhere const n					= 50
+# @everywhere const m					= 60
+# @everywhere const n					= 60
 
 #@everywhere const m					= 30
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
-<<<<<<< HEAD
 @everywhere const n_zwischensamples	= 10    # duerfen nicht zu wenige sein? abhaengig von dt?
-=======
-@everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
->>>>>>> f674e9c1fa7a21c94393dfc35ddd3963dcbf9329
+# @everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
+
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
 @show T
@@ -35,6 +33,7 @@ armijo_sig			= 0.0
 #@everywhere const dt			= 1/T
 #@everywhere const dx			= 1/m
 
+# @everywhere const dt			= 0.01
 @everywhere const dt			= 0.04
 @everywhere const dx			= 0.01
 
@@ -48,20 +47,15 @@ save_every			= 0
 
 time_regularization	= true  # geht nicht mit velocities_at interfaces
 
-<<<<<<< HEAD
-#velocities_at		= "interfaces"
+# velocities_at		= "interfaces"
 velocities_at		= "centers"
-=======
-velocities_at		= "interfaces"
-# velocities_at		= "centers"
->>>>>>> f674e9c1fa7a21c94393dfc35ddd3963dcbf9329
 
 transport_parallel	= false # geht nicht gut, verbesserungswuerdig
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
 
-grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
+grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
 
 project_divfree		= false
 
@@ -90,11 +84,11 @@ velocities_at		= ~time_regularization ? velocities_at : "centers"
 #include("view.jl")
 include("beispiele.jl")
 
-s		= inits(quadrat)
+# s		= inits(quadrat)
 # s		= inits(rot_circle)
 # s		= inits(rot_circle_ex)[:,:,1:n_samples]
 # s		= load_taxi(m,n,41)[:,:, 1:5:end]
-# s		= readtaxi_alt()[:,:, 1:5:5*n_samples+1]
+s		= readtaxi_alt()[:,:, 1:5:5*n_samples+1]
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
@@ -111,7 +105,6 @@ include("verfahren.jl")
 #u       = SharedArray(Float64, (m, n-1, T-1))#, init= S -> S[localindexes(S)] = 0.0)
 #v       = SharedArray(Float64, (m-1, n, T-1))
 
-# load old
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir/src`)
 run(`sh -c "cp *jl $rootdir/src"`)
