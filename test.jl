@@ -14,7 +14,7 @@
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
-@everywhere const n_zwischensamples	= 40    # duerfen nicht zu wenige sein? abhaengig von dt?
+@everywhere const n_zwischensamples	= 10    # duerfen nicht zu wenige sein? abhaengig von dt?
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*n_zwischensamples+1
 # Zuordnung Samplenummer zu Zeitpunkt 
@@ -26,7 +26,7 @@ armijo_sig			= 0.0
 #@everywhere const dt			= 1/T
 #@everywhere const dx			= 1/m
 
-@everywhere const dt			= 0.01
+@everywhere const dt			= 0.04
 @everywhere const dx			= 0.01
 
 @everywhere const alpha	= 0.001
@@ -35,10 +35,10 @@ armijo_sig			= 0.0
 maxsteps 			= 100000
 save_every			= 500
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+time_regularization	= true  # geht nicht mit velocities_at interfaces
 
-velocities_at		= "interfaces"
-#velocities_at		= "centers"
+#velocities_at		= "interfaces"
+velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, verbesserungswuerdig
 
