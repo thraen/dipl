@@ -33,6 +33,10 @@ end
 			@inbounds vymh_p	= max( vymh, 0)
 			@inbounds vyph_m	= min( vyph, 0)
 
+# 			if vyph*r > 0.05 || vymh < -.05
+# 				error("cfl verletzt, $i, $j")
+# 			end
+
 			@inbounds Wmh		= Ih[i,j]   - Ih[i-1,j]
 			@inbounds Wph		= Ih[i+1,j] - Ih[i,j]
 
@@ -56,9 +60,19 @@ end
 	end
 end
 
+@everywhere macro cfl_verletzt(v)
+	cflcheck =  quote
+		if abs($v)*r > 1.0
+			info("cfl verletzt, $i, $j, $t, " * string(v[i,j,t]))
+		end
+	end
+	return with_cfl_check ? cflcheck : nothing
+end
+
 @everywhere @inline function procchunk_y_fw_center!(I, Ih, v, t, irange, jrange)
 	for j = jrange
 		for i = irange
+			@cfl_verletzt v[i,j,t]
 			@inbounds anteily = (v[i,j,t] >= 0) 	? fluss_lim1(  v[i,j,t], Ih[i-1,j], Ih[i,j], Ih[i+1,j] ) - fluss_lim1(  v[i,j,t], Ih[i-2,j], Ih[i-1,j], Ih[i,j] ) : fluss_lim1( -v[i,j,t], Ih[i+1,j], Ih[i,j], Ih[i-1,j] ) - fluss_lim1( -v[i,j,t], Ih[i+2,j], Ih[i+1,j], Ih[i,j] ) 
 			@inbounds I[i,j,t+1] = Ih[i,j] - r* (anteily)
 		end
@@ -80,7 +94,7 @@ function transport_par(I0, u, v, schritte)
 	v = convert(SharedArray{Float64}, v)
 	end
 
-	@show typeof(u)
+# 	@show typeof(u)
 
 	println("==============Transport=================$n x $m x $T")
 	for t = 1:schritte

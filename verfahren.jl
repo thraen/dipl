@@ -4,7 +4,8 @@ include("echo.jl")
 include("transport.jl")
 
 include("matrizen.jl")
-const B		= generateB(m, dx)
+const B		= generate_L2(m, n, dx)
+# const B		= generateB(m, dx)
 
 include("misc.jl")
 L2norm		= function(s) return Xnorm(s, B) end
@@ -131,8 +132,8 @@ function verfahren_grad(s, u, v, steps=1)
 
 				armijo_exp = 0
 				echo("\n****** NEW GRADIENT *****")
-				#echo("max grd_J", maximum((grd_u_J)), maximum((grd_v_J)), maximum( max( (grd_u_J), (grd_v_J)) ) )
-				#echo("min grd_J", minimum((grd_u_J)), minimum((grd_v_J)), minimum( min( (grd_u_J), (grd_v_J)) ) )
+				echo("max abs grd_u_J", maximum(abs(grd_u_J)))
+				echo("min abs grd_v_J", minimum(abs(grd_v_J)))
 				break 
 			end
 			

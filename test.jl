@@ -2,23 +2,32 @@
 #addprocs(1)
 #addprocs(5)
 
-@everywhere const m					= 256+4
-@everywhere const n					= 256+4
-#@everywhere const m					= 140
-#@everywhere const n					= 140
-#@everywhere const m					= 60
-#@everywhere const n					= 60
+# @everywhere const m					= 256+4
+# @everywhere const n					= 256+4
+# @everywhere const m					= 140
+# @everywhere const n					= 140
+@everywhere const m					= 60
+@everywhere const n					= 50
 
 #@everywhere const m					= 30
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
+<<<<<<< HEAD
 @everywhere const n_zwischensamples	= 10    # duerfen nicht zu wenige sein? abhaengig von dt?
+=======
+@everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
+>>>>>>> f674e9c1fa7a21c94393dfc35ddd3963dcbf9329
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
-@everywhere const T					= (n_samples-1)*n_zwischensamples+1
+@everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
+@show T
 # Zuordnung Samplenummer zu Zeitpunkt 
-sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
+@show sample_times		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+
+# what, das ist doch falsch!
+# @everywhere const T					= (n_samples-1)*n_zwischensamples+1
+#sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
 
 armijo_bas			= 0.5
 armijo_sig			= 0.0
@@ -32,13 +41,20 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
+# maxsteps 			= 2
 maxsteps 			= 100000
-save_every			= 500
+
+save_every			= 0
 
 time_regularization	= true  # geht nicht mit velocities_at interfaces
 
+<<<<<<< HEAD
 #velocities_at		= "interfaces"
 velocities_at		= "centers"
+=======
+velocities_at		= "interfaces"
+# velocities_at		= "centers"
+>>>>>>> f674e9c1fa7a21c94393dfc35ddd3963dcbf9329
 
 transport_parallel	= false # geht nicht gut, verbesserungswuerdig
 
@@ -65,19 +81,20 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 #multigrid solver tolerance
 @everywhere const mg_tol = 1e-1 
 
+@everywhere with_cfl_check = false
+
 # Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
 velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 #include("view.jl")
 include("beispiele.jl")
-include("verfahren.jl")
 
-#s		= inits(quadrat)
-#s		= inits(rot_circle)
-#s		= inits(rot_circle_ex)[:,:,1:5]
-#s		= load_taxi(m,n,41)[:,:, 1:5:end]
-s		= readtaxi_alt()[:,:, 1:5:end]
+s		= inits(quadrat)
+# s		= inits(rot_circle)
+# s		= inits(rot_circle_ex)[:,:,1:n_samples]
+# s		= load_taxi(m,n,41)[:,:, 1:5:end]
+# s		= readtaxi_alt()[:,:, 1:5:5*n_samples+1]
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
@@ -87,6 +104,8 @@ velocities_at == "interfaces" && begin
 	u		= 0* ones( m, n-1, T-1 )
 	v		= 0* ones( m-1, n, T-1 )
 end
+
+include("verfahren.jl") 
 
 # bei Zellzwischenwerten
 #u       = SharedArray(Float64, (m, n-1, T-1))#, init= S -> S[localindexes(S)] = 0.0)

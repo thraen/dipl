@@ -56,11 +56,13 @@ function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
 	sk		= 0
 	for t = T:-1:2
 		# thr!!! rechter oder linker grenzwert zum diracterm?
-		if mod(t-1, n_zsamp) == 0 then
-			#echo("am sample        ", t, "->", t-1, n_samp-sk)
+		if mod(t-1, n_zsamp+1) == 0 then
+# 			echo("am sample        ", t, "->", t-1, n_samp-sk)
 			err			= I[:, :, t] - s[:, :, n_samp-sk] 
 			p[:,:,t] 	= p[:,:,t] - err/norm_s
 			sk 			+= 1
+		else
+# 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
 		end
 		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
