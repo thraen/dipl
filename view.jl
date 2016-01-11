@@ -1,7 +1,7 @@
 #using Images
 #using ImageView
 
-@everywhere using PyCall
+#@everywhere using PyCall
 #pygui(:gtk)
 #pygui(:tk)
 
@@ -17,8 +17,8 @@ function delete_output()
 end
 
 @everywhere function save_image(im, pref, t)
-	#imshow(im[:,:,t], interpolation="none", origin="lower", cmap=gray)
-	imshow(im[:,:,t], interpolation="none", cmap="gray")
+	imshow(im[:,:,t], interpolation="none", origin="lower")#, cmap=gray)
+	#imshow(im[:,:,t], interpolation="none", cmap="gray")
 	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff)
 	clf()
 	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung

@@ -1,6 +1,11 @@
 @everywhere using PyCall
 @everywhere @pyimport pyamg
 @everywhere @pyimport scipy.sparse as scipy_sparse
+@everywhere @pyimport numpy.random as numpy_random
+
+# die Krylow-Methoden in pyamg benutzen zufaellige Startwerte
+# damit die Ergebnisse exakt reproduzierbar sind
+@everywhere numpy_random.seed(0)
 
 @everywhere function pycsr(A::SparseMatrixCSC)
 	pya	= scipy_sparse.csc_matrix( (A.nzval, A.rowval-1, A.colptr-1) )

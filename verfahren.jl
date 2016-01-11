@@ -47,10 +47,8 @@ function verfahren_direkt(s, u, v)
 		H1_err		= H1_norm_w( u, v )
 		J			= L2_err/2 + alpha*H1_err/2
 
-		echo()
-		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err)
-		echo("J", J)
-		echo()
+		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err, 
+			,"\nJ", J, "\n")
 		steps+=1
 	end
 
@@ -58,10 +56,8 @@ function verfahren_direkt(s, u, v)
 end
 
 function verfahren_grad(s, u, v, steps=1)
-	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
 	norm_s		= L2norm(s)
-	echo("norm_s", norm_s)
 
 	H1_err		= H1_norm_w( u, v )
 
@@ -69,7 +65,9 @@ function verfahren_grad(s, u, v, steps=1)
 	@time p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
-	echo("initial L2_err", L2_err)
+	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
+		 "\nnorm_s", norm_s,
+		 "\ninitial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
@@ -87,11 +85,6 @@ function verfahren_grad(s, u, v, steps=1)
 		while (armijo_exp < 40)
 			t 					= armijo_bas^armijo_exp
 
-			echo()
-			echo("step", steps, armijo_exp,"test armijo step length ", t)
-			echo("step", steps, armijo_exp,"test armijo step length ", t)
-			echo()
-
 			u_next				= u - t*grd_u_J
 			v_next				= v - t*grd_v_J
 
@@ -104,19 +97,15 @@ function verfahren_grad(s, u, v, steps=1)
 
 			J_next 				= L2_err_next/2 + alpha*H1_err_next/2
 
-			#echo( "L2errors", L2_err, L2_err_next, tmp, t2 )
-
 			#echo("max u\t", maximum(abs(u)), "max u_next", maximum(abs(u_next)))
 			#echo("max v\t", maximum(abs(v)), "max v_next", maximum(abs(v_next)))
 			#echo("max I\t", maximum(abs(I)), "max I_next", maximum(abs(I_next)))
 
-			echo("L2errors",  		L2_err, L2_err_next, L2_err-L2_err_next)
-			echo("alpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next))
-			echo("J        ", J, J_next,J-J_next)
-			echo("H1_J_w", H1_J_w)
-			echo()
+			echo("\nstep", steps, armijo_exp,"test armijo step length ", t, 
+				 "\nL2errors",  		L2_err, L2_err_next, L2_err-L2_err_next, 
+				 "\nalpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next),
+				 "\nJ        ", J, J_next,J-J_next,"\n")
 
-			#if (J_next < J) 
 			if J_next < J - armijo_sig * t *H1_J_w
 				I					= I_next
 				u					= u_next
@@ -128,12 +117,13 @@ function verfahren_grad(s, u, v, steps=1)
 				@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
-				J					= L2_err/2 + alpha*H1_err/2
+				J					= L2_err/2 + alpha*H1_err/2 # thr! das stimmt doch nicht mit Zeitregularisierung
 
 				armijo_exp = 0
-				echo("\n****** NEW GRADIENT *****")
-				echo("max abs grd_u_J", maximum(abs(grd_u_J)))
-				echo("min abs grd_v_J", minimum(abs(grd_v_J)))
+				echo("\n****** NEW GRADIENT *****\n", 
+					 "max abs grd_u_J", maximum(abs(grd_u_J)),
+					 "max abs grd_v_J", maximum(abs(grd_v_J)), "\n",
+					 "H1_J_w", H1_J_w, "\n")
 				break 
 			end
 			
