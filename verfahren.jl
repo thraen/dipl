@@ -47,8 +47,7 @@ function verfahren_direkt(s, u, v)
 		H1_err		= H1_norm_w( u, v )
 		J			= L2_err/2 + alpha*H1_err/2
 
-		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err, 
-			,"\nJ", J, "\n")
+		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err, "\nJ", J, "\n")
 		steps+=1
 	end
 
@@ -89,8 +88,6 @@ function verfahren_grad(s, u, v, steps=1)
 			v_next				= v - t*grd_v_J
 
 			H1_err_next			= H1_norm_w(u_next, v_next)
-			# thr, das sollte besser beim gradientenupdate stehen
-			H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
 
 			@time I_next		= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
@@ -116,6 +113,7 @@ function verfahren_grad(s, u, v, steps=1)
 
 				@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
 				J					= L2_err/2 + alpha*H1_err/2 # thr! das stimmt doch nicht mit Zeitregularisierung
 
