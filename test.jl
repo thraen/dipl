@@ -38,7 +38,7 @@ armijo_sig			= 0.0
 @everywhere const dx			= 0.01
 
 @everywhere const alpha	= 0.001  #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
-@everywhere const beta	= 0.0001 #*0.001
+@everywhere const beta	= 0.001   #*0.001
 
 # maxsteps 			= 2
 maxsteps 			= 100000
@@ -50,14 +50,14 @@ time_regularization	= true  # geht nicht mit velocities_at interfaces
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
 
-transport_parallel	= false # geht nicht gut, verbesserungswuerdig
+transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
 
 grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
 
-project_divfree		= false
+project_divfree		= false # betrifft nur velocities_at = "interfaces"
 
 #thr diese Optionen funktionieren nicht alle und die meisten sind sowieso unsinnvoll.
 #poisson_solver	= "multig"  #geht nicht parallel
