@@ -49,7 +49,7 @@ end
 	#return dx*dx* dt* ( sum( central_diff_x( u ).^2 + sum( central_diff_y( u ).^2 ) ) + sum( central_diff_x( v ).^2 + sum( central_diff_y( v ).^2 ) ) )
 #end
 
-H1_norm_w	= H1_norm
+H1_norm_w	= function (u,v) return alpha* H1_norm(u,v) end
 H1_norm_grd	= H1_norm
 
 @everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)

@@ -54,7 +54,7 @@ function H1_norm(u, v)
 	return -ret[1] *dx*dx *dt
 end
 
-H1_norm_w	= H1_norm
+H1_norm_w	= function (u,v) return alpha* H1_norm(u,v) end
 H1_norm_grd	= H1_norm
 
 project_divfree	== true && const S		= generate_stokes(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)

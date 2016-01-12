@@ -35,7 +35,7 @@ function verfahren_direkt(s, u, v)
 
 	L2_err, _	= sample_err(I,s,norm_s)
 	H1_err		= H1_norm_w( u, v )
-	J			= L2_err/2 + alpha*H1_err/2
+	J			= (L2_err + H1_err)/2 
 
 	steps 		= 1
 	while steps < maxsteps
@@ -45,7 +45,7 @@ function verfahren_direkt(s, u, v)
 
 		L2_err, _	= sample_err(I,s,norm_s)
 		H1_err		= H1_norm_w( u, v )
-		J			= L2_err/2 + alpha*H1_err/2
+		J			= (L2_err + H1_err)/2 
 
 		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err, "\nJ", J, "\n")
 		steps+=1
@@ -72,7 +72,7 @@ function verfahren_grad(s, u, v, steps=1)
 
 	@show H1_J_w			= H1_norm_grd(grd_u_J, grd_v_J)
 
-	@show J	= L2_err/2 + alpha*H1_err/2
+	@show J		= (L2_err + H1_err)/2
 	@show J0	= J
 	@show H0	= H1_err
 	@show L0	= L2_err
@@ -92,15 +92,11 @@ function verfahren_grad(s, u, v, steps=1)
 			@time I_next		= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
-			J_next 				= L2_err_next/2 + alpha*H1_err_next/2
-
-			#echo("max u\t", maximum(abs(u)), "max u_next", maximum(abs(u_next)))
-			#echo("max v\t", maximum(abs(v)), "max v_next", maximum(abs(v_next)))
-			#echo("max I\t", maximum(abs(I)), "max I_next", maximum(abs(I_next)))
+			J_next				= (L2_err_next + H1_err_next)/2 
 
 			echo("\nstep", steps, armijo_exp,"test armijo step length ", t, 
-				 "\nL2errors",  		L2_err, L2_err_next, L2_err-L2_err_next, 
-				 "\nalpha H1_errors", alpha*H1_err, alpha*H1_err_next, alpha*(H1_err-H1_err_next),
+				 "\nL2errors ",  L2_err, L2_err_next, L2_err-L2_err_next, 
+				 "\nH1_errors", H1_err, H1_err_next, H1_err-H1_err_next,
 				 "\nJ        ", J, J_next,J-J_next,"\n")
 
 			if J_next < J - armijo_sig * t *H1_J_w
@@ -115,7 +111,7 @@ function verfahren_grad(s, u, v, steps=1)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
-				J					= L2_err/2 + alpha*H1_err/2 # thr! das stimmt doch nicht mit Zeitregularisierung
+				J					= (L2_err + H1_err)/2
 
 				armijo_exp = 0
 				echo("\n****** NEW GRADIENT *****\n", 
@@ -138,6 +134,7 @@ function verfahren_grad(s, u, v, steps=1)
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
 
+#funktioniert leider nicht
 function verfahren_grad_goldstein(s, u, v, steps=1)
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
 	s0			= s[:,:,1]
@@ -155,7 +152,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
-	J	= L2_err/2 + alpha*H1_err/2
+	J					= (L2_err + H1_err)/2 
 
 	u_next = 0
 	v_next = 0
@@ -173,7 +170,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 		@time I_next		= transport( s0, u_next, v_next, T-1 )
 		L2_err_next, _		= sample_err(I_next,s,norm_s)
 
-		J_next 				= L2_err_next/2 + alpha*H1_err_next/2
+		J_next				= (L2_err_next + H1_err_next)/2
 		# echo( "try t", t, L2_err_next, H1_err_next, J_next)
 
 		return J_next
@@ -192,7 +189,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 		@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
 		H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
-		J					= L2_err/2 + alpha*H1_err/2
+		J					= (L2_err + H1_err)/2
 		steps += 1
 	end
 
@@ -241,6 +238,7 @@ function verfahren_grad_goldstein(s, u, v, steps=1)
 	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
 end
 
+#wollte die Armijo-Tests parallelisieren. Bin zu dem Schluss gekommen, dass sich das zu wenig lohnen würde
 function verfahren_grad_try_par(s, u, v, steps=1)
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta")
 	norm_s		= L2norm(s)
@@ -257,7 +255,7 @@ function verfahren_grad_try_par(s, u, v, steps=1)
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 	H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
-	J	= L2_err/2 + alpha*H1_err/2
+	J			= (L2_err + H1_err)/2 
 
 	function try_J(u, v, t, grd_u_J, grd_v_J, s, norm_s)
 		u_next				= u - t*grd_u_J
@@ -268,7 +266,7 @@ function verfahren_grad_try_par(s, u, v, steps=1)
 		I_next				= transport( s[:,:,1], u_next, v_next, T-1 )
 		L2_err_next, _		= sample_err(I_next,s,norm_s)
 
-		J_next 				= L2_err_next/2 + alpha*H1_err_next/2
+		J_next				= (L2_err_next + H1_err_next)/2 
 		# echo( "try t", t, L2_err_next, H1_err_next, J_next)
 
 		return I_next, L2_err_next, H1_err_next, J_next
@@ -287,7 +285,7 @@ function verfahren_grad_try_par(s, u, v, steps=1)
 		@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
 		H1_J_w				= H1_norm_grd(grd_u_J, grd_v_J)
-		J					= L2_err/2 + alpha*H1_err/2
+		J					= (L2_err + H1_err)/2 
 		steps += 1
 	end
 

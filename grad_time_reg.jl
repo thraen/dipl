@@ -46,8 +46,9 @@ end
 function H1_norm_w_timereg(u,v)
 	u_	= reshape(u, m*n*(T-1))
 	v_	= reshape(v, m*n*(T-1))
+	# alpha und beta stecken in CostNormOp
 	ret	= dx*dx* (u_'*CostNormOp*u_ + v_'*CostNormOp*v_)	
-	return  ret[1]
+	return  ret[1] #*alpha # thr: da soll nicht *alpha stehen, nur zum test
 end
 
 function H1_norm_grd_timereg(u,v)

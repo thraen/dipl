@@ -187,9 +187,6 @@ end
 	R		= spdiagm( (R_ndiag, R_diag, R_ndiag), (-(m*n), 0, m*n) )
 
     ellOp = LT + R
-	# thr, was hats damit auf sich
-    #GradNormOp = ellOp / sTime.dt;
-    #CostNormOp = ellOp / sTime.dt * sRegParam.alpha;
 
     GradNormOp = (LT + R )/dt
     CostNormOp = (alpha * LT + beta * R)/dt
