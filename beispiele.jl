@@ -1,5 +1,31 @@
-#img				= imread("test/test-0.png")
-#s					= convert(Array, img)
+function char_quadrat2d(y, x, cy, cx, ah)
+	return (x >= cx-ah ).*(x <= cx+ah ).*(y >= cy-ah).*(y <= cy+ah);
+end
+
+function char_quadrat(m,n,T)
+	#ah	= floor( min(n,m)/ 10 )
+	ah	= floor( min(n,m)/ 7 )
+
+	cx	= floor(n/2)
+	#cy	= floor(m/2-2*ah)
+	cy	= floor(m/2)
+
+	return (y,x,t) -> char_quadrat2d(y,x, cy+t, cx, ah)
+end
+
+function init_vorgabe(f_generator,m,n,T)
+	I	= zeros(m, n, T)
+	f	= f_generator(m,n,T)
+
+	for t = 0:T-1
+		for j = 1:n
+			for i = 1:m
+				I[i,j,t+1] = f(i,j,t)
+			end
+		end
+	end
+	return I
+end
 
 function quadrat(y,x,t)
 	cx	= floor(n/2)

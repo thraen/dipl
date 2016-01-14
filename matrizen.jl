@@ -84,6 +84,7 @@ end
 	println("generate elliptic operator")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 
+	# thr! hier wird das globale m verwendet
 	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
 	R_ndiag	= -ones(m*n*(T-2))
 

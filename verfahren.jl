@@ -55,7 +55,10 @@ end
 
 function verfahren_grad(s, u, v, steps=1)
 	s0			= s[:,:,1]
-	norm_s		= L2norm(s)
+	_norm_s		= L2norm(s)
+
+	norm_s		= _norm_s
+	#norm_s		= 1
 
 	H1_err		= H1_norm_w( u, v )
 
@@ -64,7 +67,7 @@ function verfahren_grad(s, u, v, steps=1)
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
-		 "\nnorm_s", norm_s,
+		 "\n_norm_s", _norm_s,
 		 "\ninitial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
@@ -94,9 +97,10 @@ function verfahren_grad(s, u, v, steps=1)
 			J_next				= (L2_err_next + H1_err_next)/2 
 
 			echo("\nstep", steps, armijo_exp,"test armijo step length ", t, 
-				 "\nL2errors ",  L2_err, L2_err_next, L2_err-L2_err_next, 
-				 "\nH1_errors", H1_err, H1_err_next, H1_err-H1_err_next,
-				 "\nJ        ", J, J_next,J-J_next,"\n")
+				 #"\nrL2errors ",  L2_err/_norm_s, L2_err_next/_norm_s, (L2_err-L2_err_next)/_norm_s, 
+				 "\nL2errors ",   L2_err, L2_err_next, L2_err-L2_err_next, 
+				 "\nH1_errors",   H1_err, H1_err_next, H1_err-H1_err_next,
+				 "\nJ        ",   J, J_next,J-J_next,"\n")
 
 			if J_next < J - armijo_sig * t *H1_J_w
 				I					= I_next

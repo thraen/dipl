@@ -37,8 +37,21 @@ armijo_sig			= 0.0
 # @everywhere const dt			= 0.04
 @everywhere const dx			= 0.01
 
-@everywhere const alpha	= 0.001  #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
-@everywhere const beta	= 0.001   #*0.001
+# gut bei every = 3,4,5 da funktionierern hoehere faktoren nicht mehr
+# @everywhere const alpha	= 0.1 
+# @everywhere const beta	= 0.08  
+
+#@everywhere const alpha	= 0.001/4/1.38916667/1.399
+#@everywhere const beta	= 0.001/4/1.38916667/1.399
+#step	455	39	test armijo step length 	1.8189894035458565e-12	
+#rL2errors 	0.0001653830487966356	0.00016538304879663488	7.316901284020345e-19	
+#L2errors 	2.2974461861999313e-5	2.297446186199921e-5	1.0164395367051604e-19	
+#H1_errors	5.371933970456542e-5	5.371933970456554e-5	-1.2197274440461925e-19	
+#J        	3.8346900783282365e-5	3.834690078328238e-5	-1.3552527156068805e-20	
+
+
+@everywhere const alpha	= 0.001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
+@everywhere const beta	= 0.001
 
 # maxsteps 			= 2
 maxsteps 			= 100000
@@ -84,7 +97,15 @@ velocities_at		= ~time_regularization ? velocities_at : "centers"
 #include("view.jl")
 include("beispiele.jl")
 
-s		= inits(quadrat)
+
+every = 2
+@show vorgabe_sample_times = (1:every:every*n_samples) 
+@show T_vorgabe	= vorgabe_sample_times[end]
+
+I_given = init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
+s		= I_given[:,:,vorgabe_sample_times] 		###aaaahhrg
+# s		= inits(quadrat)
+
 # s		= inits(rot_circle)
 # s		= inits(rot_circle_ex)[:,:,1:n_samples]
 # s		= load_taxi(m,n,41)[:,:, 1:5:end]
