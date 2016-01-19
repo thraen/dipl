@@ -6,7 +6,7 @@
 #pygui(:tk)
 
 @everywhere using PyPlot
-@everywhere pygui(false)
+#@everywhere pygui(false)
 
 @everywhere isuff=".png"
 #suff=".svg"

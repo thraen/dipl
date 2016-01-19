@@ -13,8 +13,9 @@
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 5
+#@everywhere const n_samples			= 2
 #@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
+#@everywhere const n_zwischensamples	= 29    # duerfen nicht zu wenige sein? abhaengig von dt?
 @everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
 
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
@@ -53,8 +54,8 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
 @everywhere const beta	= 0.001
 
-# maxsteps 			= 2
-maxsteps 			= 100000
+ maxsteps 			= 2
+# maxsteps 			= 100000
 
 save_every			= 0
 
@@ -94,10 +95,11 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
 velocities_at		= ~time_regularization ? velocities_at : "centers"
 
-#include("view.jl")
+include("view.jl")
 include("beispiele.jl")
 
 
+#every = 10
 every = 2
 @show vorgabe_sample_times = (1:every:every*n_samples) 
 @show T_vorgabe	= vorgabe_sample_times[end]

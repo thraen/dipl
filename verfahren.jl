@@ -57,6 +57,8 @@ function verfahren_grad(s, u, v, steps=1)
 	s0			= s[:,:,1]
 	_norm_s		= L2norm(s)
 
+	#s/=sqrt(_norm_s)
+
 	norm_s		= _norm_s
 	#norm_s		= 1
 
@@ -65,6 +67,9 @@ function verfahren_grad(s, u, v, steps=1)
 	@time I			= transport(s0, u, v, T-1)
 	@time p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
+
+	#thr
+	#L2_err /= sqrt(_norm_s)
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
 		 "\n_norm_s", _norm_s,
@@ -93,6 +98,9 @@ function verfahren_grad(s, u, v, steps=1)
 
 			@time I_next		= transport( s0, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
+
+			#thr
+			#L2_err_next/=sqrt(_norm_s)
 
 			J_next				= (L2_err_next + H1_err_next)/2 
 
