@@ -13,7 +13,7 @@
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 2
+@everywhere const n_samples			= 3
 #@everywhere const n_samples			= 2
 #@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
 #@everywhere const n_zwischensamples	= 29    # duerfen nicht zu wenige sein? abhaengig von dt?
@@ -101,7 +101,7 @@ include("beispiele.jl")
 
 
 #every = 10
-every = 10
+every = 4
 @show vorgabe_sample_times = (1:every:every*n_samples) 
 @show T_vorgabe	= vorgabe_sample_times[end]
 
