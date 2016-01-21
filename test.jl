@@ -13,6 +13,7 @@
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
+@everywhere const n_samples			= 2
 #@everywhere const n_samples			= 2
 #@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
 #@everywhere const n_zwischensamples	= 29    # duerfen nicht zu wenige sein? abhaengig von dt?
@@ -54,8 +55,8 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
 @everywhere const beta	= 0.001
 
- maxsteps 			= 2
-# maxsteps 			= 100000
+#maxsteps 			= 1
+maxsteps 			= 100000
 
 save_every			= 0
 
@@ -100,7 +101,7 @@ include("beispiele.jl")
 
 
 #every = 10
-every = 2
+every = 10
 @show vorgabe_sample_times = (1:every:every*n_samples) 
 @show T_vorgabe	= vorgabe_sample_times[end]
 
@@ -141,5 +142,6 @@ steps=1
 #@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+#@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 _="fertig"

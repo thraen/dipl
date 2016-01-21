@@ -69,6 +69,10 @@ H1_norm_grd = H1_norm_grd_timereg
 		#thr, warum hier muss hier eigentlich eigentlich mit dt^2 multipliziert werden?
 		rhs[:,:,t]	= ((beta-alpha)* Luv + pI_xy) * dt^2
 		if (t==1) || (t==T-1)
+			#@show t
+			#@show maximum(abs(I[:,:,t]))
+			#@show maximum(abs(p[:,:,t]))
+			#@show maximum(abs(pI_xy))
 			rhs[:,:,t] /= 2
 		end
 	end
