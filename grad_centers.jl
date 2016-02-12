@@ -1,5 +1,5 @@
 const L			= generate_laplace(m, n, dx)
-const Cx, Cy	= generate_differentiation_central(n, dx) 
+const Cx, Cy	= generate_differentiation_central(m, n, dx) 
 
 poisson_solver == "lufact" && begin
 	const LU		= factorize(L)

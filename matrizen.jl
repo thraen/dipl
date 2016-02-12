@@ -1,5 +1,16 @@
+function generate_differentiation_central(m, n, dx)
+	println("generate central differences Matrices for cell centers $m x $n")
+	ndiag_x_m	= -[ repmat( [ 0; ones(n-2); 0], m-2) ; zeros(m) ] /(2*dx)
+	ndiag_x_p	=  [ zeros(m) ; repmat( [ 0; ones(n-2); 0], m-2) ] /(2*dx)
+	Cx	= spdiagm( (ndiag_x_m, ndiag_x_p), (-m, m) )
 
-function generate_differentiation_central(n, dx)
+	ndiag_y_m	= -[ zeros(n-1) ; repmat( [ 0; ones(m-2); 0], n-2) ; zeros(n)] /(2*dx)
+	ndiag_y_p	=  [ zeros(n)   ; repmat( [ 0; ones(m-2); 0], n-2) ; zeros(n-1)] /(2*dx)
+	Cy	= spdiagm( (ndiag_y_m, ndiag_y_p), (-1, 1) )
+	return Cx, Cy
+end
+
+function _generate_differentiation_central(n, dx)
 	println("generate central differences Matrices for cell centers")
 	nDOF= n^2
 	cy	= sparse(diagm(vec([-ones(n-2,1);0]),-1)+diagm(vec([0;ones(n-2,1)]),1))
@@ -80,7 +91,25 @@ end
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-@everywhere function generate_ellip_beta(n, T, dt, dx, alpha, beta)
+@everywhere function _generate_ellip_beta(n, T, dt, dx, alpha, beta)
+	println("generate elliptic operator")
+	LT		= generate_block_laplace(m,n,T,dt, dx)
+
+	# thr! hier wird das globale m verwendet
+	R_diag	= [ones(m*n); 2*ones(m*n*(T-3)); ones(m*n)]
+	R_ndiag	= -ones(m*n*(T-2))
+
+	R		= spdiagm( (R_ndiag, R_diag, R_ndiag), (-(m*n), 0, m*n) )
+
+    ellOp = LT + R
+
+    GradNormOp = (LT + R )/dt
+    CostNormOp = (alpha * LT + beta * R)/dt
+
+	return ellOp, GradNormOp, CostNormOp
+end
+
+@everywhere function generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
 	println("generate elliptic operator")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 

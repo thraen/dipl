@@ -1,6 +1,6 @@
-@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(n, T, dt, dx, alpha, beta)
+@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
 const L			= generate_laplace(m, n, dx)
-const Cx, Cy	= generate_differentiation_central(n, dx) 
+const Cx, Cy	= generate_differentiation_central(m, n, dx) 
 
 timereg_solver == "lufact" && begin
 	info("Vorsicht: LU-Zerlegung fuer den Zeitregularisierungsoperator braucht sehr viel RAM!")

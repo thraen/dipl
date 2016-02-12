@@ -39,7 +39,7 @@ end
 #@everywhere pyB = kron(speye(N), Ltest) + kron(Ltest, speye(N))
 
 
-@everywhere const pyB, _, _ = generate_ellip_beta(n, T, dt, dx, alpha, beta)
+@everywhere const pyB, _, _ = generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
 
 @everywhere const m1	= construct_mgsolv(pyB)
 @everywhere const m2	= construct_mgsolv(pyB)

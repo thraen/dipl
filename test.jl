@@ -13,8 +13,9 @@
 #@everywhere const n					= 30
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 3
+@everywhere const n_samples			= 5
 #@everywhere const n_samples			= 2
+#@everywhere const n_zwischensamples	= 2    # duerfen nicht zu wenige sein? abhaengig von dt?
 #@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
 #@everywhere const n_zwischensamples	= 29    # duerfen nicht zu wenige sein? abhaengig von dt?
 @everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
@@ -101,7 +102,8 @@ include("beispiele.jl")
 
 
 #every = 10
-every = 4
+#every = 4
+every = 2
 @show vorgabe_sample_times = (1:every:every*n_samples) 
 @show T_vorgabe	= vorgabe_sample_times[end]
 
@@ -143,5 +145,10 @@ steps=1
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+
+a,b = _generate_differentiation_central(n, dx)
+
+@show a==Cx
+@show b==Cy
 
 _="fertig"
