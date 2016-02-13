@@ -1,11 +1,11 @@
 function generate_differentiation_central(m, n, dx)
 	println("generate central differences Matrices for cell centers $m x $n")
-	ndiag_x_m	= -[ repmat( [ 0; ones(n-2); 0], m-2) ; zeros(m) ] /(2*dx)
-	ndiag_x_p	=  [ zeros(m) ; repmat( [ 0; ones(n-2); 0], m-2) ] /(2*dx)
+	ndiag_x_m	= -[ repmat( [ 0; ones(m-2); 0], n-2) ; zeros(m) ] /(2*dx)
+	ndiag_x_p	=  [ zeros(m) ; repmat( [ 0; ones(m-2); 0], n-2) ] /(2*dx)
 	Cx	= spdiagm( (ndiag_x_m, ndiag_x_p), (-m, m) )
 
-	ndiag_y_m	= -[ zeros(n-1) ; repmat( [ 0; ones(m-2); 0], n-2) ; zeros(n)] /(2*dx)
-	ndiag_y_p	=  [ zeros(n)   ; repmat( [ 0; ones(m-2); 0], n-2) ; zeros(n-1)] /(2*dx)
+	ndiag_y_m	= -[ zeros(m-1); repmat( [0; ones(m-2); 0], n-2); zeros(m) ] /(2*dx)
+	ndiag_y_p	=  [ zeros(m); repmat( [0; ones(m-2); 0], n-2); zeros(m-1) ] /(2*dx)
 	Cy	= spdiagm( (ndiag_y_m, ndiag_y_p), (-1, 1) )
 	return Cx, Cy
 end
@@ -126,3 +126,4 @@ end
 
 	return ellOp, GradNormOp, CostNormOp
 end
+

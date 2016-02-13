@@ -103,13 +103,13 @@ include("beispiele.jl")
 
 #every = 10
 #every = 4
-every = 2
+#every = 2
 @show vorgabe_sample_times = (1:every:every*n_samples) 
 @show T_vorgabe	= vorgabe_sample_times[end]
 
-I_given = init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
-s		= I_given[:,:,vorgabe_sample_times] 		###aaaahhrg
-# s		= inits(quadrat)
+#I_given = init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
+#s		= I_given[:,:,vorgabe_sample_times] 		###aaaahhrg
+ s		= inits(quadrat)
 
 # s		= inits(rot_circle)
 # s		= inits(rot_circle_ex)[:,:,1:n_samples]
@@ -147,8 +147,7 @@ steps=1
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 a,b = _generate_differentiation_central(n, dx)
-
-@show a==Cx
-@show b==Cy
+a==Cx
+b==Cy
 
 _="fertig"
