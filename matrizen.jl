@@ -90,7 +90,7 @@ end
 	return ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2
 end
 
-function _generate_laplace(m,n,dx)
+function _generate_laplace(m,n,dx) #falsch
 	println("generate Laplace Matrix")
 	return spdiagm( _laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
 end
@@ -100,13 +100,26 @@ function generate_laplace(m,n,dx)
 	return spdiagm( laplace_diags(m,n), (-m, -1, 0, 1, m) )/ (dx*dx)
 end
 
-@everywhere function generate_block_laplace(m, n, T, dt, dx)
+@everywhere function _generate_block_laplace(m, n, T, dt, dx) #falsch
 	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
 	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
 	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
 	block_ndiagr1		= [ ndiagr1/2; repmat([0;ndiagr1], T-3); 0; ndiagr1/2 ]
 	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(n) ; ndiagl2], T-3) ; zeros(n) ; ndiagl2/2 ]
 	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(n) ; ndiagr2], T-3) ; zeros(n) ; ndiagr2/2 ]
+	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
+end
+
+#immernoch falshc
+@everywhere function generate_block_laplace(m, n, T, dt, dx) 
+	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
+	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
+	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
+	block_ndiagr1		= [ ndiagr1/2; repmat([0;ndiagr1], T-3); 0; ndiagr1/2 ]
+
+	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(n) ; ndiagl2], T-3) ; zeros(n) ; ndiagl2/2 ]
+	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(n) ; ndiagr2], T-3) ; zeros(n) ; ndiagr2/2 ]
+
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
