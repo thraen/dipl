@@ -110,17 +110,17 @@ end
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
 end
 
-#immernoch falshc
+#thr! teste, ob das wirklich stimmt!
 @everywhere function generate_block_laplace(m, n, T, dt, dx) 
 	ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2 = laplace_diags(m,n)
 	block_diag			= [ diag/2; repmat(diag, T-3); diag/2 ] 
 	block_ndiagl1		= [ ndiagl1/2; repmat([0;ndiagl1], T-3); 0; ndiagl1/2 ]
 	block_ndiagr1		= [ ndiagr1/2; repmat([0;ndiagr1], T-3); 0; ndiagr1/2 ]
 
-	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(n) ; ndiagl2], T-3) ; zeros(n) ; ndiagl2/2 ]
-	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(n) ; ndiagr2], T-3) ; zeros(n) ; ndiagr2/2 ]
+	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(m) ; ndiagl2], T-3) ; zeros(m) ; ndiagl2/2 ]
+	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(m) ; ndiagr2], T-3) ; zeros(m) ; ndiagr2/2 ]
 
-	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-n, -1, 0, 1, n) ) * dt^2 / (dx*dx)
+	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-m, -1, 0, 1, m) ) * dt^2 / (dx*dx)
 end
 
 @everywhere function _generate_ellip_beta(n, T, dt, dx, alpha, beta)

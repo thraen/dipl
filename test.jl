@@ -7,7 +7,7 @@
 # @everywhere const m					= 140
 # @everywhere const n					= 140
 @everywhere const m					= 60
-@everywhere const n					= 40
+@everywhere const n					= 65
 
 #@everywhere const m					= 30
 #@everywhere const n					= 30
@@ -61,7 +61,7 @@ maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+time_regularization	= true  # geht nicht mit velocities_at interfaces
 
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
@@ -98,7 +98,7 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 include("view.jl")
-pygui(true)
+#pygui(true)
 include("beispiele.jl")
 
 
@@ -151,8 +151,14 @@ a,b = _generate_differentiation_central(n, dx)
 @show a==Cx
 @show b==Cy
 
-a=full(_generate_laplace(m,n,dx))
+a=_generate_laplace(m,n,dx)
 @show a==L
 
+a= _generate_block_laplace(m,n,T,dt,dx)
+b= generate_block_laplace(m,n,T,dt,dx)
+
+@show a==b
+a=1
+b=1
 
 _="fertig"
