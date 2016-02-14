@@ -62,7 +62,7 @@ function generate_L2(m, n, dx)
 	return spdiagm( diags, ( -(m-1), -m, -1, 0, 1, m, (m-1) ) )
 end
 
-@everywhere function laplace_diags(m,n)
+@everywhere function _laplace_diags(m,n)
 	diag_seg	= [ 1; repmat([4], n-2) ; 1]
 	diag		= [ ones(n); repmat(diag_seg, m-2); ones(n) ]
 
@@ -76,9 +76,28 @@ end
 	return ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2
 end
 
+@everywhere function laplace_diags(m,n)
+	diag_seg	= [ 1; 4*ones(m-2) ; 1]
+	diag		= [ ones(m); repmat(diag_seg, n-2); ones(m) ]
+
+	ndiag1_seg	= [ 0; -ones( (m-2) ); 0]
+	ndiagl1		= [ zeros(m-1); repmat(ndiag1_seg, n-2); zeros(m) ]
+	ndiagr1		= [ zeros(m  ); repmat(ndiag1_seg, n-2); zeros(m-1) ]
+
+	ndiagl2		= [ repmat(ndiag1_seg, n-2); zeros(m) ]
+	ndiagr2		= [ zeros(m); repmat(ndiag1_seg, n-2) ]
+
+	return ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2
+end
+
+function _generate_laplace(m,n,dx)
+	println("generate Laplace Matrix")
+	return spdiagm( _laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
+end
+
 function generate_laplace(m,n,dx)
 	println("generate Laplace Matrix")
-	return spdiagm( laplace_diags(m,n), (-n, -1, 0, 1, n) )/ (dx*dx)
+	return spdiagm( laplace_diags(m,n), (-m, -1, 0, 1, m) )/ (dx*dx)
 end
 
 @everywhere function generate_block_laplace(m, n, T, dt, dx)

@@ -7,7 +7,7 @@
 # @everywhere const m					= 140
 # @everywhere const n					= 140
 @everywhere const m					= 60
-@everywhere const n					= 60
+@everywhere const n					= 40
 
 #@everywhere const m					= 30
 #@everywhere const n					= 30
@@ -16,9 +16,9 @@
 @everywhere const n_samples			= 5
 #@everywhere const n_samples			= 2
 #@everywhere const n_zwischensamples	= 2    # duerfen nicht zu wenige sein? abhaengig von dt?
-#@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
+@everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
 #@everywhere const n_zwischensamples	= 29    # duerfen nicht zu wenige sein? abhaengig von dt?
-@everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
+#@everywhere const n_zwischensamples	= 39    # duerfen nicht zu wenige sein? abhaengig von dt?
 
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
@@ -56,12 +56,12 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
 @everywhere const beta	= 0.001
 
-#maxsteps 			= 1
+# maxsteps 			= 1
 maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= true  # geht nicht mit velocities_at interfaces
+time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
@@ -98,14 +98,15 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 include("view.jl")
+pygui(true)
 include("beispiele.jl")
 
 
 #every = 10
 #every = 4
 #every = 2
-@show vorgabe_sample_times = (1:every:every*n_samples) 
-@show T_vorgabe	= vorgabe_sample_times[end]
+#@show vorgabe_sample_times = (1:every:every*n_samples) 
+#@show T_vorgabe	= vorgabe_sample_times[end]
 
 #I_given = init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
 #s		= I_given[:,:,vorgabe_sample_times] 		###aaaahhrg
@@ -147,7 +148,11 @@ steps=1
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 a,b = _generate_differentiation_central(n, dx)
-a==Cx
-b==Cy
+@show a==Cx
+@show b==Cy
+
+a=full(_generate_laplace(m,n,dx))
+@show a==L
+
 
 _="fertig"

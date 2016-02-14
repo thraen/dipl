@@ -57,12 +57,15 @@ H1_norm_grd	= H1_norm
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
-# 	if t==1
-# 		imshow(reshape( pI_y, m, n )
-# 	end
-
 	phi_x			= solve_poisson(LU, pI_x)
 	phi_y			= solve_poisson(LU, pI_y)
+
+# 	if t==1
+# 		imshow(reshape( pI_y, m, n ))
+# 		imshow(reshape( pI_x, m, n ))
+# 		imshow(reshape( phi_y, m, n ))
+# 		imshow(reshape( phi_x, m, n ))
+# 	end
 
 	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
