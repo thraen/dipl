@@ -4,20 +4,16 @@
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples			= 5
 
-# @everywhere const n_zwischensamples	= 9    # duerfen nicht zu wenige sein? abhaengig von dt?
-# ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 #@everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
-# Zuordnung Samplenummer zu Zeitpunkt 
-#sample_times						= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
 
 armijo_bas			= 0.5
 armijo_sig			= 0.0
 
-@everywhere const dt			= 0.01
-@everywhere const dx			= 0.01
+@everywhere const dt	= 0.01
+@everywhere const dx	= 0.01
 
-@everywhere const alpha	= 0.001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
-@everywhere const beta	= 0.001
+@everywhere const alpha	= 0.0001 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
+@everywhere const beta	= 0.0001
 
 # maxsteps 			= 1
 maxsteps 			= 100000
@@ -65,11 +61,13 @@ pygui(true)
 include("beispiele.jl")
 
 @everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 2 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const zwischen_ausgelassen	= 3 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+# Zuordnung Samplenummer zu Zeitpunkt 
 @everywhere const sample_times			= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
 
+# ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
 
 @everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
@@ -117,7 +115,6 @@ steps=1
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 # Differenz zur Vorgabe
-
 diff_vorgabe	= zeros( size(I_vorgabe) )
 for t in 1:T_vorgabe
 	@show j				= vorgabe_frames[t]

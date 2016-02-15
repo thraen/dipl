@@ -53,7 +53,7 @@ end
 
 function save_images_(im, pref)
 	tic()
-	println("save_images_ $rootdir/$pref")
+# 	println("save_images_ $rootdir/$pref") 
 	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
@@ -91,8 +91,8 @@ function save_all()
 	save_images_(I, "I")
 	save_surfs_(I,"I")
 
-	save_images_(I_given, "I_given")
-	save_surfs_(I_given, "I_given")
+	save_images_(I_vorgabe, "I_given")
+	save_surfs_(I_vorgabe, "I_given")
 
 	save_images_(diff_vorgabe, "diff_vorgabe")
 	save_surfs_(diff_vorgabe, "diff_vorgabe")
