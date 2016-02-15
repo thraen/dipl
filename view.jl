@@ -21,7 +21,10 @@ end
 	#imshow(im[:,:,t], interpolation="none", cmap="gray")
 	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff)
 	clf()
-	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
+end
+
+@everywhere function save_surf(im, pref, t)
+	surf(im[:,:,t],rstride=1, cstride=1) # rstride, cstride aufloesung
 	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff)
 	clf()
 end
@@ -50,13 +53,23 @@ end
 
 function save_images_(im, pref)
 	tic()
+	println("save_images_ $rootdir/$pref")
 	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
-
 	@sync @parallel for t=1:T 
 		save_image(im, pref, t)
-		#savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
+	end
+	toc()
+end
+
+function save_surfs_(im, pref)
+	tic()
+	run(`mkdir -p $rootdir`)
+	m, n, T = size(im)
+	run(`mkdir -p $rootdir/$pref`)
+	@sync @parallel for t=1:T 
+		save_surf(im, pref, t)
 	end
 	toc()
 end
@@ -74,9 +87,18 @@ end
 
 function save_all()
 	save_images_(s, "s")
+
 	save_images_(I, "I")
+	save_surfs_(I,"I")
+
+	save_images_(I_given, "I_given")
+	save_surfs_(I_given, "I_given")
+
+	save_images_(diff_vorgabe, "diff_vorgabe")
+	save_surfs_(diff_vorgabe, "diff_vorgabe")
+
 	#save_images_(p, "p")
-	save_quivers_(u,v,"w")
+	#save_quivers_(u,v,"w")
 	#save_quivers_(grd_u_J, grd_v_J,"grad_J")
 	#save_w()
 end
@@ -110,7 +132,6 @@ function extract_convergence_history()
 end
 
 # L2hist, H1hist, Jhist = extract_convergence_history()
-
 
 #function report()
 	#f		= open(rootdir *"report.txt")

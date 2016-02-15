@@ -82,9 +82,9 @@ include("beispiele.jl")
 
 # Zuordnung Samplenummer zu Zeitpunkt 
 
-I_given = init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
-s		= I_given[:,:,vorgabe_used_indices] 		###aaaahhrg
-# s		= inits(quadrat)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
+s			= I_vorgabe[:,:,vorgabe_used_indices] 		###aaaahhrg
+# s			= inits(quadrat)
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
@@ -118,10 +118,10 @@ steps=1
 
 # Differenz zur Vorgabe
 
-diff_vorgabe	= zeros( size(I_given) )
+diff_vorgabe	= zeros( size(I_vorgabe) )
 for t in 1:T_vorgabe
 	@show j				= vorgabe_frames[t]
-	diff_vorgabe[:,:,t]	= I_given[:,:,t] - I[:,:,j]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
 end
 
 _="fertig"
