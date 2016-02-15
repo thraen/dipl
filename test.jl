@@ -61,7 +61,7 @@ maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= true  # geht nicht mit velocities_at interfaces
+time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
@@ -95,7 +95,7 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 
 # Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
-velocities_at		= ~time_regularization ? velocities_at : "centers"
+# velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 include("view.jl")
 #pygui(true)
@@ -146,19 +146,5 @@ steps=1
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
-
-a,b = _generate_differentiation_central(n, dx)
-@show a==Cx
-@show b==Cy
-
-a=_generate_laplace(m,n,dx)
-@show a==L
-
-a= _generate_block_laplace(m,n,T,dt,dx)
-b= generate_block_laplace(m,n,T,dt,dx)
-
-@show a==b
-a=1
-b=1
 
 _="fertig"
