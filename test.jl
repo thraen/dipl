@@ -80,9 +80,14 @@ include("beispiele.jl")
 
 # Zuordnung Samplenummer zu Zeitpunkt 
 
-I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe) 	###aaaahhrg
-s			= I_vorgabe[:,:,vorgabe_used_indices] 		###aaaahhrg
-# s			= inits(quadrat)
+# I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+
+#s      = inits(rot_circle_ex)[:,:,1:5]
+I_vorgabe   = init_vorgabe(_rot_circle_ex, m,n, T_vorgabe)
+
+# s      = readtaxi()[:,:, 1:5:end]
+
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
@@ -95,21 +100,12 @@ end
 
 include("verfahren.jl") 
 
-# bei Zellzwischenwerten
-#u       = SharedArray(Float64, (m, n-1, T-1))#, init= S -> S[localindexes(S)] = 0.0)
-#v       = SharedArray(Float64, (m-1, n, T-1))
-
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir/src`)
 run(`sh -c "cp *jl $rootdir/src"`)
 run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
 
 steps=1
-#u, v	= load("$(rootdir)zwischenergebnis_$steps.jld", "u", "v")
-#change alpha, beta and run
-#@everywhere const alpha= 0.001
-#@everywhere const beta	= 0.001
-#@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
 #@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)

@@ -14,17 +14,17 @@ function char_quadrat(m,n,T)
 end
 
 function init_vorgabe(f_generator,m,n,T)
-	I	= zeros(m, n, T)
+	V	= zeros(m, n, T)
 	f	= f_generator(m,n,T)
 
 	for t = 0:T-1
 		for j = 1:n
 			for i = 1:m
-				I[i,j,t+1] = f(i,j,t)
+				V[i,j,t+1] = f(i,j,t)
 			end
 		end
 	end
-	return I
+	return V
 end
 
 function quadrat(y,x,t)
@@ -59,12 +59,26 @@ function rot_circle(y,x,t)
 	return slotted_circle(rxy[2], rxy[1])
 end
 
+function _rot_circle_ex(m,n,T) 
+	# thr vorsicht mit y, x vertauscht!
+	#w=0.25 
+	w=0.5 
+	#w=1.0 
+	#w=2.0
+	#w=3.0 
+	dings = function(y,x,t)
+		rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
+		return slotted_circle(rxy[2], rxy[1], 40, 0)
+	end
+	return dings
+end
+
 function rot_circle_ex(y,x,t) 
 	# thr vorsicht mit y, x vertauscht!
 	#w=0.25 
 	#w=0.5 
-	#w=1.0 
-	w=2.0
+	w=1.0 
+	#w=2.0
 	#w=3.0 
 	rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
 	return slotted_circle(rxy[2], rxy[1], 40, 0)
