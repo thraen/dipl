@@ -111,16 +111,35 @@ steps=1
 #@everywhere const beta	= 0.001
 #@everywhere rootdir = "../out/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/"
 
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-#@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+@time for i in 1:length(sample_times)-1
+	@show sample_times[i]
+	from_f	= sample_times[i][2]
+	till_f	= sample_times[i+1][2]-1
+	# u geht nur bis T-1
+	u_		= copy(u[:,:,from_f:till_f])
+	v_		= copy(v[:,:,from_f:till_f])
+	@show from_f till_f
 
-# Differenz zur Vorgabe
-diff_vorgabe	= zeros( size(I_vorgabe) )
-for t in 1:T_vorgabe
-	@show j				= vorgabe_frames[t]
-	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+
+	#samples
+	from_s	= sample_times[i][1]
+	till_s	= from_s+1
+	@show from_s till_s
+	s_		= copy(s[:,:,from_s:till_s])
+	
+
+	# I geht bis T, der letzte Frame wird durch das entsprechende sample ersetzt, siehe oben
+	@time I_, u_, v_, p_, L2_err_, H1_err_, J_, H1_J_w_, steps_ = verfahren_grad(s_, u_, v_, steps)
+	println( '\n')
 end
 
+# Differenz zur Vorgabe
+# diff_vorgabe	= zeros( size(I_vorgabe) )
+# for t in 1:T_vorgabe
+# 	@show j				= vorgabe_frames[t]
+# 	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+# end
+# 
 _="fertig"
 
 # nochmal mit restarts

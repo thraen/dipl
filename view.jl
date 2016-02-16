@@ -86,6 +86,7 @@ function save_images(im, pref)
 end
 
 function save_all()
+	println("save_images_ $rootdir") 
 	save_images_(s, "s")
 
 	save_images_(I, "I")
