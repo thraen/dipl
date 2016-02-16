@@ -1,8 +1,8 @@
 @everywhere const m					= 60
-@everywhere const n					= 65
+@everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 5
+@everywhere const n_samples			= 10
 
 #@everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
 

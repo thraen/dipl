@@ -1,8 +1,8 @@
 @everywhere const m					= 60
-@everywhere const n					= 65
+@everywhere const n					= 60
 
 # insgesamt. diese variable wird nicht zur Verwendung der globalen Matrizen verwendet.
-@everywhere const _n_samples		= 5
+@everywhere const _n_samples		= 10
 # fuer die Hintereinanderausfuehrung, jeweils von einem Sample zum nächsten
 @everywhere const n_samples			= 2
 
@@ -135,6 +135,7 @@ I	= zeros(m,n,_T)
 	@show from_f:till_f
 	I[:,:,from_f:till_f]	= I_[:,:,1:end-1]
 	#thr das letzte sample muss noch nach I kopiert werden!!!
+	#hae!! das ist doch falsch! moment
 	I[:,:,till_f+1]			= s_[:,:,end]
 
 	# !!!!! das optische Flussfeld stimmt dann so nicht !!!!!!

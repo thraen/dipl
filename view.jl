@@ -25,6 +25,9 @@ end
 
 @everywhere function save_surf(im, pref, t)
 	surf(im[:,:,t],rstride=1, cstride=1) # rstride, cstride aufloesung
+	fig	= gcf()
+	ax	= gca()
+	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
 	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff)
 	clf()
 end
