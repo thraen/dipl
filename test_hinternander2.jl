@@ -124,7 +124,7 @@ save_all()
 #nochmal ohne restart
 
 @everywhere const n_samples				= n_samples_gesamt
-@everywhere const sample_times			= sample_time_gesamt
+				  sample_times			= sample_time_gesamt
 @everywhere const T						= T_gesamt
 
 velocities_at == "centers" && begin
