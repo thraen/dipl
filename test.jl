@@ -115,6 +115,8 @@ for t in 1:T_vorgabe
 	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
 end
 
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+
 _="fertig"
 
 # nochmal mit restarts

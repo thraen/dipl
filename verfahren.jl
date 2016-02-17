@@ -59,8 +59,8 @@ function verfahren_grad(s, u, v, steps=1)
 
 	H1_err		= H1_norm_w( u, v )
 
-	@time I			= transport(s0, u, v, T-1)
-	@time p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	@time I		= transport(s0, u, v, T-1)
+	@time p		= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
