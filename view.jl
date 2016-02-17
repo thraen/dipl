@@ -6,11 +6,14 @@
 #pygui(:tk)
 
 @everywhere using PyPlot
-#@everywhere pygui(false)
+@everywhere pygui(false)
 
-@everywhere isuff=".png"
+# @everywhere isuff=".png"
+@everywhere isuff=".eps"
+# @everywhere isuff=".svg"
 #suff=".svg"
 @everywhere vsuff=".dlm"
+@everywhere dpi=1200
 
 function delete_output()
 	run(`rm $rootdir -r`)
@@ -19,7 +22,7 @@ end
 @everywhere function save_image(im, pref, t)
 	imshow(im[:,:,t], interpolation="none", origin="lower")#, cmap=gray)
 	#imshow(im[:,:,t], interpolation="none", cmap="gray")
-	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff)
+	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi)
 	clf()
 end
 
@@ -28,13 +31,13 @@ end
 	fig	= gcf()
 	ax	= gca()
 	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
-	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff)
+	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff, dpi=dpi)
 	clf()
 end
 
 @everywhere function save_quiver(u,v, pref, t, mpad, npad)
 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
-	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff)
+	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff, dpi=dpi)
 	clf()
 end
 
@@ -56,13 +59,15 @@ end
 
 function save_images_(im, pref)
 	tic()
-# 	println("save_images_ $rootdir/$pref") 
 	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
-	@sync @parallel for t=1:T 
+	for t=1:T 
 		save_image(im, pref, t)
 	end
+# 	@sync @parallel for t=1:T 
+# 		save_image(im, pref, t)
+# 	end
 	toc()
 end
 
@@ -92,13 +97,13 @@ function save_all()
 	println("save_images_ $rootdir") 
 	save_images_(s, "s")
 
-	save_images_(I, "I")
+# 	save_images_(I, "I")
 	save_surfs_(I,"I")
 
-	save_images_(I_vorgabe, "I_given")
+# 	save_images_(I_vorgabe, "I_given")
 	save_surfs_(I_vorgabe, "I_given")
 
-	save_images_(diff_vorgabe, "diff_vorgabe")
+# 	save_images_(diff_vorgabe, "diff_vorgabe")
 	save_surfs_(diff_vorgabe, "diff_vorgabe")
 
 	#save_images_(p, "p")

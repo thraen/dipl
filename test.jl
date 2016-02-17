@@ -1,19 +1,8 @@
-@everywhere const m					= 60
-@everywhere const n					= 60
-
-# fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 2
-
-#@everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
-
 armijo_bas			= 0.5
 armijo_sig			= 0.0
 
-@everywhere const dt	= 0.01
-@everywhere const dx	= 0.01
-
-@everywhere const alpha	= 0.00009 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
-@everywhere const beta	= 0.00009
+@everywhere const alpha	= 0.0009 
+@everywhere const beta	= 0.0009
 
 maxsteps 			= 10
 # maxsteps 			= 100000
@@ -57,17 +46,25 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 # velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 include("view.jl")
+
+@everywhere const m					= 60
+@everywhere const n					= 60
+
 include("beispiele.jl")
+
+# fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
+@everywhere const n_samples				= 2
 
 @everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 4 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
-# Zuordnung Samplenummer zu Zeitpunkt 
-@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
 
 # ...................... T, alle Frames/Zeitpunkte, also T-1 Zeitschritte von einem Frame auf den naechsten
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+
+# Zuordnung Samplenummer zu Zeitpunkt 
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
 
 @everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
 @everywhere const T_vorgabe				= vorgabe_used_indices[end]
@@ -76,6 +73,9 @@ include("beispiele.jl")
 @everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 # @everywhere const vorgabe_to_frames		= [(k,vorgabe_frames[k]) for k in 1:T_vorgabe] #wird nicht wirklich gebraucht
 
+
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
 
 # Zuordnung Samplenummer zu Zeitpunkt 
 
@@ -98,7 +98,8 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+# @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+@everywhere rootdir = "../txt/test/"
 run(`mkdir -p $rootdir/src`)
 run(`sh -c "cp *jl $rootdir/src"`)
 run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
