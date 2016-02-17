@@ -49,8 +49,8 @@ include("beispiele.jl")
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
 
 @everywhere const n_samples				= 2
-@everywhere		  sample_times			= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
-@everywhere		  sample_time_gesamt	= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples_gesamt-1 ]
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere		  smpls_to_frms_gesamt	= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples_gesamt-1 ]
 
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
 @everywhere const T_gesamt				= (n_samples_gesamt-1)*(n_zwischensamples+1) +1
@@ -85,16 +85,16 @@ steps=1
 I	= zeros(m,n,T_gesamt)
 
 tic()
-@time for i in 1:length(sample_time_gesamt)-1
+@time for i in 1:length(smpls_to_frms_gesamt)-1
 	#frames
-	from_f	= sample_time_gesamt[i][2]
-	till_f	= sample_time_gesamt[i+1][2]-1
+	from_f	= smpls_to_frms_gesamt[i][2]
+	till_f	= smpls_to_frms_gesamt[i+1][2]-1
 	# u geht nur bis T-1
 	u_		= copy(u[:,:,from_f:till_f])
 	v_		= copy(v[:,:,from_f:till_f])
 
 	#samples
-	from_s	= sample_time_gesamt[i][1]
+	from_s	= smpls_to_frms_gesamt[i][1]
 	till_s	= from_s+1
 	s_		= copy(s[:,:,from_s:till_s])
 	
@@ -124,7 +124,7 @@ save_all()
 #nochmal ohne restart
 
 @everywhere const n_samples				= n_samples_gesamt
-				  sample_times			= sample_time_gesamt
+				  samples_to_frames		= smpls_to_frms_gesamt
 @everywhere const T						= T_gesamt
 
 velocities_at == "centers" && begin

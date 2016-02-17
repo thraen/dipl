@@ -28,7 +28,7 @@ include("beispiele.jl")
 # ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
 #@everywhere const T					= (n_samples-1)*n_zwischensamples+1
 # Zuordnung Samplenummer zu Zeitpunkt 
-#sample_times		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
+#samples_to_frames		= [ (k+1, k*n_zwischensamples+1) for k in 0:n_samples-1 ]
 
 
 #save_all()

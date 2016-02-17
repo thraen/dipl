@@ -75,7 +75,7 @@ end
 function sample_err_L2(I, s, norm_s)
 	err		= zeros( size(s) )
 	L2err	= 0
-	for (k,t) in sample_times
+	for (k,t) in samples_to_frames
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
 	L2err 	= L2norm(err)/norm_s
@@ -85,7 +85,7 @@ end
 function sample_err_l2(I, s, norm_s)
 	err		= zeros( size(s) )
 	l2err	= 0
-	for (k,t) in sample_times
+	for (k,t) in samples_to_frames
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
 	# dasselbe wie, aber schneller als l2err=Xnorm(err, speye)

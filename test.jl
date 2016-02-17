@@ -2,7 +2,7 @@
 @everywhere const n					= 60
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples			= 10
+@everywhere const n_samples			= 2
 
 #@everywhere const T					= (n_samples-1)*(n_zwischensamples+1) +1
 
@@ -15,8 +15,8 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.00009 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
 @everywhere const beta	= 0.00009
 
-# maxsteps 			= 1
-maxsteps 			= 100000
+maxsteps 			= 1
+# maxsteps 			= 100000
 
 save_every			= 0
 
@@ -64,14 +64,14 @@ include("beispiele.jl")
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
 # Zuordnung Samplenummer zu Zeitpunkt 
-@everywhere const sample_times			= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
 
-# ...................... T, alle ZeitPUNKTE, also T-1 Zeitschritte von einem Punkt auf den naechsten
+# ...................... T, alle Frames/Zeitpunkte, also T-1 Zeitschritte von einem Frame auf den naechsten
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
 
 @everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
 @everywhere const T_vorgabe				= vorgabe_used_indices[end]
-@everywhere const samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
 
 @everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 # @everywhere const vorgabe_to_frames		= [(k,vorgabe_frames[k]) for k in 1:T_vorgabe] #wird nicht wirklich gebraucht
@@ -79,11 +79,10 @@ include("beispiele.jl")
 
 # Zuordnung Samplenummer zu Zeitpunkt 
 
-# I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 
 #s      = inits(rot_circle_ex)[:,:,1:5]
-I_vorgabe   = init_vorgabe(_rot_circle_ex, m,n, T_vorgabe)
-
+# I_vorgabe   = init_vorgabe(_rot_circle_ex, m,n, T_vorgabe)
 # s      = readtaxi()[:,:, 1:5:end]
 
 s			= I_vorgabe[:,:,vorgabe_used_indices] 
