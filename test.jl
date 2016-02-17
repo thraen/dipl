@@ -57,7 +57,6 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 # velocities_at		= ~time_regularization ? velocities_at : "centers"
 
 include("view.jl")
-pygui(true)
 include("beispiele.jl")
 
 @everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
