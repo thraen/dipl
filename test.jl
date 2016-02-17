@@ -15,7 +15,7 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.00009 #*0.001 #warum ist das nicht dasselbe, wie die norm noch mal mit alpha zu multiplizieren? siehe CostNormOp --> thr ahh, wegen der ruecksubstitution nach ellipt gleichung. aber warum funktioniert es so gut, wenn man die norm noch mal mit alpha multipliziert. teste das auch mal ohne zeitreg
 @everywhere const beta	= 0.00009
 
-maxsteps 			= 1
+maxsteps 			= 10
 # maxsteps 			= 100000
 
 save_every			= 0

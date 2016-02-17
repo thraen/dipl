@@ -65,7 +65,8 @@ end
 
 function Xnorm(s, X) 
 	ret	= 0
-	for k = 1:n_samples
+	T	= size(s,3)
+	for k = 1:T
 		s_	 = reshape(s[:,:,k] , n*m)
 		ret	+= s_'*X*s_
 	end
