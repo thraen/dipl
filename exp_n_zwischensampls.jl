@@ -1,3 +1,21 @@
+#=
+	hier wurde ausprobiert, wieviele Zwischenframes noetig sind 
+	fuer das Quadrat: Bei 9 ausgelassenen Vorgabeframes werden 
+	sukzessive die zwischen_ausgelassen Frames eingefuegt.
+	sprich: zwischen_ausgelassen = 0,1,2,3,..
+
+	s und I_vorgabe wurden nur einmal abgespeichert fuer zwischen_ausgelassen = 0
+=#
+
+# ergebnisse: zwischen_ausgelassen zu L2norm(diff_bild)
+# 0 0.002051071429918122 geht nicht, die typische CFL-Kante
+# 1 0.037483320364157524 geht tatsaechlich auch. CFL ist mindestens zwischenzeitlich verletzt
+# 2 0.014741600705809448 geht
+# 3 0.013988767632127173 geht
+# 4 0.014011044831468963 geht
+# 5 0.01822167291787852
+# 6 0.020832244878910472
+
 armijo_bas			= 0.5
 armijo_sig			= 0.0
 
@@ -39,7 +57,7 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 #multigrid solver tolerance
 @everywhere const mg_tol = 1e-1 
 
-@everywhere with_cfl_check = true
+@everywhere with_cfl_check = false
 
 # Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
@@ -52,41 +70,23 @@ include("view.jl")
 
 include("beispiele.jl")
 
-# fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
 @everywhere const auslassen				= 9 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 0 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
-# die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
-
-# ...................... T, alle Frames/Zeitpunkte, also T-1 Zeitschritte von einem Frame auf den naechsten
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
-
-# Zuordnung Samplenummer zu Zeitpunkt 
 @everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
-
 @everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
 @everywhere const T_vorgabe				= vorgabe_used_indices[end]
 @everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
-
 @everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-# @everywhere const vorgabe_to_frames		= [(k,vorgabe_frames[k]) for k in 1:T_vorgabe] #wird nicht wirklich gebraucht
-
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
-
-# Zuordnung Samplenummer zu Zeitpunkt 
-
 I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
-
 #s      = inits(rot_circle_ex)[:,:,1:5]
-# I_vorgabe   = init_vorgabe(_rot_circle_ex, m,n, T_vorgabe)
-# s      = readtaxi()[:,:, 1:5:end]
-
 s			= I_vorgabe[:,:,vorgabe_used_indices] 
-
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
 	v		= 0* ones( m, n, T-1 )
@@ -95,31 +95,23 @@ velocities_at == "interfaces" && begin
 	u		= 0* ones( m, n-1, T-1 )
 	v		= 0* ones( m-1, n, T-1 )
 end
-
 include("verfahren.jl") 
-
-# @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
-@everywhere rootdir = "../txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)"
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
 run(`mkdir -p $rootdir/src`)
 run(`sh -c "cp *jl $rootdir/src"`)
 run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
-
 steps=1
-
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
-
-# Differenz zur Vorgabe
 diff_vorgabe	= zeros( size(I_vorgabe) )
 for t in 1:T_vorgabe
 	j					= vorgabe_frames[t]
 	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
 end
-
 echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
 
-_="fertig"
-
-# nochmal mit restarts
-
-
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")

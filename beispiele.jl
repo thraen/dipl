@@ -3,14 +3,13 @@ function char_quadrat2d(y, x, cy, cx, ah)
 end
 
 function char_quadrat(m,n,T)
-	#ah	= floor( min(n,m)/ 10 )
-	ah	= floor( min(n,m)/ 7 )
+	ah	= floor( min(n,m)/ 6 )
 
-	cx	= floor(n/2)
-	#cy	= floor(m/2-2*ah)
-	cy	= floor(m/2)
+	cx	= (n+1)/2
+	cy	= (m+1)/2
 
-	return (y,x,t) -> char_quadrat2d(y,x, cy+t, cx, ah)
+	return (y,x,t) -> char_quadrat2d(y,x, cy+t-floor(T/2), cx, ah)
+# 	return (y,x,t) -> char_quadrat2d(y,x, cy+t, cx, ah)
 end
 
 function init_vorgabe(f_generator,m,n,T)

@@ -8,12 +8,15 @@
 @everywhere using PyPlot
 @everywhere pygui(false)
 
-# @everywhere isuff=".png"
-@everywhere isuff=".eps"
+@everywhere isuff=".png"
+# @everywhere isuff=".eps"
+
 # @everywhere isuff=".svg"
 #suff=".svg"
 @everywhere vsuff=".dlm"
-@everywhere dpi=1200
+
+# @everywhere dpi=1200
+@everywhere dpi=60
 
 function delete_output()
 	run(`rm $rootdir -r`)
@@ -106,10 +109,9 @@ function save_all()
 # 	save_images_(diff_vorgabe, "diff_vorgabe")
 	save_surfs_(diff_vorgabe, "diff_vorgabe")
 
-	#save_images_(p, "p")
-	#save_quivers_(u,v,"w")
-	#save_quivers_(grd_u_J, grd_v_J,"grad_J")
-	#save_w()
+# 	save_images_(p, "p")
+# 	save_quivers_(u,v,"w")
+# 	save_quivers_(grd_u_J, grd_v_J,"grad_J")
 end
 
 function save_value(M, pref)
