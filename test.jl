@@ -4,8 +4,8 @@ armijo_sig			= 0.0
 @everywhere const alpha	= 0.0009 
 @everywhere const beta	= 0.0009
 
-maxsteps 			= 2
-# maxsteps 			= 100000
+# maxsteps 			= 2
+maxsteps 			= 100000
 
 save_every			= 0
 
@@ -39,7 +39,7 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 #multigrid solver tolerance
 @everywhere const mg_tol = 1e-1 
 
-@everywhere with_cfl_check = false
+@everywhere with_cfl_check = true
 
 # Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt
@@ -56,7 +56,7 @@ include("beispiele.jl")
 @everywhere const n_samples				= 2
 
 @everywhere const auslassen				= 9 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 0 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const zwischen_ausgelassen	= 3 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -82,7 +82,7 @@ include("beispiele.jl")
 # I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 
 #s      = inits(rot_circle_ex)[:,:,1:5]
-I_vorgabe   = init_vorgabe(_rot_circle_ex, m,n, T_vorgabe)
+I_vorgabe   = init_vorgabe(rot_circle_ex, m,n, T_vorgabe)
 # s      = readtaxi()[:,:, 1:5:end]
 
 s			= I_vorgabe[:,:,vorgabe_used_indices] 
