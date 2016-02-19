@@ -72,8 +72,8 @@ include("beispiele.jl")
 
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 9 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 0 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 9
+@everywhere const zwischen_ausgelassen	= 0
 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
@@ -109,6 +109,263 @@ for t in 1:T_vorgabe
 end
 echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
 
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 1
+
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+######## ENDE ###### danach hab ich dassselbe einfach per copy paste fuer verschiedene zwischen_ausgelassen wiederholt
+######## ENDE ###### Ab hier loeschen, falls sich was aendert
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 2
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 3
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 4
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 5
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+@everywhere dpi=1200
+@everywhere isuff=".eps"
+save_images_(s, "s")
+save_surfs_(I_vorgabe, "I_given")
+save_surfs_(I,"I")
+save_surfs_(diff_vorgabe, "diff_vorgabe")
+
+#nochmal
+@everywhere const zwischen_ausgelassen	= 6
+@everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+@everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
+@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+@everywhere const T_vorgabe				= vorgabe_used_indices[end]
+@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
+@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+@everywhere const dt	= 1/(T-1)
+@everywhere const dx	= 1/(max(m,n) -1)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+#s      = inits(rot_circle_ex)[:,:,1:5]
+s			= I_vorgabe[:,:,vorgabe_used_indices] 
+velocities_at == "centers" && begin
+	u		= 0* ones( m, n, T-1 )
+	v		= 0* ones( m, n, T-1 )
+end 
+velocities_at == "interfaces" && begin
+	u		= 0* ones( m, n-1, T-1 )
+	v		= 0* ones( m-1, n, T-1 )
+end
+include("verfahren.jl") 
+@everywhere rootdir = "/root/txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
+run(`mkdir -p $rootdir/src`)
+run(`sh -c "cp *jl $rootdir/src"`)
+run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+steps=1
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+diff_vorgabe	= zeros( size(I_vorgabe) )
+for t in 1:T_vorgabe
+	j					= vorgabe_frames[t]
+	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+end
+echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
 @everywhere dpi=1200
 @everywhere isuff=".eps"
 save_images_(s, "s")
