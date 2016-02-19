@@ -82,7 +82,7 @@ include("beispiele.jl")
 # I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 
 #s      = inits(rot_circle_ex)[:,:,1:5]
-I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[100:200, 100:200, :]
+I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # s      = readtaxi()[:,:, 1:5:end]
 
 s			= I_vorgabe[:,:,vorgabe_used_indices] 
