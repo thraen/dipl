@@ -100,14 +100,14 @@ function save_all()
 	println("save_images_ $rootdir") 
 	save_images_(s, "s")
 
-# 	save_images_(I, "I")
-	save_surfs_(I,"I")
+	save_images_(I, "I")
+# 	save_surfs_(I,"I")
 
 # 	save_images_(I_vorgabe, "I_given")
-	save_surfs_(I_vorgabe, "I_given")
+# 	save_surfs_(I_vorgabe, "I_given")
 
 # 	save_images_(diff_vorgabe, "diff_vorgabe")
-	save_surfs_(diff_vorgabe, "diff_vorgabe")
+# 	save_surfs_(diff_vorgabe, "diff_vorgabe")
 
 # 	save_images_(p, "p")
 # 	save_quivers_(u,v,"w")

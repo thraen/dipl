@@ -55,8 +55,8 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 9 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 3 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 8 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -98,8 +98,7 @@ end
 
 include("verfahren.jl") 
 
-# @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
-@everywhere rootdir = "../txt/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)"
+@everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 run(`mkdir -p $rootdir/src`)
 run(`sh -c "cp *jl $rootdir/src"`)
 run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
