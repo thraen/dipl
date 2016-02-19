@@ -39,10 +39,19 @@ function quadrat(y,x,t)
 	#return (x >= cl -t*d).*(x <= cr -t*d) .* (y >= cl-t*d).*(y <= cr-t*d);
 end
 
-function slotted_circle(y,x,cy=0,cx=0)
+function __slotted_circle(y,x,cy=0,cx=0)
 	slotd	= -9
 	slotwh	=  5
 	r		= 25
+	y	-= cy
+	x	-= cx
+	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
+end
+
+function slotted_circle(y,x,m,n,T,cy=0,cx=0)
+	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
+	slotwh	=  0.04*m
+	r		= (1/5)*m 
 	y	-= cy
 	x	-= cx
 	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
@@ -52,20 +61,30 @@ function rot(t)
 	return [cos(t) sin(t);-sin(t) cos(t)]
 end
 
-function rot_circle(y,x,t) 
+function __rot_circle_ex(m,n,T) 
 	# thr vorsicht mit y, x vertauscht!
-	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
-	return slotted_circle(rxy[2], rxy[1])
+	w=0.25 
+	dings = function(y,x,t)
+		rxy = rot(-1*w*t/pi/2 - pi/8)*[x-n/2;y-m/2]
+		return slotted_circle(rxy[2], rxy[1], 40, 0)
+	end
+	return dings
 end
 
 function rot_circle_ex(m,n,T) 
 	# thr vorsicht mit y, x vertauscht!
 	w=0.25 
 	dings = function(y,x,t)
-		rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
-		return slotted_circle(rxy[2], rxy[1], 40, 0)
+		rxy = rot(-1*w*t/pi/2 - pi/8)*[x-n/2;y-m/2]
+		return slotted_circle(rxy[2], rxy[1], m,n,T, 40, 0)
 	end
 	return dings
+end
+
+function rot_circle(y,x,t) 
+	# thr vorsicht mit y, x vertauscht!
+	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
+	return slotted_circle(rxy[2], rxy[1])
 end
 
 function _rot_circle_ex(y,x,t) 
