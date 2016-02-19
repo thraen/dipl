@@ -53,16 +53,20 @@ function __rot_circle_ex(m,n,T)
 	w=0.25 
 	dings = function(y,x,t)
 		rxy = rot(-1*w*t/pi/2 - pi/8)*[x-n/2;y-m/2]
-		return slotted_circle(rxy[2], rxy[1], 40, 0)
+		return __slotted_circle(rxy[2], rxy[1], 40, 0)
 	end
 	return dings
 end
 
-
 function slotted_circle(y,x,m,n,T,cy=0,cx=0)
+# 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
+# 	slotwh	=  0.02*m
+# 	r		= (1/8)*m 
+
 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
 	slotwh	=  0.02*m
-	r		= (1/8)*m 
+	r		= (1/10)*m 
+
 	y	-= cy
 	x	-= cx
 	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
@@ -73,7 +77,7 @@ function rot(t)
 end
 
 function rot_circle_ex(m,n,T) 
-	w=0.25 
+	w=0.1
 	fun = function(y,x,t)
 		rxy = rot(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
 # 		rxy = rot(-1*w*t/pi/2 - pi/4 )*[x-n/2;y-m/2]
