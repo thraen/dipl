@@ -1,11 +1,11 @@
 armijo_bas			= 0.5
-armijo_sig			= 0.0
+armijo_sig			= 0.4
 
-# @everywhere const alpha	= 0.0009 
-# @everywhere const beta	= 0.0009
+@everywhere const alpha	= 0.2 
+@everywhere const beta	= 0.2
 
-@everywhere const alpha	= 0.009
-@everywhere const beta	= 0.009
+# @everywhere const alpha	= 0.005
+# @everywhere const beta	= 0.005
 
 # maxsteps 			= 3
 maxsteps 			= 100000
@@ -50,8 +50,11 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-@everywhere const m					= 100
-@everywhere const n					= 100
+@everywhere const m					= 60
+@everywhere const n					= 60
+
+# @everywhere const m					= 100
+# @everywhere const n					= 100
 
 # @everywhere const m					= 140
 # @everywhere const n					= 140
@@ -85,11 +88,11 @@ include("beispiele.jl")
 
 # Zuordnung Samplenummer zu Zeitpunkt 
 
-# I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 
 #s      = inits(rot_circle_ex)[:,:,1:5]
 
-I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
+# I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 
 # s      = readtaxi()[:,:, 1:5:end]
@@ -116,8 +119,8 @@ run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
 
 steps=1
 
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-#@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 # # Differenz zur Vorgabe
 diff_vorgabe	= zeros( size(I_vorgabe) )

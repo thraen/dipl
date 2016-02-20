@@ -135,12 +135,15 @@ end
 
 function verfahren_grad_altnormalization(s, u, v, steps=1)
 	_norm_s		= L2norm(s)
-	s/=sqrt(_norm_s)
+# hier wird das Eingabebild 'normiert'
+# 	s/=sqrt(_norm_s)
 	s0			= s[:,:,1]
 	
 
-	#norm_s		= _norm_s
+# 	norm_s		= _norm_s
+# 	norm_s		= 10.0
 	norm_s		= 1
+# 	norm_s		= 0.1
 
 	H1_err		= H1_norm_w( u, v )
 
