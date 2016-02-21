@@ -49,17 +49,12 @@ include("beispiele.jl")
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
 
 @everywhere const n_samples				= 2
-@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
-@everywhere		  smpls_to_frms_gesamt	= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples_gesamt-1 ]
 
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
 @everywhere const T_gesamt				= (n_samples_gesamt-1)*(n_zwischensamples+1) +1
 
-@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples_gesamt) 
+@everywhere const vorgabe_used_indices	= auswahl_vorgabe(auslassen, n_samples)
 @everywhere const T_vorgabe				= vorgabe_used_indices[end]
-@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples_gesamt]
-
-@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 
 I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 s			= I_vorgabe[:,:,vorgabe_used_indices]
@@ -83,6 +78,7 @@ steps=1
 I	= zeros(m,n,T_gesamt)
 
 tic()
+smpls_to_frms_gesamt	= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples_gesamt-1 ]
 @time for i in 1:length(smpls_to_frms_gesamt)-1
 	#frames
 	from_f	= smpls_to_frms_gesamt[i][2]
@@ -111,18 +107,14 @@ elapsed_t = toc()
 echo("\n\nelapsed time: ", elapsed_t)
 
 # Differenz zur Vorgabe
-diff_vorgabe	= zeros( size(I_vorgabe) )
-for t in 1:T_vorgabe
-	@show j				= vorgabe_frames[t]
-	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
-end
+vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+
 echo("\n\nL2 Differenz: ", L2norm(diff_vorgabe))
 save_all()
 
 #nochmal ohne restart
 
 @everywhere const n_samples				= n_samples_gesamt
-				  samples_to_frames		= smpls_to_frms_gesamt
 @everywhere const T						= T_gesamt
 
 velocities_at == "centers" && begin
@@ -146,11 +138,7 @@ I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
 elapsed_t = toc()
 echo("\n\nelapsed time: ", elapsed_t)
 
-diff_vorgabe	= zeros( size(I_vorgabe) )
-for t in 1:T_vorgabe
-	@show j				= vorgabe_frames[t]
-	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
-end
+vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 echo("\n\nL2 Differenz: ", L2norm(diff_vorgabe))
 

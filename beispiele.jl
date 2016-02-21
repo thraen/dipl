@@ -196,6 +196,24 @@ function load_taxi(m,n,T)
 	return taxi
 end
 
+function diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+	m,n,T_vorgabe	= size(I_vorgabe)
+	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+	# 	vorgabe_to_frames		= [(k,vorgabe_frames[k]) for k in 1:T_vorgabe] #wird nicht wirklich gebraucht
+	vorgabe_fehler	= zeros( size(I_vorgabe) )
+	for t in 1:T_vorgabe
+		j						= vorgabe_frames[t]
+		vorgabe_fehler[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
+	end
+	return  vorgabe_fehler
+end
+
+@everywhere function auswahl_vorgabe(auslassen, n_samples)
+	used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
+	# 	samples_to_vorgabe	= [(k, used_indices[k]) for k in 1:n_samples]
+	return used_indices
+end
+
 #taxi_bmp2dlm_pyplot!()
 
 #taxipad = load_taxi(260, 260, 5)

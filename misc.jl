@@ -73,10 +73,18 @@ function Xnorm(s, X)
 	return ret[1]
 end
 
+function samples_to_frames(n_samples, n_zwischensamples)
+	samples_to_frames	= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
+end
+
 function sample_err_L2(I, s, norm_s)
-	err		= zeros( size(s) )
-	L2err	= 0
-	for (k,t) in samples_to_frames
+	m, n ,n_samples	= size(s)
+	_, n, T			= size(I)
+	err				= zeros( m,n,n_samples )
+	L2err			= 0
+	# thr da kann man die globalen Variablen noch rausnehmen
+#  	n_zwischensamples	= div(T-1 , n_samples-1)-1
+	for (k,t) in samples_to_frames(n_samples, n_zwischensamples) 
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end
 	L2err 	= L2norm(err)/norm_s

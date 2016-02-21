@@ -46,7 +46,6 @@ end
 
 function save_quivers_(u,v, pref)
 	tic()
-	run(`mkdir -p $rootdir`)
 	mu, nu, T = size(u)
 	mv, nv, T = size(v)
 	mpad = abs(mu-mv)
@@ -62,7 +61,6 @@ end
 
 function save_images_(im, pref)
 	tic()
-	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
 	for t=1:T 
@@ -76,7 +74,6 @@ end
 
 function save_surfs_(im, pref)
 	tic()
-	run(`mkdir -p $rootdir`)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
 	@sync @parallel for t=1:T 
@@ -86,7 +83,6 @@ function save_surfs_(im, pref)
 end
 
 function save_images(im, pref)
-	run(`mkdir -p $rootdir`)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
@@ -180,7 +176,6 @@ function latextable_normal(caption, label, headl, lines...)
 end
 
 print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
-
 
 # \hline
 # \# dummy frames   & L2-Samplefehler & H1-Fehler & L2-Vorgabefehler & PSNR-Vorgabefehler  & \# Iterationen \\

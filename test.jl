@@ -23,8 +23,8 @@ armijo_maxtry		= 60
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005
 
-maxsteps 			= 3
-# maxsteps 			= 100000
+# maxsteps 			= 3
+maxsteps 			= 100000
 
 save_every			= 0
 
@@ -69,7 +69,7 @@ include("view.jl")
 @everywhere const m					= 60
 @everywhere const n					= 60
 
-# @everywhere const m					= 100
+# @everywhere const m					= 100 
 # @everywhere const n					= 100
 
 # @everywhere const m					= 140
@@ -89,31 +89,17 @@ include("beispiele.jl")
 # ...................... T, alle Frames/Zeitpunkte, also T-1 Zeitschritte von einem Frame auf den naechsten
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
 
-# Zuordnung Samplenummer zu Zeitpunkt 
-@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
-
-@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
-@everywhere const T_vorgabe				= vorgabe_used_indices[end]
-@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
-
-@everywhere const vorgabe_frames		= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-# @everywhere const vorgabe_to_frames		= [(k,vorgabe_frames[k]) for k in 1:T_vorgabe] #wird nicht wirklich gebraucht
+@everywhere const T_vorgabe				= auswahl_vorgabe(auslassen, n_samples)[end]
 
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-# Zuordnung Samplenummer zu Zeitpunkt 
-
 I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
-
-#s      = inits(rot_circle_ex)[:,:,1:5]
-
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
-
 # s      = readtaxi()[:,:, 1:5:end]
 
-s			= I_vorgabe[:,:,vorgabe_used_indices] 
+s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
@@ -137,14 +123,10 @@ steps=1
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 # # Differenz zur Vorgabe
-diff_vorgabe	= zeros( size(I_vorgabe) )
-for t in 1:T_vorgabe
-	j					= vorgabe_frames[t]
-	diff_vorgabe[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
-end
+vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
-echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
-echo("linf( I-I_vorgabe )", l_inf(diff_vorgabe))
-echo("PNSR( I-I_vorgabe )", psnr(diff_vorgabe))
+echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
+echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
+echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 
 _="fertig"
