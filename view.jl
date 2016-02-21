@@ -142,6 +142,54 @@ function extract_convergence_history()
 	return L2hist, H1hist, Jhist
 end
 
+
+function latextable_normal(caption, label, headl, lines...)
+	function tabularline(l)
+		lstr	=  string(l[1])
+		for c in l[2:end]
+			lstr *= " & $c"
+		end
+		return lstr *"\\\\\n"
+	end
+
+	tblhead		= "\\begin{table}[h]\n"
+	captions	= "\\caption{dummy}\n"
+	labels		= "\\label{table:dummy}\n"
+	hline		= "\\hline\n"
+	nc			= length(headl)
+	nl			= length(lines)
+
+	tabularhead	= "\\begin{tabular}{l*{$(nc-1)}{c}}\n"
+	
+	headstr		= tabularline(headl)
+
+	liness		= foldl(*, map(tabularline, lines))
+	
+	str	= tblhead * captions * labels * tabularhead *
+			hline * headstr * hline *
+			liness * hline *
+			"\\end{tabular}\n\\end{table}"
+
+	return str
+end
+
+print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
+
+
+# \hline
+# \# dummy frames   & L2-Samplefehler & H1-Fehler & L2-Vorgabefehler & PSNR-Vorgabefehler  & \# Iterationen \\
+# \hline
+# 0				  & 6 & 4 & 0 & 2 & 10 \\
+# 1				  & 6 & 3 & 0 & 3 &  8 \\
+# 2				  & 6 & 2 & 1 & 3 &  7 \\
+# 3                 & 6 & 2 & 1 & 3 &  5 \\
+# 4                 & 6 & 2 & 1 & 3 &  5 \\
+# 5                 & 6 & 2 & 1 & 3 &  5 \\
+# \hline
+# \end{tabular}
+# \end{table}
+
+
 # L2hist, H1hist, Jhist = extract_convergence_history()
 
 #function report()

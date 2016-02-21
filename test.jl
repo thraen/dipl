@@ -1,11 +1,24 @@
 armijo_bas			= 0.5
-armijo_sig			= 0.4
+armijo_sig			= 0.0
 
-@everywhere const alpha	= 0.2 
-@everywhere const beta	= 0.2
+# @everywhere const alpha	= 0.2 
+# @everywhere const beta	= 0.2
 
 # @everywhere const alpha	= 0.005
 # @everywhere const beta	= 0.005
+
+#AHA, die Differenz mach einen Faktor 10 Unterschied in der Qualitaet der Loesung!
+# @everywhere const alpha	= 0.001
+# @everywhere const beta	= 0.001
+
+@everywhere const alpha	= 0.0001006
+@everywhere const beta	= 0.0001006
+ 
+# @everywhere const alpha	= 0.0001
+# @everywhere const beta	= 0.0001
+
+# @everywhere const alpha	= 0.00005
+# @everywhere const beta	= 0.00005
 
 # maxsteps 			= 3
 maxsteps 			= 100000
@@ -62,10 +75,10 @@ include("view.jl")
 include("beispiele.jl")
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples				= 2
+@everywhere const n_samples				= 5
 
-@everywhere const auslassen				= 7 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 9 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -119,8 +132,8 @@ run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
 
 steps=1
 
-# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 # # Differenz zur Vorgabe
 diff_vorgabe	= zeros( size(I_vorgabe) )
