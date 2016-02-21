@@ -79,8 +79,8 @@ function verfahren_grad(s, u, v, steps=1)
 	# Armijo-Schrittweite
 	armijo_exp	= 0
 
-	while steps < maxsteps  &&  armijo_exp < 40  &&  H1_J_w > 1e-8 
-		while (armijo_exp < 40)
+	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
+		while (armijo_exp < armijo_maxtry)
 			t 					= armijo_bas^armijo_exp
 
 			u_next				= u - t*grd_u_J
@@ -143,15 +143,14 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 # 	norm_s		= _norm_s
 # 	norm_s		= 10.0
 # 	norm_s		= 2.0
-# 	norm_s		= 1.0
+	norm_s		= 1.0
 
 
 	#AHA, die Differenz mach einen Faktor 10 Unterschied in der Qualitaet der Loesung!
 	# bei alpha = 0.0001 und der 5er quadratsequenz
-	norm_s		= 0.5556 #0.004732103566789128
+# 	norm_s		= 0.5556353538255331
 # 	norm_s		= 0.555
 # 	norm_s		= 0.55
-# 	norm_s		= 0.5556353538255331
 
 # 	norm_s		= 0.1
 
@@ -180,8 +179,8 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 	# Armijo-Schrittweite
 	armijo_exp	= 0
 
-	while steps < maxsteps  &&  armijo_exp < 40  &&  H1_J_w > 1e-8 
-		while (armijo_exp < 40)
+	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
+		while (armijo_exp < armijo_maxtry)
 			t 					= armijo_bas^armijo_exp
 
 			u_next				= u - t*grd_u_J

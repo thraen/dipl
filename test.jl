@@ -1,5 +1,6 @@
-armijo_bas			= 0.5
-armijo_sig			= 0.0
+armijo_bas			= 0.99
+armijo_sig			= 0
+armijo_maxtry		= 60
 
 # @everywhere const alpha	= 0.2 
 # @everywhere const beta	= 0.2
@@ -11,17 +12,19 @@ armijo_sig			= 0.0
 # @everywhere const alpha	= 0.001
 # @everywhere const beta	= 0.001
 
-@everywhere const alpha	= 0.0001006
-@everywhere const beta	= 0.0001006
+# @everywhere const alpha	= 0.0001006
+# @everywhere const beta	= 0.0001006
  
-# @everywhere const alpha	= 0.0001
-# @everywhere const beta	= 0.0001
+@everywhere const alpha	= 0.0001 #* 0.5556353538255331
+@everywhere const alpha	= 0.00005 #* 0.5556353538255331
+# @everywhere const alpha	= 0.0001 * 0.5556353538255331
+@everywhere const beta	= 0.0001
 
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005
 
-# maxsteps 			= 3
-maxsteps 			= 100000
+maxsteps 			= 3
+# maxsteps 			= 100000
 
 save_every			= 0
 
@@ -126,14 +129,12 @@ pygui(true)
 include("verfahren.jl") 
 
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
-run(`mkdir -p $rootdir/src`)
-run(`sh -c "cp *jl $rootdir/src"`)
-run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+make_output_dir(rootdir)
 
 steps=1
 
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
 
 # # Differenz zur Vorgabe
 diff_vorgabe	= zeros( size(I_vorgabe) )
@@ -143,5 +144,7 @@ for t in 1:T_vorgabe
 end
 
 echo("L2( I-I_vorgabe )", L2norm(diff_vorgabe))
+echo("linf( I-I_vorgabe )", l_inf(diff_vorgabe))
+echo("PNSR( I-I_vorgabe )", psnr(diff_vorgabe))
 
 _="fertig"

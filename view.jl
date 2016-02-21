@@ -142,6 +142,12 @@ function extract_convergence_history()
 	return L2hist, H1hist, Jhist
 end
 
+function make_output_dir(dir)
+	run(`mkdir -p $dir/src`)
+	run(`sh -c "cp *jl $dir/src"`)
+	run(`sh -c "git log -1 > $dir/this_git_commit"`) 
+end
+
 
 function latextable_normal(caption, label, headl, lines...)
 	function tabularline(l)

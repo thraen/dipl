@@ -94,6 +94,20 @@ function sample_err_l2(I, s, norm_s)
 	return l2err, err
 end
 
+function meansquare(K)
+	m,n,T	= size(K)
+	return sum(K.*K)/m/n
+end
+
+function l_inf(K)
+	return maximum(abs(K))
+end
+
+function psnr(K) 
+# 	return 10* log10( l_inf(K)^2 / meansquare(K) )
+	return 10* log10( 1 / meansquare(K) ) # die Helligkeitswerte unserer Bilder werden mit [0,1] codiert
+end
+
 #  laplace(u) = -f
 #
 # with boundary condition 

@@ -76,9 +76,7 @@ end
 include("verfahren.jl") 
 
 @everywhere rootdir = "../out/hinternander/$(m)_x_$(n)_$(n_samples_gesamt)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)/separat/"
-run(`mkdir -p $rootdir/src`)
-run(`sh -c "cp *jl $rootdir/src"`)
-run(`sh -c "git log -1 > $rootdir/this_git_commit"`) #thr
+make_output_dir(rootdir)
 
 steps=1
 
