@@ -1,6 +1,10 @@
-armijo_bas			= 0.99
+# armijo_bas			= 0.5
+# armijo_sig			= 0
+# armijo_maxtry		= 40
+
+armijo_bas			= 0.9
 armijo_sig			= 0
-armijo_maxtry		= 60
+armijo_maxtry		= 80
 
 # @everywhere const alpha	= 0.2 
 # @everywhere const beta	= 0.2
@@ -8,17 +12,19 @@ armijo_maxtry		= 60
 # @everywhere const alpha	= 0.005
 # @everywhere const beta	= 0.005
 
-#AHA, die Differenz mach einen Faktor 10 Unterschied in der Qualitaet der Loesung!
-# @everywhere const alpha	= 0.001
-# @everywhere const beta	= 0.001
+@everywhere const alpha	= 0.001
+@everywhere const beta	= 0.001
 
 # @everywhere const alpha	= 0.0001006
 # @everywhere const beta	= 0.0001006
  
-@everywhere const alpha	= 0.0001 #* 0.5556353538255331
-@everywhere const alpha	= 0.00005 #* 0.5556353538255331
+# @everywhere const alpha	= 0.0001 #* 0.5556353538255331
+# @everywhere const beta	= 0.0001
+
+# @everywhere const alpha	= 0.00005 
+# @everywhere const beta	= 0.00005 
+
 # @everywhere const alpha	= 0.0001 * 0.5556353538255331
-@everywhere const beta	= 0.0001
 
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005

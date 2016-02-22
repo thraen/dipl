@@ -177,20 +177,6 @@ end
 
 print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
 
-# \hline
-# \# dummy frames   & L2-Samplefehler & H1-Fehler & L2-Vorgabefehler & PSNR-Vorgabefehler  & \# Iterationen \\
-# \hline
-# 0				  & 6 & 4 & 0 & 2 & 10 \\
-# 1				  & 6 & 3 & 0 & 3 &  8 \\
-# 2				  & 6 & 2 & 1 & 3 &  7 \\
-# 3                 & 6 & 2 & 1 & 3 &  5 \\
-# 4                 & 6 & 2 & 1 & 3 &  5 \\
-# 5                 & 6 & 2 & 1 & 3 &  5 \\
-# \hline
-# \end{tabular}
-# \end{table}
-
-
 # L2hist, H1hist, Jhist = extract_convergence_history()
 
 #function report()

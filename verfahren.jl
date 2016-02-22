@@ -14,6 +14,28 @@ time_regularization == true		&& include("grad_time_reg.jl")
 ~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
 ~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces.jl")
 
+function plot_grad_section(lastJ, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, k)
+	Js		= zeros(k)
+	stepws	= zeros(k)
+	for exp in 0:k-1
+		t 				= armijo_bas^exp
+		u_next			= u - t*grd_u_J
+		v_next			= v - t*grd_v_J
+		H1_err_next		= H1_norm_w(u_next, v_next)
+		I_next			= transport( s0, u_next, v_next, T-1 )
+		L2_err_next, _	= sample_err(I_next,s,norm_s)
+		stepws[exp+1]	= t
+		Js[exp+1]		= (L2_err_next + H1_err_next)/2 
+	end
+	clf()
+	rng=[40:k]
+	plot(stepws[rng], [lastJ for exp in 1:k][rng], color="black" )
+	plot(stepws[rng], Js[rng], "bx")
+	plot(stepws[rng], [lastJ-t*H1_J_w for t in stepws][rng], color="green")
+# 	plot(stepws[rng], [lastJ-0.3*H1_J_w*t for t in stepws][rng])
+# 	plot(stepws[rng], [lastJ-armijo_sig*H1_J_w*t for t in stepws][rng])
+end
+
 function next_w!(I, p, u, v, alpha)
 	for t= 1:T-1
 		pI_x_		= reshape(Cx*reshape(I[:,:,t], n*m) , m, n).*p[:,:,t]
@@ -98,7 +120,7 @@ function verfahren_grad(s, u, v, steps=1)
 				 "\nH1_errors",   H1_err, H1_err_next, H1_err-H1_err_next,
 				 "\nJ        ",   J, J_next,J-J_next,"\n")
 
-			if J_next < J - armijo_sig * t *H1_J_w
+			if J_next < (J - armijo_sig * t *H1_J_w)
 				I					= I_next
 				u					= u_next
 				v					= v_next
@@ -180,6 +202,10 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 	armijo_exp	= 0
 
 	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
+# 		if steps % 10 == 0
+# 			plot_grad_section(J, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, 140)
+# 		end
+		
 		while (armijo_exp < armijo_maxtry)
 			t 					= armijo_bas^armijo_exp
 
@@ -202,7 +228,7 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 				 "\nH1_errors",   H1_err, H1_err_next, H1_err-H1_err_next,
 				 "\nJ        ",   J, J_next,J-J_next,"\n")
 
-			if J_next < J - armijo_sig * t *H1_J_w
+			if J_next < (J - armijo_sig * t *H1_J_w)
 				I					= I_next
 				u					= u_next
 				v					= v_next
