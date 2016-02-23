@@ -1,4 +1,4 @@
-function char_quadrat2d(y, x, cy, cx, ah)
+function char_quadrat_param(y, x, cy, cx, ah)
 	return (x >= cx-ah ).*(x <= cx+ah ).*(y >= cy-ah).*(y <= cy+ah);
 end
 
@@ -8,8 +8,8 @@ function char_quadrat(m,n,T)
 	cx	= (n+1)/2
 	cy	= (m+1)/2
 
-	return (y,x,t) -> char_quadrat2d(y,x, cy+t-floor(T/2), cx, ah)
-# 	return (y,x,t) -> char_quadrat2d(y,x, cy+t, cx, ah)
+	return (y,x,t) -> char_quadrat_param(y,x, cy+t-floor(T/2), cx, ah)
+# 	return (y,x,t) -> char_quadrat_param(y,x, cy+t, cx, ah)
 end
 
 function init_vorgabe(f_generator,m,n,T)
@@ -84,6 +84,15 @@ function rot_circle_ex(m,n,T)
 		return slotted_circle(rxy[2], rxy[1], m,n,T, m/3, 0)
 	end
 	return fun
+end
+
+function transl_circle(m,n,T) 
+	return (y,x,t) -> slotted_circle(y+t, x, m,n,T, m/2, n/2)
+end
+
+function scale_circle(m,n,T) 
+	w=0.1
+	return (y,x,t) -> slotted_circle(y*w*t, x*w*t, m,n,T, m/2, n/2)
 end
 
 function rot_circle(y,x,t) 

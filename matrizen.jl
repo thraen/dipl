@@ -56,7 +56,7 @@ end
 
 function generate_laplace(m,n,dx)
 	println("generate Laplace Matrix")
-	return spdiagm( laplace_diags(m,n), (-m, -1, 0, 1, m) )/ (dx*dx)
+	return spdiagm( laplace_diags(m,n), (-m, -1, 0, 1, m) ) / (dx*dx)
 end
 
 #thr! teste, ob das wirklich stimmt!

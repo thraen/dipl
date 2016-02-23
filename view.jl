@@ -175,7 +175,7 @@ function latextable_normal(caption, label, headl, lines...)
 	return str
 end
 
-print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
+# print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
 
 # L2hist, H1hist, Jhist = extract_convergence_history()
 

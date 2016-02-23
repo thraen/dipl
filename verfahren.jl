@@ -14,7 +14,7 @@ time_regularization == true		&& include("grad_time_reg.jl")
 ~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
 ~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces.jl")
 
-function plot_grad_section(lastJ, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, k)
+function plot_grad_section(lastJ, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, k, steps)
 	Js		= zeros(k)
 	stepws	= zeros(k)
 	for exp in 0:k-1
@@ -28,10 +28,11 @@ function plot_grad_section(lastJ, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, k)
 		Js[exp+1]		= (L2_err_next + H1_err_next)/2 
 	end
 	clf()
-	rng=[40:k]
+	rng=[1:k]
 	plot(stepws[rng], [lastJ for exp in 1:k][rng], color="black" )
 	plot(stepws[rng], Js[rng], "bx")
 	plot(stepws[rng], [lastJ-t*H1_J_w for t in stepws][rng], color="green")
+	savefig(rootdir * "/gradientenrichtung" * lpad(steps, 8,"0") * isuff, dpi=dpi)
 # 	plot(stepws[rng], [lastJ-0.3*H1_J_w*t for t in stepws][rng])
 # 	plot(stepws[rng], [lastJ-armijo_sig*H1_J_w*t for t in stepws][rng])
 end
@@ -202,8 +203,8 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 	armijo_exp	= 0
 
 	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
-# 		if steps % 10 == 0
-# 			plot_grad_section(J, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, 140)
+# 		if steps % 5 == 0
+# 			plot_grad_section(J, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, 140, steps)
 # 		end
 		
 		while (armijo_exp < armijo_maxtry)

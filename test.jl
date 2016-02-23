@@ -29,7 +29,7 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005
 
-# maxsteps 			= 3
+# maxsteps 			= 1
 maxsteps 			= 100000
 
 save_every			= 0
@@ -102,6 +102,7 @@ include("beispiele.jl")
 
 I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
+# I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # s      = readtaxi()[:,:, 1:5:end]
 
@@ -116,7 +117,7 @@ velocities_at == "interfaces" && begin
 	v		= 0* ones( m-1, n, T-1 )
 end
 
-pygui(true)
+# pygui(true)
 
 include("verfahren.jl") 
 
@@ -136,3 +137,4 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 
 _="fertig"
+pygui(true)
