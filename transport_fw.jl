@@ -4,6 +4,7 @@
 	for j = jrange
 		for i = irange
 				@inbounds uxph	= u[i,j,t] 
+				# thr! was passiert, wenn ich hier auch u[i,j,t] nehme?
 				@inbounds uxmh	= u[i,j-1,t]
 				
 				@inbounds uxph_m	= min( uxph, 0)
@@ -28,6 +29,7 @@ end
 	for j = jrange
 		for i = irange
 			@inbounds vyph	= v[i,j,t]
+			# thr! was passiert, wenn ich hier auch v[i,j,t] nehme?
 			@inbounds vymh	= v[i-1,j,t]
 
 			@inbounds vymh_p	= max( vymh, 0)

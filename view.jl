@@ -22,7 +22,7 @@ function delete_output()
 	run(`rm $rootdir -r`)
 end
 
-@everywhere function save_image(im, pref, t)
+@everywhere function save_image_t(im, pref, t)
 	imshow(im[:,:,t], interpolation="none", origin="lower")#, cmap=gray)
 	#imshow(im[:,:,t], interpolation="none", cmap="gray")
 	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi)
@@ -30,7 +30,10 @@ end
 end
 
 @everywhere function save_surf(im, pref, t)
-	surf(im[:,:,t],rstride=1, cstride=1) # rstride, cstride aufloesung
+	##
+	## surf(X,Y,Z)!! man muss die arrays also transponieren!
+	##
+	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
 	fig	= gcf()
 	ax	= gca()
 	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
@@ -64,10 +67,10 @@ function save_images_(im, pref)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
 	for t=1:T 
-		save_image(im, pref, t)
+		save_image_t(im, pref, t)
 	end
 # 	@sync @parallel for t=1:T 
-# 		save_image(im, pref, t)
+# 		save_image_t(im, pref, t)
 # 	end
 	toc()
 end
@@ -87,7 +90,7 @@ function save_images(im, pref)
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
 	for t=1:T 
-		save_image(im, pref, t)
+		save_image_t(im, pref, t)
 	end
 	toc()
 end
@@ -137,6 +140,7 @@ function extract_convergence_history()
 # 	Jhist	= readdlm("$rootdir/Jhist")
 	return L2hist, H1hist, Jhist
 end
+# L2hist, H1hist, Jhist = extract_convergence_history()
 
 function make_output_dir(dir)
 	run(`mkdir -p $dir/src`)
@@ -153,10 +157,9 @@ function latextable_normal(caption, label, headl, lines...)
 		end
 		return lstr *"\\\\\n"
 	end
-
 	tblhead		= "\\begin{table}[h]\n"
-	captions	= "\\caption{dummy}\n"
-	labels		= "\\label{table:dummy}\n"
+	captions	= "\\caption{$(caption)}\n"
+	labels		= "\\label{table:$(label)}\n"
 	hline		= "\\hline\n"
 	nc			= length(headl)
 	nl			= length(lines)
@@ -171,15 +174,42 @@ function latextable_normal(caption, label, headl, lines...)
 			hline * headstr * hline *
 			liness * hline *
 			"\\end{tabular}\n\\end{table}"
-
 	return str
 end
-
 # print(latextable_normal("capt", "lbl", ["h1", "h2", "h3"], [11, 12, 13], [21, 22, 23]))
 
-# L2hist, H1hist, Jhist = extract_convergence_history()
+function to_file(file, str)
+	tblfile = open(file, "w")
+	write(file, str); close(tblfile)
+end
 
-#function report()
-	#f		= open(rootdir *"report.txt")
-	#write(f, 
-#end
+
+# Spezielle Reports
+# 
+# fuer die 2-Bilder-Demos
+#
+@everywhere function save_displacement(dir, isuff, dpi)
+	clf()
+	imshow(s[:,:,2]-s[:,:,1], cmap="gray_r", interpolation="none", origin="lower")
+	savefig(dir * "displacement" *isuff, dpi=dpi)
+end
+
+@everywhere function save_auswahl_rot_disc(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
+	@sync @parallel for t in ts
+	# 	for t in ts
+		clf()
+		imshow(what[:,:,t], cmap="gray_r", interpolation="none", origin="lower")
+		savefig(dir * "img_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
+		clf()
+
+		surf(what[:,:,t]', cmap="gray_r", cstride=1, rstride=1)
+		fig	= gcf()
+		ax	= gca()
+		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
+
+		ax[:view_init](azim=-30, elev=55)
+
+		savefig(dir * "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
+	end
+end
+

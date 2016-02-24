@@ -76,10 +76,6 @@ function grad_J(I, p, u, v)
 	grd_u_J	= @init_grad(m,n,T)
 	grd_v_J	= @init_grad(m,n,T)
 
-	#convert(SharedArray{Float64}, I)
-	#convert(SharedArray{Float64}, p)
-	#convert(SharedArray{Float64}, u)
-	#convert(SharedArray{Float64}, v)
 	#=
 		@show macroexpand(:(
 		@do_par_when_defined for t= 1:T-1

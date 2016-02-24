@@ -50,7 +50,6 @@ function H1_norm(u, v)
 		end
 		ret += ret_
 	end
-	# thr! dx steckt auch in L? stimmt das so?
 	return -ret[1] *dx*dx *dt
 end
 

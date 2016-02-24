@@ -117,6 +117,8 @@ velocities_at == "interfaces" && begin
 	v		= 0* ones( m-1, n, T-1 )
 end
 
+# pygui(true)
+
 include("verfahren.jl") 
 
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"

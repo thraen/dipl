@@ -1,3 +1,7 @@
+function rot(t)
+	return [cos(t) sin(t);-sin(t) cos(t)]
+end
+
 function char_quadrat_param(y, x, cy, cx, ah)
 	return (x >= cx-ah ).*(x <= cx+ah ).*(y >= cy-ah).*(y <= cy+ah);
 end
@@ -26,26 +30,71 @@ function init_vorgabe(f_generator,m,n,T)
 	return V
 end
 
+function char_slotted_circle_param(y,x,cy,cx,r,slotd,slotw)
+	y	-= cy
+	x	-= cx
+	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotw)*(x>slotd) ))
+end
+
+function rot_circle_ex(m,n,T) 
+	w=0.1
+# 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
+# 	slotw	=  0.02*m
+# 	r		= (1/8)*m 
+
+	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m
+	r		= (1/10)*m 
+
+	fun = function(y,x,t)
+		rxy = rot(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
+		return char_slotted_circle_param(rxy[2], rxy[1], m/3, 0, r,slotd,slotw)
+	end
+	return fun
+end
+
+function transl_circle(m,n,T) 
+	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m*2
+	r		= (1/10)*m*2
+	return (y,x,t) -> char_slotted_circle_param(y+t, x, m/2, n/2, m/2, n/2, r, slotd, slotw)
+end
+
+function scale_circle(m,n,T) 
+	sc		= 0.1
+	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m*2
+	r		= (1/10)*m*2
+	return (y,x,t) -> char_slotted_circle_param(y*sc*t, x*sc*t, m/2, n/2, m/2, n/2, r, slotd, slotw)
+end
+
+
+
+
 function quadrat(y,x,t)
 	cx	= floor(n/2)
 	cy	= floor(m/2)
-
 	d	= 2
 	cl	= cx - 8
 	cr	= cx + 8
-
 	#return (x >= cl +t*d).*(x <= cr +t*d).*(y >= cl).*(y <= cr);
 	return (x >= cl ).*(x <= cr ).*(y >= cl+t*d).*(y <= cr+t*d);
 	#return (x >= cl -t*d).*(x <= cr -t*d) .* (y >= cl-t*d).*(y <= cr-t*d);
 end
 
+function __rot_circle(y,x,t) 
+	# thr vorsicht mit y, x vertauscht!
+	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
+	return __slotted_circle(rxy[2], rxy[1])
+end
+
 function __slotted_circle(y,x,cy=0,cx=0)
 	slotd	= -9
-	slotwh	=  5
+	slotw	=  5
 	r		= 25
 	y	-= cy
 	x	-= cx
-	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
+	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotw)*(x>slotd) ))
 end
 
 function __rot_circle_ex(m,n,T) 
@@ -58,49 +107,6 @@ function __rot_circle_ex(m,n,T)
 	return dings
 end
 
-function slotted_circle(y,x,m,n,T,cy=0,cx=0)
-# 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
-# 	slotwh	=  0.02*m
-# 	r		= (1/8)*m 
-
-	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
-	slotwh	=  0.02*m
-	r		= (1/10)*m 
-
-	y	-= cy
-	x	-= cx
-	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotwh)*(x>slotd) ))
-end
-
-function rot(t)
-	return [cos(t) sin(t);-sin(t) cos(t)]
-end
-
-function rot_circle_ex(m,n,T) 
-	w=0.1
-	fun = function(y,x,t)
-		rxy = rot(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
-# 		rxy = rot(-1*w*t/pi/2 - pi/4 )*[x-n/2;y-m/2]
-		return slotted_circle(rxy[2], rxy[1], m,n,T, m/3, 0)
-	end
-	return fun
-end
-
-function transl_circle(m,n,T) 
-	return (y,x,t) -> slotted_circle(y+t, x, m,n,T, m/2, n/2)
-end
-
-function scale_circle(m,n,T) 
-	w=0.1
-	return (y,x,t) -> slotted_circle(y*w*t, x*w*t, m,n,T, m/2, n/2)
-end
-
-function rot_circle(y,x,t) 
-	# thr vorsicht mit y, x vertauscht!
-	rxy = rot(-1*t/pi/2)*[x-n/2;y-m/2]
-	return slotted_circle(rxy[2], rxy[1])
-end
-
 function _rot_circle_ex(y,x,t) 
 	# thr vorsicht mit y, x vertauscht!
 	#w=0.25 
@@ -109,7 +115,7 @@ function _rot_circle_ex(y,x,t)
 	#w=2.0
 	#w=3.0 
 	rxy = rot(-1*w*t/pi/2)*[x-n/2;y-m/2]
-	return slotted_circle(rxy[2], rxy[1], 40, 0)
+	return __slotted_circle(rxy[2], rxy[1], 40, 0)
 end
 
 function inits(f)
