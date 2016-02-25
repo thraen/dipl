@@ -12,8 +12,11 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.005
 # @everywhere const beta	= 0.005
 
-@everywhere const alpha	= 0.001
-@everywhere const beta	= 0.001
+# @everywhere const alpha	= 0.001 #ganz ok
+# @everywhere const beta	= 0.001
+
+@everywhere const alpha	= 0.0001 #gut!
+@everywhere const beta	= 0.0001
 
 # maxsteps 			= 1
 maxsteps 			= 100000
@@ -36,8 +39,8 @@ timereg_solver		= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-@everywhere const m					= 60
-@everywhere const n					= 60
+@everywhere const m					= 100
+@everywhere const n					= 100
 
 include("beispiele.jl")
 
@@ -85,13 +88,14 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_w)
 
-capt	= "demo_rot_disc" 
+capt	= "demoRotDisc" 
 lbl		= "demo_rot_disc"
-head	= ["L^2 I-s", "L2 V-I", "L\\inf V-s", "PNSR V-I"]
+head	= ["\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|\$", "\$\\sum \\|V-I\\|_{\\inf}\$", "PNSR(V-I)"]
 res		= [L2_err, L2norm(vorgabe_fehler), l_inf(vorgabe_fehler), psnr(vorgabe_fehler)]
-to_file(rootdir*"table_"*capt*".tex", latextable_normal(capt, lbl, head, res) )
+to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, lbl, head, res) )
 
 save_displacement(rootdir, ".eps", 1200)
+save_displacement(rootdir, ".png", 100)
 auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
 save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
 save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)

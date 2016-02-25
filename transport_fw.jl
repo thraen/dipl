@@ -3,22 +3,22 @@
 	#@inbounds begin
 	for j = jrange
 		for i = irange
-				@inbounds uxph	= u[i,j,t] 
-				# thr! was passiert, wenn ich hier auch u[i,j,t] nehme?
-				@inbounds uxmh	= u[i,j-1,t]
-				
-				@inbounds uxph_m	= min( uxph, 0)
-				@inbounds uxmh_p	= max( uxmh, 0)
+			@inbounds uxph	= u[i,j,t] 
+			# thr! was passiert, wenn ich hier auch u[i,j,t] nehme? oder den Durchschnitt und dann wie center?
+			@inbounds uxmh	= u[i,j-1,t]
+			
+			@inbounds uxph_m	= min( uxph, 0)
+			@inbounds uxmh_p	= max( uxmh, 0)
 
-				@inbounds Wmh		= I[i,j,t]   - I[i,j-1,t]
-				@inbounds Wph		= I[i,j+1,t] - I[i,j,t]
+			@inbounds Wmh		= I[i,j,t]   - I[i,j-1,t]
+			@inbounds Wph		= I[i,j+1,t] - I[i,j,t]
 
-				@inbounds anteil_higmh	= limited_hot( uxmh, I[i,j-2,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] )
-				@inbounds anteil_higph	= limited_hot( uxph, I[i,j-1,t], I[i,j,t], I[i,j+1,t], I[i,j+2,t] )
+			@inbounds anteil_higmh	= limited_hot( uxmh, I[i,j-2,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] )
+			@inbounds anteil_higph	= limited_hot( uxph, I[i,j-1,t], I[i,j,t], I[i,j+1,t], I[i,j+2,t] )
 
-				@inbounds anteil_low	= uxph_m*Wph + uxmh_p*Wmh
+			@inbounds anteil_low	= uxph_m*Wph + uxmh_p*Wmh
 
-				@inbounds Ih[i,j] = I[i,j,t] - r* anteil_low - r*(anteil_higph - anteil_higmh)
+			@inbounds Ih[i,j] = I[i,j,t] - r* anteil_low - r*(anteil_higph - anteil_higmh)
 		end
 	end
 	#end

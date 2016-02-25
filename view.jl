@@ -194,6 +194,11 @@ end
 	savefig(dir * "displacement" *isuff, dpi=dpi)
 end
 
+# @everywhere cmpsurf = "gray_r"
+@everywhere cmpsurf = "gray"
+# @everywhere cmpsurf = "GnBu"
+# @everywhere cmpsurf = "Blues"
+
 @everywhere function save_auswahl_rot_disc(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
 	@sync @parallel for t in ts
 	# 	for t in ts
@@ -202,14 +207,36 @@ end
 		savefig(dir * "img_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
 		clf()
 
-		surf(what[:,:,t]', cmap="gray_r", cstride=1, rstride=1)
+		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
+# 		surf(what[:,:,t]', cstride=1, rstride=1)
 		fig	= gcf()
 		ax	= gca()
 		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
 
-		ax[:view_init](azim=-30, elev=55)
+		ax[:view_init](azim=-39, elev=53)
+# 		ax[:view_init](azim=-30, elev=55)
 
-		savefig(dir * "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
+		savefig(dir * cmpsurf* "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
 	end
 end
+
+function cmaptest(what, cmp)
+		clf()
+		surf(what[:,:,floor(3*T/4)]', cmap=cmp, cstride=1, rstride=1, linewidth=0.2)
+		fig	= gcf()
+		ax	= gca()
+		ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
+		ax[:view_init](azim=-30, elev=55)
+end
+
+# pygui(true)
+# cmaptest(I, "gray_r") #super scheisse
+# cmaptest(I, "gray") #ok
+# cmaptest(I, "GnBu")
+# cmaptest(I, "GnBu_r")
+# cmaptest(I, "Blues")
+# cmaptest(I, "Blues_r")
+# cmaptest(I, "coolwarm")
+# cmaptest(I, "coolwarm_r")
+
 

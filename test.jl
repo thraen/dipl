@@ -29,15 +29,15 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005
 
-# maxsteps 			= 1
-maxsteps 			= 100000
+maxsteps 			= 3
+# maxsteps 			= 100000
 
 save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-# velocities_at		= "interfaces"
-velocities_at		= "centers"
+velocities_at		= "interfaces"
+# velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 
@@ -84,10 +84,11 @@ include("view.jl")
 include("beispiele.jl")
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples				= 5
+@everywhere const n_samples				= 2
 
 @everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 9 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+# @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -100,9 +101,10 @@ include("beispiele.jl")
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+# I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
+I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # s      = readtaxi()[:,:, 1:5:end]
 
@@ -133,6 +135,9 @@ vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
+echo("Gradnorm", H1_J_w)
 
 _="fertig"
 pygui(true)
+
+# imshow(I_vorgabe[:,:,3])

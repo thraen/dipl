@@ -57,7 +57,7 @@ function transl_circle(m,n,T)
 	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
 	slotw	=  0.02*m*2
 	r		= (1/10)*m*2
-	return (y,x,t) -> char_slotted_circle_param(y+t, x, m/2, n/2, m/2, n/2, r, slotd, slotw)
+	return (y,x,t) -> char_slotted_circle_param(y+t, x, m/2, n/2, r, slotd, slotw)
 end
 
 function scale_circle(m,n,T) 
@@ -65,7 +65,24 @@ function scale_circle(m,n,T)
 	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
 	slotw	=  0.02*m*2
 	r		= (1/10)*m*2
-	return (y,x,t) -> char_slotted_circle_param(y*sc*t, x*sc*t, m/2, n/2, m/2, n/2, r, slotd, slotw)
+	return (y,x,t) -> char_slotted_circle_param(y*sc*t, x*sc*t, m/2, n/2, r, slotd, slotw)
+end
+
+# A= [1 0; 0 1]
+A= [1.2 0; 0.2 0.8]
+
+function deform_circle(m,n,T) 
+	w=1
+	sc		= 0.1
+	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m*2
+	r		= (1/10)*m*2
+	fun = function(y,x,t)
+# 		rxy = dings(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
+		rxy = A^t*[x-n/2;y-m/2]
+		return char_slotted_circle_param(rxy[2], rxy[1], 0, 0, r,slotd,slotw)
+	end
+	return fun
 end
 
 
