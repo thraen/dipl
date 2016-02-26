@@ -47,7 +47,7 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 8 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const auslassen				= 10 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -88,17 +88,8 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_w)
 
-capt	= "demoRotDisc" 
-lbl		= "demo_rot_disc"
-head	= ["\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|\$", "\$\\sum \\|V-I\\|_{\\inf}\$", "PNSR(V-I)"]
-res		= [L2_err, L2norm(vorgabe_fehler), l_inf(vorgabe_fehler), psnr(vorgabe_fehler)]
-to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, lbl, head, res) )
-
-save_displacement(rootdir, ".eps", 1200)
-save_displacement(rootdir, ".png", 100)
-auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
-save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
-save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
+demo_table("demoRotDisc", "demo_rot_disc")
+save_demo()
 
 _="fertig"
 pygui(true)

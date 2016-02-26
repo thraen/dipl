@@ -235,6 +235,7 @@ function diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 	vorgabe_fehler	= zeros( size(I_vorgabe) )
 	for t in 1:T_vorgabe
 		j						= vorgabe_frames[t]
+		# 	@show t,j
 		vorgabe_fehler[:,:,t]	= I_vorgabe[:,:,t] - I[:,:,j]
 	end
 	return  vorgabe_fehler

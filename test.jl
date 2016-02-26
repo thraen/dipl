@@ -29,8 +29,8 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.00005
 # @everywhere const beta	= 0.00005
 
-maxsteps 			= 3
-# maxsteps 			= 100000
+# maxsteps 			= 3
+maxsteps 			= 100000
 
 save_every			= 0
 

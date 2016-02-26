@@ -25,7 +25,7 @@ end
 @everywhere function save_image_t(im, pref, t)
 	imshow(im[:,:,t], interpolation="none", origin="lower")#, cmap=gray)
 	#imshow(im[:,:,t], interpolation="none", cmap="gray")
-	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi)
+	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
 end
 
@@ -37,13 +37,13 @@ end
 	fig	= gcf()
 	ax	= gca()
 	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
-	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff, dpi=dpi)
+	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
 end
 
 @everywhere function save_quiver(u,v, pref, t, mpad, npad)
 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
-	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff, dpi=dpi)
+	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
 end
 
@@ -191,7 +191,7 @@ end
 @everywhere function save_displacement(dir, isuff, dpi)
 	clf()
 	imshow(s[:,:,2]-s[:,:,1], cmap="gray_r", interpolation="none", origin="lower")
-	savefig(dir * "displacement" *isuff, dpi=dpi)
+	savefig(dir * "displacement" *isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 end
 
 # @everywhere cmpsurf = "gray_r"
@@ -204,7 +204,7 @@ end
 	# 	for t in ts
 		clf()
 		imshow(what[:,:,t], cmap="gray_r", interpolation="none", origin="lower")
-		savefig(dir * "img_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
+		savefig(dir * "img_$name" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 		clf()
 
 		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
@@ -216,18 +216,33 @@ end
 		ax[:view_init](azim=-39, elev=53)
 # 		ax[:view_init](azim=-30, elev=55)
 
-		savefig(dir * cmpsurf* "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi)
+		savefig(dir * cmpsurf* "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	end
 end
 
-function cmaptest(what, cmp)
-		clf()
-		surf(what[:,:,floor(3*T/4)]', cmap=cmp, cstride=1, rstride=1, linewidth=0.2)
-		fig	= gcf()
-		ax	= gca()
-		ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
-		ax[:view_init](azim=-30, elev=55)
+function save_demo()
+	save_displacement(rootdir, ".eps", 1200)
+	save_displacement(rootdir, ".png", 100)
+	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
+	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
+	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
 end
+
+function demo_table(capt, label)
+	head	= ["\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|\$", "\$\\sum \\|V-I\\|_{\\inf}\$", "PNSR(V-I)"]
+	res		= [L2_err, L2norm(vorgabe_fehler), l_inf(vorgabe_fehler), psnr(vorgabe_fehler)]
+	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, lbl, head, res) )
+end
+
+function cmaptest(what, cmp)
+	clf()
+	surf(what[:,:,floor(3*T/4)]', cmap=cmp, cstride=1, rstride=1, linewidth=0.2)
+	fig	= gcf()
+	ax	= gca()
+	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
+	ax[:view_init](azim=-30, elev=55)
+end
+
 
 # pygui(true)
 # cmaptest(I, "gray_r") #super scheisse
