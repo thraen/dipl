@@ -1,8 +1,13 @@
+include("transport_rand_bw.jl")
+
 @everywhere @inline function procchunk_x_bw_center!(p, ph, u, t, irange, jrange)
 	for j = jrange
 		for i = irange
 			@inbounds uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
 			@inbounds uxmh	= (u[i,j,t-1] + u[i,j-1,t-1])/2
+			#hmmmmmmmmmm. die Fluesse sollten doch in Upwindrichtung berechnet werden, oder?
+			#hhhhmmmm. das hier ist nur die upwindrichtung wenn u>0?
+			# passt upwind steckt in fluss_lim_kons
 			@inbounds anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
 			@inbounds ph[i,j] = p[i,j,t] - r* anteilx
 		end
@@ -64,8 +69,14 @@ function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
 		else
 # 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
 		end
-		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
-		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
+# 		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
+# 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
+
+		procchunk_x_bw!(p, ph, u, t, 1:m, 3:n-2 )
+		procchunk_y_bw!(p, ph, v, t, 3:m-2, 1:n )
+
+		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
+		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
 	end
 
 	return p

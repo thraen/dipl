@@ -45,7 +45,6 @@ end
 		thet = (up - u   +eps()) / (u - um +eps())
 	end
 	anteil_hig	= 0.5*abs(a) * (1-r*abs(a)) * sbee(thet) * (u-um)
-
 	return 	  anteil_hig
 end
 
@@ -83,8 +82,18 @@ include("transport_bw.jl")
 velocities_at == "centers" && begin
 	@everywhere procchunk_x_fw!	= procchunk_x_fw_center!
 	@everywhere procchunk_y_fw!	= procchunk_y_fw_center!
+	# hier wird nur Upwind gemacht
+	@everywhere procchunk_x_fw_innerer_rand_LR!	= procchunk_x_fw_center_innerer_rand_LR!
+	@everywhere procchunk_y_fw_innerer_rand_OU!	= procchunk_y_fw_center_innerer_rand_OU!
+
+	# am Rand machen wir gar nichts, weil u da sowieso null ist.
+	# 	@everywhere procchunk_x_fw_rand_LR!	= procchunk_x_fw_center_rand_LR!
+	# 	@everywhere procchunk_x_fw_rand_OU!	= procchunk_x_fw_center_rand_OU!
+
 	@everywhere procchunk_x_bw!	= procchunk_x_bw_center!
 	@everywhere procchunk_y_bw!	= procchunk_y_bw_center!
+	@everywhere procchunk_x_bw_innerer_rand_LR!	= procchunk_x_bw_center_innerer_rand_LR!
+	@everywhere procchunk_y_bw_innerer_rand_OU!	= procchunk_y_bw_center_innerer_rand_OU!
 end
 
 velocities_at == "interfaces" && begin

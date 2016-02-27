@@ -9,11 +9,11 @@ armijo_maxtry		= 100
 # @everywhere const alpha	= 0.2 
 # @everywhere const beta	= 0.2
 
-# @everywhere const alpha	= 0.05
-# @everywhere const beta	= 0.05
+@everywhere const alpha	= 0.05
+@everywhere const beta	= 0.05
 
-@everywhere const alpha	= 0.000005
-@everywhere const beta	= 0.000005
+# @everywhere const alpha	= 0.000005
+# @everywhere const beta	= 0.000005
 
 # @everywhere const alpha	= 0.0001006
 # @everywhere const beta	= 0.0001006
@@ -36,8 +36,8 @@ save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-velocities_at		= "interfaces"
-# velocities_at		= "centers"
+# velocities_at		= "interfaces"
+velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 
@@ -72,11 +72,11 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-@everywhere const m					= 20
-@everywhere const n					= 20
+# @everywhere const m					= 20
+# @everywhere const n					= 20
 
-# @everywhere const m					= 60
-# @everywhere const n					= 60
+@everywhere const m					= 60
+@everywhere const n					= 60
 
 # @everywhere const m					= 100 
 # @everywhere const n					= 100
@@ -89,7 +89,7 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 2 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const auslassen				= 4 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 9 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 

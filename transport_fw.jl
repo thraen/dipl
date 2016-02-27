@@ -1,3 +1,14 @@
+@everywhere macro cfl_verletzt(v)
+	cflcheck =  quote
+		if abs($v)*r > 1.0
+			info("cfl verletzt, $i, $j, $t, " * string(v[i,j,t]))
+		end
+	end
+	return with_cfl_check ? cflcheck : nothing
+end
+
+include("transport_rand_fw.jl")
+
 #@everywhere function procchunk_x_fw_interf!(I::SharedArray, Ih::SharedArray, u::SharedArray, t, irange, jrange)
 @everywhere @inline function procchunk_x_fw_interf!(I, Ih, u, t, irange, jrange)
 	#@inbounds begin
@@ -52,19 +63,11 @@ end
 @everywhere @inline function procchunk_x_fw_center!(I, Ih, u, t, irange, jrange)
 	for j = jrange
 		for i = irange
+			@cfl_verletzt v[i,j,t]
 			@inbounds anteilx = (u[i,j,t] >= 0) 	? fluss_lim1(  u[i,j,t], I[i,j-1,t], I[i,j,t], I[i,j+1,t] ) - fluss_lim1(  u[i,j,t], I[i,j-2,t], I[i,j-1,t], I[i,j,t] ) : fluss_lim1( -u[i,j,t], I[i,j+1,t], I[i,j,t], I[i,j-1,t] ) - fluss_lim1( -u[i,j,t], I[i,j+2,t], I[i,j+1,t], I[i,j,t] ) 
 			@inbounds Ih[i,j] = I[i,j,t] - r* (anteilx)
 		end
 	end
-end
-
-@everywhere macro cfl_verletzt(v)
-	cflcheck =  quote
-		if abs($v)*r > 1.0
-			info("cfl verletzt, $i, $j, $t, " * string(v[i,j,t]))
-		end
-	end
-	return with_cfl_check ? cflcheck : nothing
 end
 
 @everywhere @inline function procchunk_y_fw_center!(I, Ih, v, t, irange, jrange)
@@ -81,6 +84,7 @@ end
 @everywhere proc_chunks_shared_y!(I, Ih, v, t) = procchunk_y_fw!(I, Ih, v, t, range_part_y(Ih)...)
 
 #instabil
+# Rand ist hier nicht implementiert
 function transport_par(I0, u, v, schritte)
 	@time begin
 	m, n	= size(I0)
@@ -118,8 +122,16 @@ function transport_ser(I0, u, v, schritte)
 	Ih		= zeros(m, n) #half step buffer for dimension splitting
 	println("==============Transport=================$n x $m x $T parallel=$(transport_parallel)")
 	for t = 1:schritte
-		procchunk_x_fw!(I, Ih, u, t, 3:m-2, 3:n-2 )
-		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 3:n-2 )
+# 		procchunk_x_fw!(I, Ih, u, t, 3:m-2, 3:n-2 )
+# 		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 3:n-2 )
+
+		procchunk_x_fw!(I, Ih, u, t, 1:m, 3:n-2 )
+		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 1:n )
+
+		# auf dem inneren Rand wird nur nur ein Upwindverfahren angewandt.
+		procchunk_x_fw_innerer_rand_LR!(I, Ih, u, t, 1:m, [2,n-1])
+		procchunk_y_fw_innerer_rand_OU!(I, Ih, v, t, [2,m-1], 1:n)
+		# auf dem aeusseren Rand machen wir gar nichts, weil die Geschwindigkeit hier 0 ist.
 	end
 	return I
 end

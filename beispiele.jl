@@ -12,8 +12,8 @@ function char_quadrat(m,n,T)
 	cx	= (n+1)/2
 	cy	= (m+1)/2
 
-	return (y,x,t) -> char_quadrat_param(y,x, cy+t-floor(T/2), cx, ah)
-# 	return (y,x,t) -> char_quadrat_param(y,x, cy+t, cx, ah)
+# 	return (y,x,t) -> char_quadrat_param(y,x, cy+t-floor(T/2), cx, ah)
+	return (y,x,t) -> char_quadrat_param(y,x, cy-t+floor(T/2), cx, ah)
 end
 
 function init_vorgabe(f_generator,m,n,T)
