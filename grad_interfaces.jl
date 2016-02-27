@@ -25,7 +25,7 @@ poisson_solver == "gmres" && begin
 	#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
 	@everywhere using IterativeSolvers
 	@everywhere function solve_poisson_x(b)
-		x, conv_hist	= gmres(L, b, restart=5)
+		x, conv_hist	= gmres(Lx, b, restart=5)
 		return x
 	end
 	@everywhere function solve_poisson_y(b)
@@ -45,7 +45,7 @@ function H1_norm(u, v)
 		v_ = reshape(v[:,:,t], n*(m-1))
 		ret_  = (u_'*Lx*u_) 
 		ret_ += (v_'*Ly*v_) 
-		if t==1 || t==T
+		if t==1 || t==T-1
 			ret_ /= 2
 		end
 		ret += ret_

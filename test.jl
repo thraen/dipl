@@ -4,16 +4,16 @@
 
 armijo_bas			= 0.9
 armijo_sig			= 0
-armijo_maxtry		= 80
+armijo_maxtry		= 100
 
 # @everywhere const alpha	= 0.2 
 # @everywhere const beta	= 0.2
 
-# @everywhere const alpha	= 0.005
-# @everywhere const beta	= 0.005
+# @everywhere const alpha	= 0.05
+# @everywhere const beta	= 0.05
 
-@everywhere const alpha	= 0.001
-@everywhere const beta	= 0.001
+@everywhere const alpha	= 0.000005
+@everywhere const beta	= 0.000005
 
 # @everywhere const alpha	= 0.0001006
 # @everywhere const beta	= 0.0001006
@@ -72,8 +72,11 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-@everywhere const m					= 60
-@everywhere const n					= 60
+@everywhere const m					= 20
+@everywhere const n					= 20
+
+# @everywhere const m					= 60
+# @everywhere const n					= 60
 
 # @everywhere const m					= 100 
 # @everywhere const n					= 100
@@ -101,10 +104,10 @@ include("beispiele.jl")
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-# I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
-I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
+# I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # s      = readtaxi()[:,:, 1:5:end]
 

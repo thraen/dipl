@@ -35,12 +35,11 @@ function H1_norm(u, v)
 		v_ = reshape(v[:,:,t], n*m)
 		ret_  = (u_'*L*u_) 
 		ret_ += (v_'*L*v_) 
-		if t==1 || t==T
+		if t==1 || t==T-1 #thr!!
 			ret_ /= 2
 		end
 		ret += ret_
 	end
-	# thr! dx steckt auch in L? stimmt das so?
 	return dt* dx*dx*ret[1]
 end
 

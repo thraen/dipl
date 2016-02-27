@@ -204,7 +204,7 @@ end
 	# 	for t in ts
 		clf()
 		imshow(what[:,:,t], cmap="gray_r", interpolation="none", origin="lower")
-		savefig(dir * "img_$name" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 		clf()
 
 		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
@@ -216,22 +216,35 @@ end
 		ax[:view_init](azim=-39, elev=53)
 # 		ax[:view_init](azim=-30, elev=55)
 
-		savefig(dir * cmpsurf* "srf_$name" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	end
+end
+
+@everywhere function save_verr(verr, name, dir, isuff, dpi)
+	m,n,ts = size(verr)
+	@sync @parallel for t in 1:ts
+		imshow(abs(verr[:,:,t]), cmap="gray_r", interpolation="none", origin="lower")
+		savefig(dir * "img_$name" * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+		clf()
 	end
 end
 
 function save_demo()
 	save_displacement(rootdir, ".eps", 1200)
 	save_displacement(rootdir, ".png", 100)
-	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
+	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+	auswahl = [vorgabe_frames]
+# 	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
+	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
+	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
 end
 
 function demo_table(capt, label)
 	head	= ["\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|\$", "\$\\sum \\|V-I\\|_{\\inf}\$", "PNSR(V-I)"]
 	res		= [L2_err, L2norm(vorgabe_fehler), l_inf(vorgabe_fehler), psnr(vorgabe_fehler)]
-	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, lbl, head, res) )
+	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 end
 
 function cmaptest(what, cmp)

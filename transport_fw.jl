@@ -35,10 +35,6 @@ end
 			@inbounds vymh_p	= max( vymh, 0)
 			@inbounds vyph_m	= min( vyph, 0)
 
-# 			if vyph*r > 0.05 || vymh < -.05
-# 				error("cfl verletzt, $i, $j")
-# 			end
-
 			@inbounds Wmh		= Ih[i,j]   - Ih[i-1,j]
 			@inbounds Wph		= Ih[i+1,j] - Ih[i,j]
 
