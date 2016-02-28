@@ -73,10 +73,10 @@ function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
 # 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
 
 		procchunk_x_bw!(p, ph, u, t, 1:m, 3:n-2 )
+# 		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
+# 
 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 1:n )
-
-		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
-		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
+# 		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
 	end
 
 	return p

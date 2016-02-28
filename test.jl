@@ -109,7 +109,7 @@ I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
-# s      = readtaxi()[:,:, 1:5:end]
+# s      = readtaxi_alt()[:,:, 1:5:end]
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
