@@ -179,6 +179,17 @@ function readtaxi_alt()
 	return taxi
 end
 
+function flipy(F)
+	m,n,T	= size(F)
+	res = zeros(m,n,T)
+	for t = 1:T
+		for i = 1:m
+			res[m-i+1,:,t] = F[i,:,t]
+		end
+	end
+	return res
+end
+
 # thr entfernen: die alte Methode zur Erstellung der DLMs ohne auffuellen auf 260x260
 function taxi_bmp2dlm_images!()
 	for i=1:41

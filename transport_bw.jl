@@ -82,5 +82,35 @@ function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
 	return p
 end
 
+function ruecktransport_ser!(s, I, u, v, n_samp, n_zsamp, norm_s)
+	m, n, T = size(I)
+	p		= zeros(m,n,T)
+	ph		= zeros(m,n)
+	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
+	sk		= 0
+	for t = T:-1:2
+		# thr!!! rechter oder linker grenzwert zum diracterm?
+		if mod(t-1, n_zsamp+1) == 0 then
+# 			echo("am sample        ", t, "->", t-1, n_samp-sk)
+			err			= I[:, :, t] - s[:, :, n_samp-sk] 
+			p[:,:,t] 	= p[:,:,t] - err/norm_s
+			ph			= p[:,:,t]
+			sk 			+= 1
+		else
+# 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
+		end
+# 		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
+# 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
+
+		procchunk_x_bw!(p, ph, u, t, 1:m, 3:n-2 )
+		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
+
+		procchunk_y_bw!(p, ph, v, t, 3:m-2, 1:n )
+		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
+	end
+	return p
+end
+
+
 #thr!
 ruecktransport_par = ruecktransport_ser

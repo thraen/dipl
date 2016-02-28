@@ -137,3 +137,22 @@ function transport_ser(I0, u, v, schritte)
 	return I
 end
 
+function transport_ser!(I, u, v, schritte)
+	m, n, T	= size(I)
+	Ih		= I[:,:,1] #half step buffer for dimension splitting
+	println("==============Transport=================$n x $m x $T parallel=$(transport_parallel)")
+	for t = 1:schritte
+# 		procchunk_x_fw!(I, Ih, u, t, 3:m-2, 3:n-2 )
+# 		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 3:n-2 )
+
+		# auf dem inneren Rand wird nur nur ein Upwindverfahren angewandt.
+		# auf dem aeusseren Rand machen wir gar nichts, weil die Geschwindigkeit hier 0 ist.
+		procchunk_x_fw!(I, Ih, u, t, 1:m, 3:n-2 )
+		procchunk_x_fw_innerer_rand_LR!(I, Ih, u, t, 1:m, [2,n-1])
+
+		procchunk_y_fw!(I, Ih, v, t, 3:m-2, 1:n )
+		procchunk_y_fw_innerer_rand_OU!(I, Ih, v, t, [2,m-1], 1:n)
+	end
+	return I
+end
+

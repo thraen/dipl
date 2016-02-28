@@ -229,7 +229,19 @@ end
 	end
 end
 
-function save_demo()
+function save_demo_rot_disc()
+	save_displacement(rootdir, ".eps", 1200)
+	save_displacement(rootdir, ".png", 100)
+	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+	auswahl = [vorgabe_frames]
+# 	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
+	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
+	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
+	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
+	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
+end
+
+function save_demo_taxi()
 	save_displacement(rootdir, ".eps", 1200)
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 

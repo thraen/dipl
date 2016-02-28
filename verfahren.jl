@@ -48,35 +48,6 @@ function next_w!(I, p, u, v, alpha)
 	return u, v
 end
 
-function verfahren_direkt(s, u, v)
-	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dy=$dy, alpha=$alpha, beta=$beta")
-	norm_s		= L2norm(s) #thr. gewicht?
-	s0			= s[:,:,1]
-
-	I			= zeros(m, n, T)
-	p			= zeros(m, n, T)
-
-	L2_err, _	= sample_err(I,s,norm_s)
-	H1_err		= H1_norm_w( u, v )
-	J			= (L2_err + H1_err)/2 
-
-	steps 		= 1
-	while steps < maxsteps
-		I			= transport(s0, u, v, T-1)
-		p			= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
-		u, v		= next_w!(I, p, u, v, alpha)
-
-		L2_err, _	= sample_err(I,s,norm_s)
-		H1_err		= H1_norm_w( u, v )
-		J			= (L2_err + H1_err)/2 
-
-		echo(steps, "L2errors",  L2_err, "H1_errors", H1_err, "\nJ", J, "\n")
-		steps+=1
-	end
-
-	return I, u, v, p, L2_err, H1_err, J, steps
-end
-
 function verfahren_grad(s, u, v, steps=1)
 	norm_s		= L2norm(s)
 	s0			= s[:,:,1]
@@ -180,8 +151,13 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 
 	H1_err		= H1_norm_w( u, v )
 
-	@time I		= transport(s0, u, v, T-1)
-	@time p		= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
+	I	= zeros(m,n,T)
+	for t = 1:T
+		I[:,:,t] = s0
+	end
+
+	@time I		= transport!(I, u, v, T-1)
+	@time p		= ruecktransport!( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	#thr
@@ -216,7 +192,7 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 
 			H1_err_next			= H1_norm_w(u_next, v_next)
 
-			@time I_next		= transport( s0, u_next, v_next, T-1 )
+			@time I_next		= transport!( I, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
 			#thr
@@ -238,7 +214,7 @@ function verfahren_grad_altnormalization(s, u, v, steps=1)
 				H1_err				= H1_err_next
 				L2_err				= L2_err_next
 
-				@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
+				@time p					= ruecktransport!(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 
