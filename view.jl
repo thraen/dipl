@@ -201,20 +201,16 @@ end
 
 @everywhere function save_auswahl_rot_disc(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
 	@sync @parallel for t in ts
-	# 	for t in ts
 		clf()
 		imshow(what[:,:,t], cmap="gray_r", interpolation="none", origin="lower")
 		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 		clf()
 
 		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
-# 		surf(what[:,:,t]', cstride=1, rstride=1)
 		fig	= gcf()
 		ax	= gca()
 		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
-
 		ax[:view_init](azim=-39, elev=53)
-# 		ax[:view_init](azim=-30, elev=55)
 
 		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	end
@@ -241,14 +237,31 @@ function save_demo_rot_disc()
 	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
 end
 
+@everywhere function save_auswahl_taxi(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
+	@sync @parallel for t in ts
+		clf()
+		imshow(what[:,:,t], cmap="gray", interpolation="none", origin="lower")
+		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+		clf()
+
+		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
+		fig	= gcf()
+		ax	= gca()
+		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
+		ax[:view_init](azim=-39, elev=53)
+
+		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	end
+end
+
 function save_demo_taxi()
 	save_displacement(rootdir, ".eps", 1200)
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 	auswahl = [vorgabe_frames]
 # 	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
-	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
-	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
+	save_auswahl_taxi(I, "I", auswahl, rootdir, ".png", 100)
+	save_auswahl_taxi(I, "I", auswahl, rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
 end

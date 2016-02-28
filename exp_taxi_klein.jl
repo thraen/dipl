@@ -63,7 +63,7 @@ include("beispiele.jl")
 
 tcx, tcy	= 115, 110
 I_vorgabe   = readtaxi_alt()[tcy-49:tcy+50, tcx-49:tcx+50, 1:T_vorgabe]
-I_vorgabe	= flipy(I_vorgabe)
+# I_vorgabe	= flipy(I_vorgabe)
 
 ##mit padding
 # tmp	= zeros(m,n,T_vorgabe)
@@ -101,7 +101,7 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_w)
 
-demo_table("demoRotDisc", "demo_rot_disc")
+demo_table("demoTaxi", "demo_taxi")
 save_demo_taxi()
 
 _="fertig"
