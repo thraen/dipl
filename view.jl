@@ -23,7 +23,7 @@ function delete_output()
 end
 
 @everywhere function save_image_t(im, pref, t)
-	imshow(im[:,:,t], interpolation="none", origin="lower")#, cmap=gray)
+	imshow(im[:,:,t], interpolation="none", origin="lower", cmap="gray")
 	#imshow(im[:,:,t], interpolation="none", cmap="gray")
 	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
@@ -66,12 +66,12 @@ function save_images_(im, pref)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
-	for t=1:T 
-		save_image_t(im, pref, t)
-	end
-# 	@sync @parallel for t=1:T 
+# 	for t=1:T 
 # 		save_image_t(im, pref, t)
 # 	end
+	@sync @parallel for t=1:T 
+		save_image_t(im, pref, t)
+	end
 	toc()
 end
 

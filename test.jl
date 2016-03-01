@@ -6,11 +6,14 @@ armijo_bas			= 0.9
 armijo_sig			= 0
 armijo_maxtry		= 100
 
-# @everywhere const alpha	= 0.2 
-# @everywhere const beta	= 0.2
+@everywhere const alpha	= 0.9 
+@everywhere const beta	= 0.9
 
-@everywhere const alpha	= 0.05
-@everywhere const beta	= 0.05
+# @everywhere const alpha	= 0.05
+# @everywhere const beta	= 0.05
+
+# @everywhere const alpha	= 0.005
+# @everywhere const beta	= 0.005
 
 # @everywhere const alpha	= 0.000005
 # @everywhere const beta	= 0.000005
@@ -36,8 +39,8 @@ save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-# velocities_at		= "interfaces"
-velocities_at		= "centers"
+velocities_at		= "interfaces"
+# velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 
@@ -75,14 +78,17 @@ include("view.jl")
 # @everywhere const m					= 20
 # @everywhere const n					= 20
 
-@everywhere const m					= 60
-@everywhere const n					= 60
+# @everywhere const m					= 60
+# @everywhere const n					= 60
 
-# @everywhere const m					= 100 
-# @everywhere const n					= 100
+@everywhere const m					= 100 
+@everywhere const n					= 100
 
 # @everywhere const m					= 140
 # @everywhere const n					= 140
+
+# @everywhere const m					= 200
+# @everywhere const n					= 200
 
 include("beispiele.jl")
 
@@ -90,7 +96,7 @@ include("beispiele.jl")
 @everywhere const n_samples				= 2
 
 @everywhere const auslassen				= 4 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 9 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const zwischen_ausgelassen	= 7 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
@@ -112,6 +118,16 @@ I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # s      = readtaxi_alt()[:,:, 1:5:end]
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
+
+# Aufloesungsunabhaengig, ohne Vorgabe
+# s[:,:,1] = zeros(m,n)
+# s[:,:,2] = zeros(m,n)
+# for i = 1:m
+# 	for j = 1:n
+# 		s[i,j,1]	= ((j-1)*dx >= 0.3) & ((j-1)*dx<=0.6) & (((i-1)*dx) >=0.3 )& (((i-1)*dx)<=0.6)
+# 		s[i,j,2]	= ((j-1)*dx >= 0.5) & ((j-1)*dx<=0.8) & (((i-1)*dx) >=0.5 )& (((i-1)*dx)<=0.8)
+# 	end
+# end
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )

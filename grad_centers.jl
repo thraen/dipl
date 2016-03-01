@@ -3,6 +3,8 @@ const Cx, Cy	= generate_differentiation_central(m, n, dx)
 
 poisson_solver == "lufact" && begin
 	const LU		= factorize(L)
+	#thr
+	const _LU		= factorize(L*dx)
 	@everywhere function solve_poisson(LU, b)
 		return LU\b
 	end
@@ -28,7 +30,7 @@ poisson_solver == "multig" && begin
 end
 
 # Integral genaehert durch Integral einer Stueckweise linearen Interpolation
-function H1_norm(u, v)
+function _H1_norm(u, v)
 	ret = 0
 	for t=1:T-1
 		u_ = reshape(u[:,:,t], n*m)
@@ -43,6 +45,22 @@ function H1_norm(u, v)
 	return dt* dx*dx*ret[1]
 end
 
+function H1_norm(u, v)
+	ret = 0
+	println("H1TESTSsss")
+	for t=1:T-1
+		u_ = reshape(u[:,:,t], n*m)
+		v_ = reshape(v[:,:,t], n*m)
+		ret_  = (u_'*(L*dt*dx*dx)*u_)  # so klammern ist besser wegen fliesskommagenauigkeit
+		ret_ += (v_'*(L*dt*dx*dx)*v_) 
+		if t==1 || t==T-1 #thr!!
+			ret_ /= 2
+		end
+		ret += ret_
+	end
+	return ret[1]
+end
+
 # Integration durch Integral einer stueckweise konstanten Naeherung
 #function H1_norm(u, v)
 	#return dx*dx* dt* ( sum( central_diff_x( u ).^2 + sum( central_diff_y( u ).^2 ) ) + sum( central_diff_x( v ).^2 + sum( central_diff_y( v ).^2 ) ) )
@@ -51,7 +69,7 @@ end
 H1_norm_w	= function (u,v) return alpha* H1_norm(u,v) end
 H1_norm_grd	= H1_norm
 
-@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+@everywhere @inline function _grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den schon Rand 0!
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
@@ -59,12 +77,18 @@ H1_norm_grd	= H1_norm
 	phi_x			= solve_poisson(LU, pI_x)
 	phi_y			= solve_poisson(LU, pI_y)
 
-# 	if t==1
-# 		imshow(reshape( pI_y, m, n ))
-# 		imshow(reshape( pI_x, m, n ))
-# 		imshow(reshape( phi_y, m, n ))
-# 		imshow(reshape( phi_x, m, n ))
-# 	end
+	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
+	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
+end
+
+@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den schon Rand 0!
+	pI_x			= (Cx*dx)*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+	pI_y			= (Cy*dx)*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+
+	println("GRADTST")
+	phi_x			= solve_poisson(_LU, pI_x)
+	phi_y			= solve_poisson(_LU, pI_y)
 
 	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 

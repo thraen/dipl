@@ -18,14 +18,16 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.0001
 # @everywhere const beta	= 0.0001
 
-# maxsteps 			= 1
+# maxsteps 			= 3
 maxsteps 			= 100000
 
 save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-velocities_at		= "centers"
+@everywhere velocities_at		= "interfaces"
+# velocities_at		= "centers"
+
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
 project_divfree		= false # betrifft nur velocities_at = "interfaces"
@@ -63,7 +65,8 @@ include("beispiele.jl")
 
 tcx, tcy	= 115, 110
 I_vorgabe   = readtaxi_alt()[tcy-49:tcy+50, tcx-49:tcx+50, 1:T_vorgabe]
-# I_vorgabe	= flipy(I_vorgabe)
+I_vorgabe	= flipy(I_vorgabe) #ohne flip 0.3907014720825837
+								# mitflip 0.39072996829119466
 
 ##mit padding
 # tmp	= zeros(m,n,T_vorgabe)
@@ -85,7 +88,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/demo/exp_taxi_klein/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+@everywhere rootdir = "../out/demo/exp_taxi_klein/$(velocities_at)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 make_output_dir(rootdir)
 
 steps=1
@@ -101,8 +104,8 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_w)
 
-demo_table("demoTaxi", "demo_taxi")
-save_demo_taxi()
+# demo_table("demoTaxi", "demo_taxi")
+# save_demo_taxi()
 
 _="fertig"
 pygui(true)
