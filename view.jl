@@ -275,9 +275,10 @@ function save_demo_taxi()
 end
 
 function demo_table(capt, label)
-	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|_2^2\$", "Reg.-Fehler"]
+	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "Reg.-Fehler", "\$\\sum \\|V-I\\|_2^2\$"]
+# 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "Reg.-Fehler", "\$\\sum \\|V-I\\|_2^2\$"]
 	bet		= (time_regularization == false) ? 0 : beta
-	res		= [alpha, beta, L2_err, L2norm(vorgabe_fehler), H1_err]
+	res		= [alpha, bet, L2_err, H1_err, L2norm(vorgabe_fehler)]
 	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))

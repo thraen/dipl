@@ -83,7 +83,7 @@ function sample_err_L2(I, s, norm_s)
 	err				= zeros( m,n,n_samples )
 	L2err			= 0
 	# thr da kann man die globalen Variablen noch rausnehmen
-#  	n_zwischensamples	= div(T-1 , n_samples-1)-1
+	#  	n_zwischensamples	= div(T-1 , n_samples-1)-1
 	for (k,t) in samples_to_frames(n_samples, n_zwischensamples) 
 		err[:,:,k]	= I[:,:,t] - s[:,:,k]
 	end

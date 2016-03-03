@@ -69,6 +69,7 @@ end
 	block_ndiagl2		= [ ndiagl2/2; repmat([zeros(m) ; ndiagl2], T-3) ; zeros(m) ; ndiagl2/2 ]
 	block_ndiagr2		= [ ndiagr2/2; repmat([zeros(m) ; ndiagr2], T-3) ; zeros(m) ; ndiagr2/2 ]
 
+	#thr *dt^2 ?
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-m, -1, 0, 1, m) ) * dt^2 / (dx*dx)
 end
 
@@ -87,5 +88,5 @@ end
     GradNormOp = (LT + R )/dt
     CostNormOp = (alpha * LT + beta * R)/dt
 
-	return ellOp, GradNormOp, CostNormOp
+	return ellOp, GradNormOp, CostNormOp, LT/dt, R/dt
 end

@@ -1,4 +1,4 @@
-@everywhere const ellOp, GradNormOp, CostNormOp	= generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
+@everywhere const ellOp, GradNormOp, CostNormOp, Sreg, Treg	= generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
 const L			= generate_laplace(m, n, dx)
 const Cx, Cy	= generate_differentiation_central(m, n, dx) 
 
@@ -48,7 +48,7 @@ function H1_norm_w_timereg(u,v)
 	v_	= reshape(v, m*n*(T-1))
 	# alpha und beta stecken in CostNormOp
 	ret	= dx*dx* (u_'*CostNormOp*u_ + v_'*CostNormOp*v_)	
-	return  ret[1] #*alpha # thr: da soll nicht *alpha stehen, nur zum test
+	return  ret[1] 
 end
 
 function H1_norm_grd_timereg(u,v)
@@ -56,6 +56,14 @@ function H1_norm_grd_timereg(u,v)
 	v_	= reshape(v, m*n*(T-1))
 	ret	= dx*dx* (u_'*GradNormOp*u_ + v_'*GradNormOp*v_)
 	return  ret[1]
+end
+
+function H1_norm_w_noweight_space(u,v)
+	return dx*dx* (u[:]*Sreg*u[:] + v_[:]'*Sreg*v[:])
+end
+
+function H1_norm_w_noweight_time(u,v)
+	return dx*dx* (u[:]*Treg*u[:] + v_[:]'*Treg*v[:])
 end
 
 H1_norm_w   = H1_norm_w_timereg

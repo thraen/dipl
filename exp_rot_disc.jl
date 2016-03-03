@@ -76,8 +76,8 @@ include("verfahren.jl")
 make_output_dir(rootdir)
 
 # echo=_echolog
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
-# @load "$(rootdir)res.jld"
+# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
+@load "$(rootdir)res.jld"
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
