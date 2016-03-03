@@ -9,14 +9,14 @@ armijo_maxtry		= 80
 # @everywhere const alpha	= 0.02  #gar nicht schlecht
 # @everywhere const beta	= 0.02
 
-# @everywhere const alpha	= 0.005
-# @everywhere const beta	= 0.005
+@everywhere const alpha	= 0.01
+@everywhere const beta	= 0.01
 
 # @everywhere const alpha	= 0.001 #ganz ok
 # @everywhere const beta	= 0.001
 
-@everywhere const alpha	= 0.0001 #gut!
-@everywhere const beta	= 0.0001
+# @everywhere const alpha	= 0.0001 #best!
+# @everywhere const beta	= 0.0001
 
 # maxsteps 			= 1
 maxsteps 			= 100000
@@ -75,9 +75,9 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
-# echo=_echolog
-# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
-@load "$(rootdir)res.jld"
+echo=_echolog
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
+# @load "$(rootdir)res.jld"
 
 echo("==============")
 echo("Gradnorm", H1_J_w)

@@ -50,8 +50,6 @@ end
 
 function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	_norm_s		= L2norm(s)
-# hier wird das Eingabebild 'normiert'
-# 	s/=sqrt(_norm_s)
 	s0			= s[:,:,1]
 	norm_s		= normierung
 
@@ -65,9 +63,6 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	@time I		= transport!(I, u, v, T-1)
 	@time p		= ruecktransport!( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
-
-	#thr
-	#L2_err /= sqrt(_norm_s)
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
 		 "\n_norm_s", _norm_s,
@@ -101,13 +96,9 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 			@time I_next		= transport!( I, u_next, v_next, T-1 )
 			L2_err_next, _		= sample_err(I_next,s,norm_s)
 
-			#thr
-			#L2_err_next/=sqrt(_norm_s)
-
 			J_next				= (L2_err_next + H1_err_next)/2 
 
 			echo("\nstep", steps, armijo_exp,"test armijo step length ", t, 
-				 #"\nrL2errors ",  L2_err/_norm_s, L2_err_next/_norm_s, (L2_err-L2_err_next)/_norm_s, 
 				 "\nL2errors ",   L2_err, L2_err_next, L2_err-L2_err_next, 
 				 "\nH1_errors",   H1_err, H1_err_next, H1_err-H1_err_next,
 				 "\nJ        ",   J, J_next,J-J_next,"\n")
