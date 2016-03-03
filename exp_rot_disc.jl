@@ -79,13 +79,17 @@ make_output_dir(rootdir)
 # @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
 @load "$(rootdir)res.jld"
 
+echo("==============")
+echo("Gradnorm", H1_J_w)
+echo("L2err", L2_err)
+echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
+echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
+
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
-echo("Gradnorm", H1_J_w)
-
 for l=1:T_vorgabe
 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
 end
