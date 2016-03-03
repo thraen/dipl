@@ -66,24 +66,27 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/demo/exp_deform_disc/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+@everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
-steps=1
-
-# @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad_altnormalization(s, u, v, steps)
+# echo=_echolog
+@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
-echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_w)
 
-demo_table("demo_deform_disc", "demo_deform_disc")
-save_demo()
+for l=1:T_vorgabe
+	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
+end
+
+save_demo_rot_disc()
+
+save_endergebnis(rootdir)
+
+demo_table("demoRotDisc", "demo_rot_disc")
 
 _="fertig"
-# pygui(true)

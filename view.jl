@@ -305,3 +305,18 @@ end
 # cmaptest(I, "coolwarm_r")
 
 
+function save_endergebnis(dir)
+	try
+		save("$(dir)res.jld", 
+				"I", I, 
+				"u", u,
+				"v", v, 
+				"L2_err", L2_err,
+				"H1_err", H1_err,
+				"J", J,
+				"H1_J_w", H1_J_w
+				)
+	catch e
+		warn("ERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
+	end
+end

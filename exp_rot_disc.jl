@@ -75,7 +75,9 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
+# echo=_echolog
 @time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
+# @load "$(rootdir)res.jld"
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
@@ -88,10 +90,10 @@ for l=1:T_vorgabe
 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
 end
 
-save_jld(steps, s, I, u, v, I_vorgabe, vorgabe_fehler)
 save_demo_rot_disc()
+
+save_endergebnis(rootdir)
 
 demo_table("demoRotDisc", "demo_rot_disc")
 
 _="fertig"
-pygui(true)
