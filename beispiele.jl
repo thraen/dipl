@@ -38,14 +38,9 @@ end
 
 function rot_circle_ex(m,n,T) 
 	w=0.1
-# 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
-# 	slotw	=  0.02*m
-# 	r		= (1/8)*m 
-
 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
 	slotw	=  0.02*m
 	r		= (1/10)*m 
-
 	fun = function(y,x,t)
 		rxy = rot(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
 		return char_slotted_circle_param(rxy[2], rxy[1], m/3, 0, r,slotd,slotw)

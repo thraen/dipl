@@ -48,106 +48,12 @@ function next_w!(I, p, u, v, alpha)
 	return u, v
 end
 
-function verfahren_grad(s, u, v, steps=1)
-	norm_s		= L2norm(s)
-	s0			= s[:,:,1]
-
-	H1_err		= H1_norm_w( u, v )
-
-	@time I		= transport(s0, u, v, T-1)
-	@time p		= ruecktransport( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
-	L2_err, _	= sample_err(I,s,norm_s)
-
-	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
-		 "\nnorm_s", norm_s,
-		 "\ninitial L2_err", L2_err)
-
-	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-
-	@show H1_J_w			= H1_norm_grd(grd_u_J, grd_v_J)
-
-	@show J		= (L2_err + H1_err)/2
-	@show J0	= J
-	@show H0	= H1_err
-	@show L0	= L2_err
-
-	# Armijo-Schrittweite
-	armijo_exp	= 0
-
-	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
-		while (armijo_exp < armijo_maxtry)
-			t 					= armijo_bas^armijo_exp
-
-			u_next				= u - t*grd_u_J
-			v_next				= v - t*grd_v_J
-
-			H1_err_next			= H1_norm_w(u_next, v_next)
-
-			@time I_next		= transport( s0, u_next, v_next, T-1 )
-			L2_err_next, _		= sample_err(I_next,s,norm_s)
-
-			J_next				= (L2_err_next + H1_err_next)/2 
-
-			echo("\nstep", steps, armijo_exp,"test armijo step length ", t, 
-				 "\nL2errors ",   L2_err, L2_err_next, L2_err-L2_err_next, 
-				 "\nH1_errors",   H1_err, H1_err_next, H1_err-H1_err_next,
-				 "\nJ        ",   J, J_next,J-J_next,"\n")
-
-			if J_next < (J - armijo_sig * t *H1_J_w)
-				I					= I_next
-				u					= u_next
-				v					= v_next
-
-				H1_err				= H1_err_next
-				L2_err				= L2_err_next
-
-				@time p					= ruecktransport(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
-				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
-				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
-
-				J					= (L2_err + H1_err)/2
-
-				armijo_exp = 0
-				echo("\n****** NEW GRADIENT *****\n", 
-					 "max abs grd_u_J", maximum(abs(grd_u_J)),
-					 "max abs grd_v_J", maximum(abs(grd_v_J)), "\n",
-					 "H1_J_w", H1_J_w, "\n")
-				break 
-			end
-			
-			armijo_exp += 1
-		end
-
-		if (save_every > 0) && (steps % save_every == 0)
-			save_jld(steps, dx, dt, alpha, beta, s, I, p, u, v, grd_u_J, grd_v_J)
-		end
-
-		steps +=1
-	end
-
-	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
-end
-
-function verfahren_grad_altnormalization(s, u, v, steps=1)
+function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	_norm_s		= L2norm(s)
 # hier wird das Eingabebild 'normiert'
 # 	s/=sqrt(_norm_s)
 	s0			= s[:,:,1]
-	
-
-# 	norm_s		= _norm_s
-# 	norm_s		= 10.0
-# 	norm_s		= 2.0
-	norm_s		= 1.0
-
-
-	#AHA, die Differenz mach einen Faktor 10 Unterschied in der Qualitaet der Loesung!
-	# bei alpha = 0.0001 und der 5er quadratsequenz
-# 	norm_s		= 0.5556353538255331
-# 	norm_s		= 0.555
-# 	norm_s		= 0.55
-
-# 	norm_s		= 0.1
+	norm_s		= normierung
 
 	H1_err		= H1_norm_w( u, v )
 

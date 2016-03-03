@@ -103,7 +103,7 @@ function sample_err_l2(I, s, norm_s)
 end
 
 function meansquare(K)
-	m,n,T	= size(K)
+	m,n	= size(K)
 	return sum(K.*K)/m/n
 end
 

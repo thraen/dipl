@@ -148,15 +148,23 @@ function make_output_dir(dir)
 	run(`sh -c "git log -1 > $dir/this_git_commit"`) 
 end
 
+function tabularline(l)
+	lstr	=  string(l[1])
+	for c in l[2:end]
+		lstr *= " & $c"
+	end
+	return lstr *"\\\\\n"
+end
+
+# function tabularline(l)
+# 	lstr	=  string(l[1])
+# 	for c in l[2:end]
+# 		lstr *= " & $c"
+# 	end
+# 	return lstr *"\\\\\n"
+# end
 
 function latextable_normal(caption, label, headl, lines...)
-	function tabularline(l)
-		lstr	=  string(l[1])
-		for c in l[2:end]
-			lstr *= " & $c"
-		end
-		return lstr *"\\\\\n"
-	end
 	tblhead		= "\\begin{table}[h]\n"
 	captions	= "\\caption{$(caption)}\n"
 	labels		= "\\label{table:$(label)}\n"
@@ -267,9 +275,13 @@ function save_demo_taxi()
 end
 
 function demo_table(capt, label)
-	head	= ["\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|\$", "\$\\sum \\|V-I\\|_{\\inf}\$", "PNSR(V-I)"]
-	res		= [L2_err, L2norm(vorgabe_fehler), l_inf(vorgabe_fehler), psnr(vorgabe_fehler)]
+	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "\$\\sum \\|V-I\\|_2^2\$", "Reg.-Fehler"]
+	bet		= (time_regularization == false) ? 0 : beta
+	res		= [alpha, beta, L2_err, L2norm(vorgabe_fehler), H1_err]
 	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
+
+	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
+	to_file(rootdir*"line_"*"errors"*".tex", tabularline(res))
 end
 
 function cmaptest(what, cmp)
