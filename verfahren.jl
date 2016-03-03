@@ -49,23 +49,19 @@ function next_w!(I, p, u, v, alpha)
 end
 
 function verfahren_grad(s, u, v, steps=1, normierung=1.0)
-	_norm_s		= L2norm(s)
 	s0			= s[:,:,1]
 	norm_s		= normierung
 
 	H1_err		= H1_norm_w( u, v )
 
 	I	= zeros(m,n,T)
-	for t = 1:T
-		I[:,:,t] = s0
-	end
+	for t = 1:T I[:,:,t] = s0 end
 
 	@time I		= transport!(I, u, v, T-1)
 	@time p		= ruecktransport!( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
-		 "\n_norm_s", _norm_s,
 		 "\ninitial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
