@@ -6,17 +6,8 @@ armijo_bas			= 0.9
 armijo_sig			= 0
 armijo_maxtry		= 80
 
-# @everywhere const alpha	= 0.02  #gar nicht schlecht
-# @everywhere const beta	= 0.02
-
-@everywhere const alpha	= 0.01
-@everywhere const beta	= 0.01
-
-# @everywhere const alpha	= 0.001 #ganz ok
-# @everywhere const beta	= 0.001
-
-# @everywhere const alpha	= 0.0001 #best!
-# @everywhere const beta	= 0.0001
+@everywhere const alpha	= 0.5
+@everywhere const beta	= 0.5
 
 # maxsteps 			= 1
 maxsteps 			= 100000
@@ -72,16 +63,16 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/demo/exp_rot_disc/new/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 echo=_echolog
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
+@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 # @load "$(rootdir)res.jld"
 
 echo("==============")
-echo("Gradnorm", H1_J_w)
-echo("L2err", L2_err)
+echo("Gradnorm", H1_J_ws[end])
+echo("L2err", L2_errs[end])
 echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
 echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
 

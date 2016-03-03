@@ -134,10 +134,6 @@ function extract_convergence_history()
 	run( `sh -c "grep H1_J_  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/H1hist"`)
 	run( `sh -c "grep L2err  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/L2hist"`)
 	run( `sh -c "grep 'J\s'  $(rootdir)/log | awk '{print \$2}' |uniq > $rootdir/Jhist"`)
-
-# 	L2hist	= readdlm("$rootdir/L2hist")
-# 	H1hist	= readdlm("$rootdir/H1hist")
-# 	Jhist	= readdlm("$rootdir/Jhist")
 	return L2hist, H1hist, Jhist
 end
 # L2hist, H1hist, Jhist = extract_convergence_history()
@@ -155,14 +151,6 @@ function tabularline(l)
 	end
 	return lstr *"\\\\\n"
 end
-
-# function tabularline(l)
-# 	lstr	=  string(l[1])
-# 	for c in l[2:end]
-# 		lstr *= " & $c"
-# 	end
-# 	return lstr *"\\\\\n"
-# end
 
 function latextable_normal(caption, label, headl, lines...)
 	tblhead		= "\\begin{table}[h]\n"
@@ -238,7 +226,6 @@ function save_demo_rot_disc()
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 	auswahl = [vorgabe_frames]
-# 	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
@@ -267,7 +254,6 @@ function save_demo_taxi()
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 	auswahl = [vorgabe_frames]
-# 	auswahl =[1, floor(T/4), floor(T/2), floor(3*T/4), T]
 	save_auswahl_taxi(I, "I", auswahl, rootdir, ".png", 100)
 	save_auswahl_taxi(I, "I", auswahl, rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
@@ -278,7 +264,7 @@ function demo_table(capt, label)
 # 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "Reg.-Fehler", "\$\\sum \\|V-I\\|_2^2\$"]
 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\e_{L^2}(I,s)\$", "\$\\e_{reg_x}(w)\$", "\$\\e_{reg_t}(w)\$", "\$\\e_{L^2}(I,V)\$"]
 	bet		= (time_regularization == false) ? 0 : beta
-	res		= [alpha, bet, L2_err, H1_norm_w_noweight_space(u,v), H1_norm_w_noweight_time(u,v), L2norm(vorgabe_fehler)]
+	res		= [alpha, bet, L2_errs[end], H1_norm_w_noweight_space(u,v), H1_norm_w_noweight_time(u,v), L2norm(vorgabe_fehler)]
 	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
@@ -293,7 +279,6 @@ function cmaptest(what, cmp)
 	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
 	ax[:view_init](azim=-30, elev=55)
 end
-
 
 # pygui(true)
 # cmaptest(I, "gray_r") #super scheisse
@@ -313,10 +298,10 @@ function save_endergebnis(dir)
 				"I", I, 
 				"u", u,
 				"v", v, 
-				"L2_err", L2_err,
-				"H1_err", H1_err,
-				"J", J,
-				"H1_J_w", H1_J_w
+				"L2_errs", L2_errs,
+				"H1_errs", H1_errs,
+				"Js", Js,
+				"H1_J_ws", H1_J_ws
 				)
 	catch e
 		warn("ERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)

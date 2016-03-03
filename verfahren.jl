@@ -53,6 +53,7 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	norm_s		= normierung
 
 	H1_err		= H1_norm_w( u, v )
+	H1_errs		= [H1_err]
 
 	I	= zeros(m,n,T)
 	for t = 1:T I[:,:,t] = s0 end
@@ -60,18 +61,18 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	@time I		= transport!(I, u, v, T-1)
 	@time p		= ruecktransport!( s, I, -u, -v, n_samples, n_zwischensamples, norm_s )
 	L2_err, _	= sample_err(I,s,norm_s)
+	L2_errs		= [L2_err]
 
 	echo("START $n x $m x $T ($n_samples samples x $n_zwischensamples zwischsamples), dx = $dx, dt=$dt, alpha=$alpha, beta=$beta",
 		 "\ninitial L2_err", L2_err)
 
 	@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 
-	@show H1_J_w			= H1_norm_grd(grd_u_J, grd_v_J)
+	@show H1_J_w= H1_norm_grd(grd_u_J, grd_v_J)
+	H1_J_ws	= [H1_J_w]
 
-	@show J		= (L2_err + H1_err)/2
-	@show J0	= J
-	@show H0	= H1_err
-	@show L0	= L2_err
+	J		= (L2_err + H1_err)/2
+	Js		= [J]
 
 	# Armijo-Schrittweite
 	armijo_exp	= 0
@@ -105,13 +106,17 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 				v					= v_next
 
 				H1_err				= H1_err_next
+				push!(H1_errs, H1_err)
 				L2_err				= L2_err_next
+				push!(L2_errs, L2_err)
 
 				@time p					= ruecktransport!(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
 				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
+				push!(H1_J_ws, H1_J_w)
 
 				J					= (L2_err + H1_err)/2
+				push!(Js, J)
 
 				armijo_exp = 0
 				echo("\n****** NEW GRADIENT *****\n", 
@@ -131,5 +136,5 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 		steps +=1
 	end
 
-	return I, u, v, p, L2_err, H1_err, J, H1_J_w, steps
+	return I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps
 end
