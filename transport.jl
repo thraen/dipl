@@ -1,3 +1,4 @@
+using Interpolations
 @everywhere const r			= dt/dx # thr marcel hat hier nur /dx
 
 @everywhere @inline function fluss_lxw1( a, u, v )

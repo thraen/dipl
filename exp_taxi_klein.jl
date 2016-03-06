@@ -13,7 +13,7 @@ maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+@everywhere time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 @everywhere velocities_at		= "centers"
 @everywhere interpolate_w_time	= true
@@ -101,7 +101,6 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 for l=1:T_vorgabe
 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
 end
-
 
 demo_table("demoTaxi", "demo_taxi")
 save_demo_taxi()

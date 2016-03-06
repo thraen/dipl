@@ -253,7 +253,7 @@ function save_demo_taxi()
 	save_displacement(rootdir, ".eps", 1200)
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-	auswahl = [vorgabe_frames]
+	auswahl = collect(vorgabe_frames)
 	save_auswahl_taxi(I, "I", auswahl, rootdir, ".png", 100)
 	save_auswahl_taxi(I, "I", auswahl, rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
