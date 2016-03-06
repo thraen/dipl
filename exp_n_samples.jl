@@ -23,15 +23,10 @@ time_regularization	= false  # geht nicht mit velocities_at interfaces
 velocities_at		= "centers"
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
-
-grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
-
+grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
 project_divfree		= false # betrifft nur velocities_at = "interfaces"
-
 poisson_solver		= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-Faktorisierung fuer die interfaces und LU-Faktorisierung fuer center
-
 stokes_solver		= "lufact"#fur gegebene Probleme am besten
-
 timereg_solver		= "multig"#fur gegebene Probleme am besten
 @everywhere const mg_tol = 1e-1 
 

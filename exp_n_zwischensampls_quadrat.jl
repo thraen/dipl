@@ -37,19 +37,15 @@ transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
 
-grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
-
+grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
 project_divfree		= false # betrifft nur velocities_at = "interfaces"
-
 #thr diese Optionen funktionieren nicht alle und die meisten sind sowieso unsinnvoll.
 #poisson_solver	= "multig"  #geht nicht parallel
 #poisson_solver	= "gmres"	#ungenau
 poisson_solver	= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-Faktorisierung fuer die interfaces und LU-Faktorisierung fuer center
-
 #stokes_solver	= "multig"	#schlecht geeignet, langsam
 #stokes_solver	= "gmres"	#ungenau
 stokes_solver	= "lufact"#fur gegebene Probleme am besten
-
 timereg_solver	= "multig"#fur gegebene Probleme am besten
 #timereg_solver	= "gmres"	#ungenau
 #timereg_solver	= "lufact"	#nur fuer sehr kleine Probleme benutzbar

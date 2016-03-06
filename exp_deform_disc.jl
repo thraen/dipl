@@ -19,7 +19,7 @@ save_every			= 0
 @everywhere interpolate_w_time	= true
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
-grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
+grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
 project_divfree		= false # betrifft nur velocities_at = "interfaces"
 poisson_solver		= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-Faktorisierung fuer die interfaces und LU-Faktorisierung fuer center
 stokes_solver		= "lufact"#fur gegebene Probleme am besten

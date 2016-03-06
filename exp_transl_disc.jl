@@ -44,7 +44,7 @@ transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
 
-grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
+grad_parallel		= true # betrifft nur die Verfahren ohne Zeitregularisierung
 
 project_divfree		= false # betrifft nur velocities_at = "interfaces"
 
