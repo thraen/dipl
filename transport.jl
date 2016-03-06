@@ -48,6 +48,17 @@ end
 	return 	  anteil_hig
 end
 
+@everywhere macro interpolate_w_time_center_fw(uv)
+	ohne =  quote
+		$(uv)[i,j,t]
+	end
+	mit =  quote
+		$(uv)[i,j,t+0.5]
+	end
+	return interpolate_w_time ? mit : ohne
+end
+
+
 
 @everywhere function range_part_x(I::SharedArray)
     idx = indexpids(I)
@@ -72,11 +83,11 @@ end
     return 3:size(I,1)-2, splits[idx]+1:splits[idx+1]
 end
 
-include("transport_fw_test.jl")  #THR! MACH DAS WIEDER WEG!
-include("transport_bw_test.jl") 
+# include("transport_fw_test.jl")  #THR! MACH DAS WIEDER WEG!
+# include("transport_bw_test.jl") 
 
-# include("transport_fw.jl")
-# include("transport_bw.jl")
+include("transport_fw.jl")
+include("transport_bw.jl")
 
 velocities_at == "centers" && begin
 	@everywhere procchunk_x_fw!	= procchunk_x_fw_center!
@@ -84,10 +95,6 @@ velocities_at == "centers" && begin
 	# hier wird nur Upwind gemacht
 	@everywhere procchunk_x_fw_innerer_rand_LR!	= procchunk_x_fw_center_innerer_rand_LR!
 	@everywhere procchunk_y_fw_innerer_rand_OU!	= procchunk_y_fw_center_innerer_rand_OU!
-
-	# am Rand machen wir gar nichts, weil u da sowieso null ist.
-	# 	@everywhere procchunk_x_fw_rand_LR!	= procchunk_x_fw_center_rand_LR!
-	# 	@everywhere procchunk_x_fw_rand_OU!	= procchunk_x_fw_center_rand_OU!
 
 	@everywhere procchunk_x_bw!	= procchunk_x_bw_center!
 	@everywhere procchunk_y_bw!	= procchunk_y_bw_center!
@@ -98,8 +105,13 @@ end
 velocities_at == "interfaces" && begin
 	@everywhere procchunk_x_fw!	= procchunk_x_fw_interf!
 	@everywhere procchunk_y_fw!	= procchunk_y_fw_interf!
+	@everywhere procchunk_x_fw_innerer_rand_LR!	= procchunk_x_fw_interf_innerer_rand_LR!
+	@everywhere procchunk_y_fw_innerer_rand_OU!	= procchunk_y_fw_interf_innerer_rand_OU!
+
 	@everywhere procchunk_x_bw!	= procchunk_x_bw_interf!
 	@everywhere procchunk_y_bw!	= procchunk_y_bw_interf!
+	@everywhere procchunk_x_bw_innerer_rand_LR!	= procchunk_x_bw_interf_innerer_rand_LR!
+	@everywhere procchunk_y_bw_innerer_rand_OU!	= procchunk_y_bw_interf_innerer_rand_OU!
 end
 
 transport_parallel || begin

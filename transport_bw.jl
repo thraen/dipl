@@ -5,9 +5,6 @@ include("transport_rand_bw.jl")
 		for i = irange
 			@inbounds uxph	= (u[i,j,t-1] + u[i,j+1,t-1])/2
 			@inbounds uxmh	= (u[i,j,t-1] + u[i,j-1,t-1])/2
-			#hmmmmmmmmmm. die Fluesse sollten doch in Upwindrichtung berechnet werden, oder?
-			#hhhhmmmm. das hier ist nur die upwindrichtung wenn u>0?
-			# passt upwind steckt in fluss_lim_kons
 			@inbounds anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
 			@inbounds ph[i,j] = p[i,j,t] - r* anteilx
 		end
@@ -53,41 +50,21 @@ end
 	#end
 end
 
-function ruecktransport_ser(s, I, u, v, n_samp, n_zsamp, norm_s)
-	m, n, T = size(I)
-	p		= zeros(m,n,T)
-	ph		= zeros(m,n)
-	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
-	sk		= 0
-	for t = T:-1:2
-		# thr!!! rechter oder linker grenzwert zum diracterm?
-		if mod(t-1, n_zsamp+1) == 0 then
-# 			echo("am sample        ", t, "->", t-1, n_samp-sk)
-			err			= I[:, :, t] - s[:, :, n_samp-sk] 
-			p[:,:,t] 	= p[:,:,t] - err/norm_s
-			sk 			+= 1
-		else
-# 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
-		end
-# 		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
-# 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
-
-		procchunk_x_bw!(p, ph, u, t, 1:m, 3:n-2 )
-# 		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
-# 
-		procchunk_y_bw!(p, ph, v, t, 3:m-2, 1:n )
-# 		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
-	end
-
-	return p
-end
-
 function ruecktransport_ser!(s, I, u, v, n_samp, n_zsamp, norm_s)
 	m, n, T = size(I)
 	p		= zeros(m,n,T)
 	ph		= zeros(m,n)
 	println("==============Ruecktransport============$n x $m x $n_samples $n_zwischensamples, $T")
 	sk		= 0
+
+	uip = u
+	vip = v
+# 	uip = interpolate(u, (BSpline(Linear()), BSpline(Linear()), BSpline(Linear())), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+# 	vip = interpolate(v, (BSpline(Linear()), BSpline(Linear()), BSpline(Linear())), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+
+# 	uip = interpolate(u, (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+# 	vip = interpolate(v, (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+
 	for t = T:-1:2
 		# thr!!! rechter oder linker grenzwert zum diracterm?
 		if mod(t-1, n_zsamp+1) == 0 then
@@ -99,18 +76,18 @@ function ruecktransport_ser!(s, I, u, v, n_samp, n_zsamp, norm_s)
 		else
 # 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
 		end
-# 		procchunk_x_bw!(p, ph, u, t, 3:m-2, 3:n-2 )
-# 		procchunk_y_bw!(p, ph, v, t, 3:m-2, 3:n-2 )
+# 		procchunk_x_bw!(p, ph, uip, t, 3:m-2, 3:n-2 )
+# 		procchunk_y_bw!(p, ph, vip, t, 3:m-2, 3:n-2 )
 
-		procchunk_x_bw!(p, ph, u, t, 1:m, 3:n-2 )
-		procchunk_x_bw_innerer_rand_LR!(p, ph, u, t, 1:m, [2,n-1])
+		procchunk_x_bw!(p, ph, uip, t, 1:m, 3:n-2 )
+		procchunk_x_bw_innerer_rand_LR!(p, ph, uip, t, 1:m, [2,n-1])
 
-		procchunk_y_bw!(p, ph, v, t, 3:m-2, 1:n )
-		procchunk_y_bw_innerer_rand_OU!(p, ph, v, t, [2,m-1], 1:n)
+		procchunk_y_bw!(p, ph, vip, t, 3:m-2, 1:n )
+		procchunk_y_bw_innerer_rand_OU!(p, ph, vip, t, [2,m-1], 1:n)
 	end
 	return p
 end
 
 
 #thr!
-ruecktransport_par = ruecktransport_ser
+ruecktransport_par! = ruecktransport_ser!

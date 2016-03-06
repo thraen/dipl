@@ -69,6 +69,7 @@ make_output_dir(rootdir)
 echo=_echolog
 @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 # @load "$(rootdir)res.jld"
+save_endergebnis(rootdir)
 
 echo("==============")
 echo("Gradnorm", H1_J_ws[end])
@@ -87,7 +88,6 @@ end
 
 save_demo_rot_disc()
 
-save_endergebnis(rootdir)
 
 demo_table("demoRotDisc", "demo_rot_disc")
 

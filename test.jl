@@ -9,31 +9,8 @@ armijo_maxtry		= 100
 @everywhere const alpha	= 0.9 
 @everywhere const beta	= 0.9
 
-# @everywhere const alpha	= 0.05
-# @everywhere const beta	= 0.05
-
-# @everywhere const alpha	= 0.005
-# @everywhere const beta	= 0.005
-
-# @everywhere const alpha	= 0.000005
-# @everywhere const beta	= 0.000005
-
-# @everywhere const alpha	= 0.0001006
-# @everywhere const beta	= 0.0001006
- 
-# @everywhere const alpha	= 0.0001 #* 0.5556353538255331
-# @everywhere const beta	= 0.0001
-
-# @everywhere const alpha	= 0.00005 
-# @everywhere const beta	= 0.00005 
-
-# @everywhere const alpha	= 0.0001 * 0.5556353538255331
-
-# @everywhere const alpha	= 0.00005
-# @everywhere const beta	= 0.00005
-
-# maxsteps 			= 3
-maxsteps 			= 100000
+maxsteps 			= 10
+# maxsteps 			= 100000
 
 save_every			= 0
 
@@ -42,7 +19,8 @@ time_regularization	= false  # geht nicht mit velocities_at interfaces
 velocities_at		= "interfaces"
 # velocities_at		= "centers"
 
-transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
+transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
+@everywhere interpolate_w_time	= true
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
@@ -75,20 +53,8 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-# @everywhere const m					= 20
-# @everywhere const n					= 20
-
-# @everywhere const m					= 60
-# @everywhere const n					= 60
-
-@everywhere const m					= 100 
-@everywhere const n					= 100
-
-# @everywhere const m					= 140
-# @everywhere const n					= 140
-
-# @everywhere const m					= 200
-# @everywhere const n					= 200
+@everywhere const m					= 60 
+@everywhere const n					= 60
 
 include("beispiele.jl")
 
@@ -143,7 +109,7 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
 make_output_dir(rootdir)
 
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, 1, 1.0)
+@time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
@@ -151,7 +117,7 @@ vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
-echo("Gradnorm", H1_J_w)
+echo("Gradnorm", H1_J_ws[end])
 
 _="fertig"
 pygui(true)

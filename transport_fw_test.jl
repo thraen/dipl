@@ -21,7 +21,7 @@ end
 			#@inbounds uxph	= u[i,j,t] 
 			#@inbounds uxmh	= u[i,j-1,t]
 
-			#das einzige, was ein bisschen was bring mit cubic interpolation
+			#das einzige, was ein bisschen was bring mit kubischer interpolation
 			uxph	= u[i,j-0.5,t]
 			uxmh	= u[i,j-0.5,t]
 			
@@ -38,10 +38,6 @@ end
 
 
 			@inbounds Ih[i,j] = I[i,j,t] - r* anteil_low - r*(anteil_higph - anteil_higmh)
-
-# 			u_	= u[i,j-0.5,t]
-# 			@inbounds anteilx = (u_ >= 0) 	? fluss_lim1( u_, I[i,j-1,t], I[i,j,t], I[i,j+1,t] ) - fluss_lim1(  u_, I[i,j-2,t], I[i,j-1,t], I[i,j,t] ) : fluss_lim1( -u_, I[i,j+1,t], I[i,j,t], I[i,j-1,t] ) - fluss_lim1( -u_, I[i,j+2,t], I[i,j+1,t], I[i,j,t] ) 
-# 			@inbounds Ih[i,j] = I[i,j,t] - r* (anteilx)
 		end
 	end
 	#end
@@ -53,7 +49,6 @@ end
 		for i = irange
 			#@inbounds vyph	= v[i,j,t]
 			#@inbounds vymh	= v[i-1,j,t]
-
 			@inbounds vyph	= v[i-0.5,j,t]
 			@inbounds vymh	= v[i-0.5,j,t]
 
@@ -69,10 +64,6 @@ end
 			@inbounds anteil_higph	= limited_hot( vyph, Ih[i-1,j], Ih[i,j], Ih[i+1,j], Ih[i+2,j] )
 
 			@inbounds I[i,j,t+1] = Ih[i,j] - r* anteil_low - r*(anteil_higph - anteil_higmh)
-
-# 			v_	= v[i-0.5,j,t]
-# 			@inbounds anteily = (v_ >= 0) 	? fluss_lim1(  v_, Ih[i-1,j], Ih[i,j], Ih[i+1,j] ) - fluss_lim1(  v_, Ih[i-2,j], Ih[i-1,j], Ih[i,j] ) : fluss_lim1( -v_, Ih[i+1,j], Ih[i,j], Ih[i-1,j] ) - fluss_lim1( -v_, Ih[i+2,j], Ih[i+1,j], Ih[i,j] ) 
-# 			@inbounds I[i,j,t+1] = Ih[i,j] - r* (anteily)
 		end
 	end
 	#end

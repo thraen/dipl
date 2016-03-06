@@ -8,9 +8,6 @@ include("transport_rand_bw.jl")
 
 			@inbounds uxph	= u[i,j+0.5,t-1]
 			@inbounds uxmh	= u[i,j-0.5,t-1] 
-			#hmmmmmmmmmm. die Fluesse sollten doch in Upwindrichtung berechnet werden, oder?
-			#hhhhmmmm. das hier ist nur die upwindrichtung wenn u>0?
-			# passt upwind steckt in fluss_lim_kons
 			@inbounds anteilx = fluss_lim_kons( uxph, p[i,j-1,t], p[i,j,t], p[i,j+1,t], p[i,j+2,t]) - fluss_lim_kons( uxmh, p[i,j-2,t], p[i,j-1,t], p[i,j,t], p[i,j+1,t])
 			@inbounds ph[i,j] = p[i,j,t] - r* anteilx
 		end

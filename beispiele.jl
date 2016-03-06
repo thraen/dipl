@@ -64,9 +64,43 @@ function scale_circle(m,n,T)
 end
 
 # A= [1 0; 0 1]
-A= [1.2 0; 0.2 0.8]
+bla=0.04
+A= [1 + bla 0; bla 1-bla]
+# A= [1  0; 0 2]
 
-function deform_circle(m,n,T) 
+
+function deform_(x,y)
+	a= 0.002
+	b=-0.004
+	x-b*y^2, y+a*x^2
+end
+
+function deform(x,y)
+# 	println(x, ' ', y)
+# 	x, (y)/(1+(0.001*(x)^2))
+	x*0.95, (y)/(1+(0.003*(x)))
+# 	x, 0.9*y
+end
+
+function deform_circle_nonlin(m,n,T) 
+	w=1
+	sc		= 0.1
+	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m*2
+	r		= (1/10)*m*2
+	fun = function(y,x,t)
+		x=x-n/2
+		y=y-m/2
+		for t_ = 1:t
+			x,y = deform(x,y)
+		end
+# 		return char_slotted_circle_param(y-m/2, x-n/2, 0, 0, r,slotd,slotw)
+		return char_slotted_circle_param(y, x, 0, 0, r,slotd,slotw)
+	end
+	return fun
+end
+
+function deform_circle_lin(m,n,T) 
 	w=1
 	sc		= 0.1
 	slotd	= -0.05*m*2 #ich setze ein quadratisches Omega voraus
@@ -75,6 +109,7 @@ function deform_circle(m,n,T)
 	fun = function(y,x,t)
 # 		rxy = dings(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
 		rxy = A^t*[x-n/2;y-m/2]
+# 		rxy = deform(x-n/2,y-m/2)
 		return char_slotted_circle_param(rxy[2], rxy[1], 0, 0, r,slotd,slotw)
 	end
 	return fun
