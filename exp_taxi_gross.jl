@@ -11,7 +11,7 @@ armijo_maxtry		= 80
 
 maxsteps 			= 100000
 
-save_every			= 0
+save_every			= 750
 
 @everywhere time_regularization	= false  # geht nicht mit velocities_at interfaces
 
@@ -31,20 +31,16 @@ timereg_solver		= "multig"#fur gegebene Probleme am besten
 
 include("view.jl")
 
-@everywhere const m					= 100
-@everywhere const n					= 100
-
-# #mit padding
-# @everywhere const m					= 124
-# @everywhere const n					= 124
+@everywhere const m					= 190
+@everywhere const n					= 256
 
 include("beispiele.jl")
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples				= 2
+@everywhere const n_samples				= 5
 
-@everywhere const auslassen				= 6 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 5 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 2 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
 
@@ -53,17 +49,8 @@ include("beispiele.jl")
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-tcx, tcy	= 115, 110
-I_vorgabe   = readtaxi_alt()[tcy-49:tcy+50, tcx-49:tcx+50, 1:T_vorgabe]
-I_vorgabe	= flipy(I_vorgabe) #ohne flip 0.3907014720825837
-								# mitflip 0.39072996829119466
-
-##mit padding
-# tmp	= zeros(m,n,T_vorgabe)
-# for t=1:T_vorgabe
-# 	tmp[:,:,t]   = [zeros(12, n);[zeros(m-24,12) I_vorgabe[:,:,t] zeros(m-24,12)]; zeros(12,n)]
-# end
-# I_vorgabe	= tmp
+I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
+# I_vorgabe	= flipy(I_vorgabe) 
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -78,7 +65,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/demo/exp_taxi_klein/new/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/demo/exp_taxi_gross/new/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 steps=1
@@ -87,7 +74,7 @@ echo=_echolog
 @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 save_endergebnis(rootdir)
 
-# # Differenz zur Vorgabe
+# Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 echo("==============")
