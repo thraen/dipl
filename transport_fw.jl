@@ -95,13 +95,13 @@ include("transport_rand_fw.jl")
 
 #instabil
 # Rand ist hier nicht implementiert
-function transport_par(I0, u, v, schritte)
+# geht nicht mehr.
+function transport_par!(I, u, v, schritte)
 	@time begin
-	m, n	= size(I0)
-	I		= SharedArray(Float64, (m,n,schritte+1))
-	I[:,:,1]= I0
-	Ih		= SharedArray(Float64, (m,n))
-
+	m, n, T	= size(I)
+	I		= convert(SharedArray{Float64}, I)
+	Ih		= I[:,:,1]
+	Ih		= convert(SharedArray{Float64}, Ih)
 	u = convert(SharedArray{Float64}, u)
 	v = convert(SharedArray{Float64}, v)
 	end

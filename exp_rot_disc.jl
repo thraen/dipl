@@ -16,6 +16,7 @@ save_every			= 0
 
 @everywhere time_regularization	= false  # geht nicht mit velocities_at interfaces
 @everywhere velocities_at		= "centers"
+@everywhere interpolate_w_time	= true
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 grad_parallel		= false # betrifft nur die Verfahren ohne Zeitregularisierung
