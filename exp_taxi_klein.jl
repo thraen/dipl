@@ -107,4 +107,3 @@ demo_table("demoTaxi", "demo_taxi")
 save_demo_taxi()
 
 _="fertig"
-pygui(true)

@@ -91,6 +91,5 @@ save_demo_rot_disc()
 save_all()
 
 demo_table("demoRotDisc", "demo_rot_disc")
-pygui(true)
 
 _="fertig"
