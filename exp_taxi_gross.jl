@@ -2,8 +2,8 @@
 # armijo_sig			= 0.0
 # armijo_maxtry		= 40
 
-armijo_bas			= 0.60 #thr anders
-armijo_sig			= 0.5
+armijo_bas			= 0.80 #thr anders
+armijo_sig			= 0.0
 armijo_maxtry		= 80
 
 @everywhere const alpha	= 0.001
@@ -72,13 +72,6 @@ steps=1
 
 echo=_echolog
 @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
-armijo_sig			= 0.3
-echo("neue Armijo-Strategie")
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, steps, 1.0)
-armijo_bas			= 0.80 #thr anders
-armijo_sig			= 0.0
-echo("neue Armijo-Strategie")
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, steps, 1.0)
 save_endergebnis(rootdir)
 
 # Differenz zur Vorgabe
