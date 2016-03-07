@@ -2,21 +2,21 @@
 # armijo_sig			= 0.0
 # armijo_maxtry		= 40
 
-armijo_bas			= 0.9
+armijo_bas			= 0.60 #thr anders
 armijo_sig			= 0.0
-armijo_maxtry		= 80
+armijo_maxtry		= 70
 
 @everywhere const alpha	= 0.01
 @everywhere const beta	= 0.01
 
 maxsteps 			= 100000
 
-save_every			= 750
+save_every			= 400
 
 @everywhere time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 @everywhere velocities_at		= "centers"
-@everywhere interpolate_w_time	= true
+@everywhere interpolate_w_time	= false #thr anders, das ist zu langsam
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 grad_parallel		= true  # betrifft nur die Verfahren ohne Zeitregularisierung

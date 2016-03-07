@@ -125,13 +125,26 @@ function transport_par!(I, u, v, schritte)
 	return I
 end
 
+macro define_interpolation(uv)
+	mit		= quote
+		interpolate($(uv), (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+	end
+	ohne	= quote
+		$(uv)
+	end
+	return interpolate_w_time ? mit : ohne
+end
+
 function transport_ser!(I, u, v, schritte)
 	m, n, T	= size(I)
 	Ih		= I[:,:,1] #half step buffer for dimension splitting
 	println("==============Transport=================$n x $m x $T parallel=$(transport_parallel)")
 
-	uip = interpolate(u, (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
-	vip = interpolate(v, (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
+	# uip = interpolate(u, (bspline(cubic(flat())), bspline(cubic(flat())), bspline(cubic(flat()))), ongrid()) #thr ongrid? oncell? kommt das gleiche raus
+	# vip = interpolate(v, (bspline(cubic(flat())), bspline(cubic(flat())), bspline(cubic(flat()))), ongrid()) #thr ongrid? oncell? kommt das gleiche raus
+
+	uip = @define_interpolation(u)
+	vip = @define_interpolation(v)
 
 	for t = 1:schritte
 		# procchunk_x_fw!(I, Ih, uip, t, 3:m-2, 3:n-2 )
