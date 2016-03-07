@@ -83,9 +83,10 @@ make_output_dir(rootdir)
 
 steps=1
 
-echo=_echolog
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
-save_endergebnis(rootdir)
+#echo=_echolog
+#@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
+#save_endergebnis(rootdir)
+@load(rootdir*"res.jld")
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)

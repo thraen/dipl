@@ -59,11 +59,11 @@ function H1_norm_grd_timereg(u,v)
 end
 
 function H1_norm_w_noweight_space(u,v)
-	return dx*dx* (u[:]'*Sreg*u[:] + v_[:]'*Sreg*v[:])
+	return dx*dx* (u[:]'*Sreg*u[:] + v[:]'*Sreg*v[:])
 end
 
 function H1_norm_w_noweight_time(u,v)
-	return dx*dx* (u[:]'*Treg*u[:] + v_[:]'*Treg*v[:])
+	return dx*dx* (u[:]'*Treg*u[:] + v[:]'*Treg*v[:])
 end
 
 H1_norm_w   = H1_norm_w_timereg

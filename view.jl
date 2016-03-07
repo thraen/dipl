@@ -264,7 +264,7 @@ function demo_table(capt, label)
 # 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "Reg.-Fehler", "\$\\sum \\|V-I\\|_2^2\$"]
 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\e_{L^2}(I,s)\$", "\$\\e_{reg_x}(w)\$", "\$\\e_{reg_t}(w)\$", "\$\\e_{L^2}(I,V)\$"]
 	bet		= (time_regularization == false) ? 0 : beta
-	res		= [alpha, bet, L2_errs[end], H1_norm_w_noweight_space(u,v), H1_norm_w_noweight_time(u,v), L2norm(vorgabe_fehler)]
+	res		= [alpha; bet; L2_errs[end]; H1_norm_w_noweight_space(u,v); H1_norm_w_noweight_time(u,v); L2norm(vorgabe_fehler)]
 	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
