@@ -225,7 +225,7 @@ function save_demo_rot_disc()
 	save_displacement(rootdir, ".eps", 1200)
 	save_displacement(rootdir, ".png", 100)
 	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-	auswahl = [vorgabe_frames]
+	auswahl = collect(vorgabe_frames)
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
 	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
 	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
@@ -262,13 +262,33 @@ end
 
 function demo_table(capt, label)
 # 	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\sum\\|I-s\\|_2^2\$", "Reg.-Fehler", "\$\\sum \\|V-I\\|_2^2\$"]
-	head	= ["\$\\alpha\$", "\$\\beta\$", "\$\\e_{L^2}(I,s)\$", "\$\\e_{reg_x}(w)\$", "\$\\e_{reg_t}(w)\$", "\$\\e_{L^2}(I,V)\$"]
+	head	= ["\$\\alpha\$"; "\$\\beta\$"; "\$\\e_{L^2}(I,s)\$"; "\$\\e_{reg_x}(w)\$"; "\$\\e_{reg_t}(w)\$"; "\$\\e_{L^2}(I,V)\$"]
 	bet		= (time_regularization == false) ? 0 : beta
 	res		= [alpha; bet; L2_errs[end]; H1_norm_w_noweight_space(u,v); H1_norm_w_noweight_time(u,v); L2norm(vorgabe_fehler)]
 	to_file(rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
 	to_file(rootdir*"line_"*"errors"*".tex", tabularline(res))
+end
+
+function nzw_table(capt, label)
+	head	= ["\$# Zwischenbilder\$"; "\$\\e_{L^2}(I,s)\$"; "\$\\e_{reg_x}(w)\$"; "\$\\e_{L^2}(I,V)\$"]
+	res		= [n_zwischensamples; L2_errs[end]; H1_norm_w_noweight_space(u,v); L2norm(vorgabe_fehler)]
+	to_file(rootdir*"v1table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
+	to_file(rootdir*"v1head_"*"errors"*".tex", tabularline(head))
+	to_file(rootdir*"v1line_"*"errors"*".tex", tabularline(res))
+	#v2
+	head	= ["\$# dummy frames\$"; "\$\\e_{L^2}(I,s)\$"; "\$\\e_{reg_x}(w)\$"; "\$\\e_{L^2}(I,V)\$"]
+	res		= [zwischen_ausgelassen; L2_errs[end]; H1_norm_w_noweight_space(u,v); L2norm(vorgabe_fehler)]
+	to_file(rootdir*"v2table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
+	to_file(rootdir*"v2head_"*"errors"*".tex", tabularline(head))
+	to_file(rootdir*"v2line_"*"errors"*".tex", tabularline(res))
+	#v3
+	head	= ["\$# dummy frames\$";"\$# Bilder\$"; "\$\\e_{L^2}(I,s)\$"; "\$\\e_{reg_x}(w)\$"; "\$\\e_{L^2}(I,V)\$"]
+	res		= [zwischen_ausgelassen; T; L2_errs[end]; H1_norm_w_noweight_space(u,v); L2norm(vorgabe_fehler)]
+	to_file(rootdir*"v3table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
+	to_file(rootdir*"v3head_"*"errors"*".tex", tabularline(head))
+	to_file(rootdir*"v3line_"*"errors"*".tex", tabularline(res))
 end
 
 function cmaptest(what, cmp)

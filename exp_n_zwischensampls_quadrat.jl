@@ -7,27 +7,20 @@
 	s und I_vorgabe wurden nur einmal abgespeichert fuer zwischen_ausgelassen = 0
 =#
 
-# ergebnisse: zwischen_ausgelassen zu L2norm(diff_bild)
-# 0 0.002051071429918122 geht nicht, die typische CFL-Kante
-# 1 0.037483320364157524 geht tatsaechlich auch. CFL ist mindestens zwischenzeitlich verletzt
-# 2 0.014741600705809448 geht
-# 3 0.013988767632127173 geht
-# 4 0.014011044831468963 geht
-# 5 0.01822167291787852
-# 6 0.020832244878910472
-
 armijo_bas			= 0.5
 armijo_sig			= 0.0
+armijo_maxtry		= 40
 
-@everywhere const alpha	= 0.0009 
-@everywhere const beta	= 0.0009
+@everywhere const alpha	= 0.0001
+@everywhere const beta	= 0.0001
 
 # maxsteps 			= 10
 maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+time_regularization				= false  # geht nicht mit velocities_at interfaces
+@everywhere interpolate_w_time	= false
 
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
@@ -71,21 +64,15 @@ include("beispiele.jl")
 @everywhere const auslassen				= 9
 @everywhere const zwischen_ausgelassen	= 0
 
-# zwischen_auslassen soll veraendert werden und alles ab hier copy paste..
-
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
+
 @everywhere const T						= (n_samples-1)*(n_zwischensamples+1) +1
-@everywhere		  samples_to_frames		= [ (k+1, k*(n_zwischensamples+1)+1) for k in 0:n_samples-1 ]
-
-@everywhere const vorgabe_used_indices	= (1:(auslassen+1):(auslassen+1)*n_samples) 
-@everywhere const T_vorgabe				= vorgabe_used_indices[end]
-
-@everywhere		  samples_to_vorgabe	= [(k, vorgabe_used_indices[k]) for k in 1:n_samples]
-
+@everywhere const T_vorgabe				= auswahl_vorgabe(auslassen, n_samples)[end]
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
+
 I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
-s			= I_vorgabe[:,:,vorgabe_used_indices] 
+s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
 	v		= 0* ones( m, n, T-1 )
@@ -94,21 +81,18 @@ velocities_at == "interfaces" && begin
 	u		= 0* ones( m, n-1, T-1 )
 	v		= 0* ones( m-1, n, T-1 )
 end
+
 include("verfahren.jl") 
 @everywhere rootdir = "../out/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
 make_output_dir(rootdir)
-steps=1
-@time I, u, v, p, L2_err, H1_err, J, H1_J_w, steps = verfahren_grad(s, u, v, steps)
+
+@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
+# @load "$(rootdir)res.jld"
+# save_endergebnis(rootdir)
 
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
-echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
+save_demo_rot_disc()
+nzw_table("Test Anzahl Frames", "dummy")
 
-# @everywhere dpi=1200
-# @everywhere isuff=".eps"
-# save_images_(s, "s")
-# save_surfs_(I_vorgabe, "I_given")
-# save_surfs_(I,"I")
-# save_surfs_(diff_vorgabe, "diff_vorgabe")
-
-
+# pygui(true)

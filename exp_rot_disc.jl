@@ -88,8 +88,6 @@ for l=1:T_vorgabe
 end
 
 save_demo_rot_disc()
-
-
 demo_table("demoRotDisc", "demo_rot_disc")
 
 _="fertig"

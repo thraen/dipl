@@ -16,8 +16,8 @@ save_every			= 0
 
 time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-velocities_at		= "interfaces"
-# velocities_at		= "centers"
+# velocities_at		= "interfaces"
+velocities_at		= "centers"
 
 transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 @everywhere interpolate_w_time	= true
@@ -61,8 +61,8 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 4 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 7 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 6 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 

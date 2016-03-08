@@ -4,6 +4,7 @@ function save_jld(steps, dx, dt, alpha, beta, s, I, p, u, v, grd_u_J, grd_v_J)
 	try
 		info("\n zwischenspeichern\n $steps")
 		save("$(rootdir)zwischenergebnis_$steps.jld", 
+				"steps", steps,
 				"dx", dx,
 				"dt", dt,
 				"alpha", alpha,
