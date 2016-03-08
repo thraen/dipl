@@ -1,10 +1,4 @@
-#using Images
-#using ImageView
-
-#@everywhere using PyCall
-#pygui(:gtk)
-#pygui(:tk)
-
+using PyPlot
 @everywhere using PyPlot
 @everywhere pygui(false)
 

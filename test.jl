@@ -81,7 +81,7 @@ I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
-# s      = readtaxi_alt()[:,:, 1:5:end]
+# I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -94,6 +94,7 @@ s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)]
 # 		s[i,j,2]	= ((j-1)*dx >= 0.5) & ((j-1)*dx<=0.8) & (((i-1)*dx) >=0.5 )& (((i-1)*dx)<=0.8)
 # 	end
 # end
+
 
 velocities_at == "centers" && begin
 	u		= 0* ones( m, n, T-1 )
