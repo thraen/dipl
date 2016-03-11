@@ -70,7 +70,7 @@ H1_norm_w					= function (u,v) return alpha* H1_norm(u,v) end
 H1_norm_grd					= H1_norm
 
 H1_norm_w_noweight_space	= H1_norm
-H1_norm_w_noweight_time		= function(u,v) return "k.A." end
+H1_norm_w_noweight_time		= function(u,v) return "{\\text{k.A.}}" end
 
 @everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den schon Rand 0!
@@ -113,7 +113,6 @@ function grad_J(I, p, u, v)
 	@do_par_when_defined for t= 1:T-1
 		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
 	end
-
 	#clf()
 	#quiver(grd_u_J[:,:,1], grd_v_J[:,:,1])
 	#sleep(1)

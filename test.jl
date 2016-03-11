@@ -4,13 +4,13 @@
 
 armijo_bas			= 0.9
 armijo_sig			= 0
-armijo_maxtry		= 100
+armijo_maxtry		= 40
 
-@everywhere const alpha	= 0.9 
-@everywhere const beta	= 0.9
+@everywhere const alpha	= 0.001 
+@everywhere const beta	= 0.001
 
-maxsteps 			= 10
-# maxsteps 			= 100000
+# maxsteps 			= 10
+maxsteps 			= 100000
 
 save_every			= 0
 
@@ -119,6 +119,8 @@ echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_ws[end])
+
+demo_table("test", "test")
 
 _="fertig"
 pygui(true)

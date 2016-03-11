@@ -118,8 +118,6 @@ function deform_circle_lin(m,n,T)
 end
 
 
-
-
 function quadrat(y,x,t)
 	cx	= floor(n/2)
 	cy	= floor(m/2)

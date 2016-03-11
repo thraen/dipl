@@ -112,6 +112,7 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 
 				@time p					= ruecktransport!(s, I, -u, -v, n_samples, n_zwischensamples, norm_s)
 				@time grd_u_J, grd_v_J	= grad_J(I, p, u, v)
+
 				H1_J_w					= H1_norm_grd(grd_u_J, grd_v_J)
 				push!(H1_J_ws, H1_J_w)
 

@@ -73,7 +73,7 @@ H1_norm_w			= function (u,v) return alpha* H1_norm(u,v) end
 H1_norm_grd			= H1_norm
 
 H1_norm_w_noweight_space	= H1_norm
-H1_norm_w_noweight_time		= function(u,v) return "k.A." end
+H1_norm_w_noweight_time		= function(u,v) return "{\\text{k.A.}}" end
 
 project_divfree	== true && const S		= generate_stokes(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 project_divfree	== true && const SLU	= factorize(S)

@@ -263,6 +263,7 @@ function demo_table(capt, label)
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
 	to_file(rootdir*"line_"*"errors"*".tex", tabularline(res))
+	print( rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 end
 
 function nzw_table(capt, label)
