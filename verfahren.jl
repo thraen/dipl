@@ -134,10 +134,9 @@ function verfahren_grad(s, u, v, grad_bound, steps=1, normierung=1.0)
 			save_jld(steps, dx, dt, alpha, beta, s, I, p, u, v, grd_u_J, grd_v_J)
 		end
 
+		steps%50 == 0 && @everywhere gc()
+
 		steps +=1
-	end
-	if steps%25 == 0 
-		@everywhere gc()
 	end
 
 	return I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps
