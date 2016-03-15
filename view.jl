@@ -94,7 +94,7 @@ function save_all()
 	save_images_(s, "s")
 
 	save_images_(I, "I")
-# 	save_surfs_(I,"I")
+	save_surfs_(I,"I")
 
 # 	save_images_(I_vorgabe, "I_given")
 # 	save_surfs_(I_vorgabe, "I_given")
@@ -103,7 +103,7 @@ function save_all()
 # 	save_surfs_(diff_vorgabe, "diff_vorgabe")
 
 # 	save_images_(p, "p")
-# 	save_quivers_(u,v,"w")
+	save_quivers_(u,v,"w")
 # 	save_quivers_(grd_u_J, grd_v_J,"grad_J")
 end
 

@@ -65,11 +65,6 @@ function scale_circle(m,n,T)
 	return (y,x,t) -> char_slotted_circle_param(y*sc*t, x*sc*t, m/2, n/2, r, slotd, slotw)
 end
 
-# A= [1 0; 0 1]
-bla=0.04
-A= [1 + bla 0; bla 1-bla]
-# A= [1  0; 0 2]
-
 
 function deform_(x,y)
 	a= 0.002
@@ -101,6 +96,9 @@ function deform_circle_nonlin(m,n,T)
 	end
 	return fun
 end
+
+bla=0.04
+A= [1 + bla 0; bla 1-bla]
 
 function deform_circle_lin(m,n,T) 
 	w=1

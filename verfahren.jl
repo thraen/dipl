@@ -136,6 +136,9 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 
 		steps +=1
 	end
+	if steps%50 == 0 
+		@everywhere gc()
+	end
 
 	return I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps
 end

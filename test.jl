@@ -2,12 +2,12 @@
 # armijo_sig			= 0
 # armijo_maxtry		= 40
 
-armijo_bas			= 0.9
+armijo_bas			= 0.7
 armijo_sig			= 0
 armijo_maxtry		= 40
 
-@everywhere const alpha	= 0.001 
-@everywhere const beta	= 0.001
+@everywhere const alpha	= 0.000001 
+@everywhere const beta	= 0.000001
 
 # maxsteps 			= 10
 maxsteps 			= 100000
@@ -20,7 +20,7 @@ time_regularization	= false  # geht nicht mit velocities_at interfaces
 velocities_at		= "centers"
 
 transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
-@everywhere interpolate_w_time	= true
+@everywhere interpolate_w_time	= false
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
@@ -61,8 +61,8 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 6 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 5 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 10 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 4 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
@@ -82,6 +82,10 @@ I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
+
+# srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
+# randerr	= randn(size(I_vorgabe))
+# I_vorgabe+= 0.2*randerr
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -107,7 +111,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)_dx$(dx)dt$(dt)_mgtol$(mg_tol)/"
+@everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 @time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
@@ -122,5 +126,6 @@ echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
 
+save_all()
+
 _="fertig"
-pygui(true)

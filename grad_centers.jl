@@ -1,11 +1,11 @@
-const L			= generate_laplace(m, n, dx)
+@everywhere const L			= generate_laplace(m, n, dx)
 const Cx, Cy	= generate_differentiation_central(m, n, dx) 
 
 poisson_solver == "lufact" && begin
-	const LU		= factorize(L)
+	@everywhere const LU		= factorize(L)
 	#thr
 	# 	const _LU		= factorize(L*dx)
-	@everywhere function solve_poisson(LU, b)
+	@everywhere function solve_poisson(b)
 		return LU\b
 	end
 end
@@ -72,26 +72,26 @@ H1_norm_grd					= H1_norm
 H1_norm_w_noweight_space	= H1_norm
 H1_norm_w_noweight_time		= function(u,v) return "{\\text{k.A.}}" end
 
-@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+@everywhere @inline function grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, t)
 	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den schon Rand 0!
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
-	phi_x			= solve_poisson(LU, pI_x)
-	phi_y			= solve_poisson(LU, pI_y)
+	phi_x			= solve_poisson(pI_x)
+	phi_y			= solve_poisson(pI_y)
 
 	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
 end
 
-@everywhere @inline function _grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+@everywhere @inline function _grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, t)
 	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den schon Rand 0!
 	pI_x			= (Cx*dx)*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= (Cy*dx)*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
 	println("GRADTST")
-	phi_x			= solve_poisson(_LU, pI_x)
-	phi_y			= solve_poisson(_LU, pI_y)
+	phi_x			= solve_poisson(pI_x)
+	phi_y			= solve_poisson(pI_y)
 
 	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
@@ -105,13 +105,13 @@ function grad_J(I, p, u, v)
 	#=
 		@show macroexpand(:(
 		@do_par_when_defined for t= 1:T-1
-			grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+			grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, t)
 		end
 		))
 	=#
 
 	@do_par_when_defined for t= 1:T-1
-		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, LU, t)
+		grad_slice!(grd_u_J, grd_v_J, I, p, u, v, Cx, Cy, t)
 	end
 	#clf()
 	#quiver(grd_u_J[:,:,1], grd_v_J[:,:,1])

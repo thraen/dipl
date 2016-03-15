@@ -54,7 +54,7 @@ end
 	return ndiagl2, ndiagl1, diag, ndiagr1, ndiagr2
 end
 
-function generate_laplace(m,n,dx)
+@everywhere function generate_laplace(m,n,dx)
 	println("generate Laplace Matrix")
 	return spdiagm( laplace_diags(m,n), (-m, -1, 0, 1, m) ) / (dx*dx)
 end
