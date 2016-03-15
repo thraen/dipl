@@ -5,9 +5,10 @@
 armijo_bas			= 0.7
 armijo_sig			= 0
 armijo_maxtry		= 40
+grad_bound			= 1e-8
 
-@everywhere const alpha	= 0.000001 
-@everywhere const beta	= 0.000001
+@everywhere const alpha	= 0.01 
+@everywhere const beta	= 0.01
 
 # maxsteps 			= 10
 maxsteps 			= 100000
@@ -61,8 +62,8 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 10 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
-@everywhere const zwischen_ausgelassen	= 4 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
+@everywhere const auslassen				= 19 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const zwischen_ausgelassen	= 3 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 # die Anzahl zwischen den Referenzframes zu generierenden Frames. 
@@ -114,7 +115,7 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/new/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
-@time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
+@time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, grad_bound, 1, 1.0)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)

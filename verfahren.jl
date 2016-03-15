@@ -48,7 +48,7 @@ function next_w!(I, p, u, v, alpha)
 	return u, v
 end
 
-function verfahren_grad(s, u, v, steps=1, normierung=1.0)
+function verfahren_grad(s, u, v, grad_bound, steps=1, normierung=1.0)
 	s0			= s[:,:,1]
 	norm_s		= normierung
 
@@ -77,7 +77,7 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 	# Armijo-Schrittweite
 	armijo_exp	= 0
 
-	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > 1e-8 
+	while steps < maxsteps  &&  armijo_exp < armijo_maxtry  &&  H1_J_w > grad_bound 
 # 		if steps % 5 == 0
 # 			plot_grad_section(J, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, 140, steps)
 # 		end
@@ -136,7 +136,7 @@ function verfahren_grad(s, u, v, steps=1, normierung=1.0)
 
 		steps +=1
 	end
-	if steps%50 == 0 
+	if steps%25 == 0 
 		@everywhere gc()
 	end
 
