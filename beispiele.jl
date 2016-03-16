@@ -8,14 +8,22 @@ end
 
 function char_quadrat(m,n,T)
 	ah	= floor( min(n,m)/ 6 )
-
 	cx	= (n+1)/2
 	cy	= (m+1)/2
-
 	return (y,x,t) -> char_quadrat_param(y,x, cy, cx-t+floor(T/2), ah)
+end
 
-# 	return (y,x,t) -> char_quadrat_param(y,x, cy+t-floor(T/2), cx, ah)
-# 	return (y,x,t) -> char_quadrat_param(y,x, cy-t+floor(T/2), cx, ah)
+function char_quadratR(m,n,T)
+	ah	= floor( min(n,m)/ 6 )
+	cx	= (n+1)/2 
+	cy	= (m+1)/2 +m/6
+	return (y,x,t) -> char_quadrat_param(y,x, cy, cx+t-floor(T/2), ah)
+end
+function char_quadratL(m,n,T)
+	ah	= floor( min(n,m)/ 6 )
+	cx	= (n+1)/2
+	cy	= (m+1)/2 -m/6
+	return (y,x,t) -> char_quadrat_param(y,x, cy, cx-t+floor(T/2), ah)
 end
 
 function init_vorgabe(f_generator,m,n,T)

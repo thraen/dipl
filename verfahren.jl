@@ -48,7 +48,7 @@ function next_w!(I, p, u, v, alpha)
 	return u, v
 end
 
-function verfahren_grad(s, u, v, grad_bound, steps=1, normierung=1.0)
+function verfahren_grad(s, u, v, grad_bound=1e-8, steps=1, normierung=1.0)
 	s0			= s[:,:,1]
 	norm_s		= normierung
 

@@ -7,8 +7,8 @@ armijo_sig			= 0
 armijo_maxtry		= 40
 grad_bound			= 1e-8
 
-@everywhere const alpha	= 0.1
-@everywhere const beta	= 0.1
+@everywhere const alpha	= 0.0000001
+@everywhere const beta	= 0.0000001
 
 # maxsteps 			= 10
 maxsteps 			= 100000
@@ -60,9 +60,9 @@ include("view.jl")
 include("beispiele.jl")
 
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
-@everywhere const n_samples				= 5
+@everywhere const n_samples				= 2
 
-@everywhere const auslassen				= 7 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const auslassen				= 19 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 3 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 # @everywhere const zwischen_ausgelassen	= 12 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
@@ -77,21 +77,17 @@ include("beispiele.jl")
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-iv1	= init_vorgabe(char_quadratR, m,n, T_vorgabe)
-iv2	= init_vorgabe(char_quadratL, m,n, T_vorgabe)
-I_vorgabe = iv1+iv2
-
-
+I_vorgabe	= init_vorgabe(char_quadrat, m,n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
 
-# @everywhere rfac=0.3
-# srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
-# randerr	= randn(size(I_vorgabe))
-# I_vorgabe+= rfac*randerr
+@everywhere rfac=0.3
+srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
+randerr	= randn(size(I_vorgabe))
+I_vorgabe+= rfac*randerr
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -117,7 +113,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/2quadrate_eng/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/rausch/$(rfac)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 @time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, grad_bound, 1, 1.0)
@@ -132,7 +128,6 @@ echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
 
-save_all()
+# save_all()
 
 _="fertig"
-# pygui(true)
