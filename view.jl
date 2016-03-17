@@ -60,9 +60,6 @@ function save_images_(im, pref)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
-# 	for t=1:T 
-# 		save_image_t(im, pref, t)
-# 	end
 	@sync @parallel for t=1:T 
 		save_image_t(im, pref, t)
 	end
@@ -230,15 +227,15 @@ end
 	@sync @parallel for t in ts
 		clf()
 		imshow(what[:,:,t], cmap="gray", interpolation="none", origin="lower")
+		ax	= gca()
+		ax[:set_axis_off]() 
 		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-		clf()
 
+		clf()
 		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
 		fig	= gcf()
-		ax	= gca()
 		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
 		ax[:view_init](azim=-39, elev=53)
-
 		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	end
 end
