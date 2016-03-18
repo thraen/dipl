@@ -206,7 +206,7 @@ end
 @everywhere function save_verr(verr, name, dir, isuff, dpi)
 	m,n,ts = size(verr)
 	@sync @parallel for t in 1:ts
-		imshow(abs(verr[:,:,t]), cmap="gray_r", interpolation="none", origin="lower")
+		imshow(abs(verr[:,:,t]), cmap="gray_r", interpolation="none", origin="lower", vmin=0, vmax=1)
 		savefig(dir * "img_$name" * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 		clf()
 	end
@@ -228,7 +228,10 @@ end
 		clf()
 		imshow(what[:,:,t], cmap="gray", interpolation="none", origin="lower")
 		ax	= gca()
-		ax[:set_axis_off]() 
+# 		ax[:set_axis_off]()  #ganze achsenbeschriftung weg
+# 		ax[:set_xticks]([xx,xx,xx..])  #positionen der ticks
+# 		ax[:set_xticklabels]([])  #keine labels
+# 		ax[:set_yticklabels]([])  #keine labels
 		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
 		clf()

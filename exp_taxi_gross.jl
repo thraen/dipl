@@ -2,7 +2,7 @@
 # armijo_sig			= 0.0
 # armijo_maxtry		= 40
 
-armijo_bas			= 0.80 #thr anders
+armijo_bas			= 0.60 #thr anders
 armijo_sig			= 0.0
 armijo_maxtry		= 80
 
@@ -39,7 +39,7 @@ include("beispiele.jl")
 # fuer die Konstruktion der Zeitregularisierungsmatrizen muss n_samples >=2 und n_zwischensamples >=3 sein!
 @everywhere const n_samples				= 5
 
-@everywhere const auslassen				= 5 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
+@everywhere const auslassen				= 4 # die Referenzsamples werden so gewählt, dass aus der Vorgabe werden immer `auslassen` Frames weggelassen werden
 @everywhere const zwischen_ausgelassen	= 2 # zwischen zwei ausgelassenen Frames sollen so viele Zwischenframes generiert werden.
 
 @everywhere const n_zwischensamples		= auslassen + (auslassen+1) * zwischen_ausgelassen
@@ -50,7 +50,7 @@ include("beispiele.jl")
 @everywhere const dx	= 1/(max(m,n) -1)
 
 I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
-# I_vorgabe	= flipy(I_vorgabe) 
+I_vorgabe	= flipy(I_vorgabe) 
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
