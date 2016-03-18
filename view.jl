@@ -41,7 +41,7 @@ end
 	clf()
 end
 
-function save_quivers_(u,v, pref)
+function save_quivers(u,v, pref)
 	tic()
 	mu, nu, T = size(u)
 	mv, nv, T = size(v)
@@ -56,7 +56,7 @@ function save_quivers_(u,v, pref)
 	toc()
 end
 
-function save_images_(im, pref)
+function save_images(im, pref)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
@@ -66,7 +66,7 @@ function save_images_(im, pref)
 	toc()
 end
 
-function save_surfs_(im, pref)
+function save_surfs(im, pref)
 	tic()
 	m, n, T = size(im)
 	run(`mkdir -p $rootdir/$pref`)
@@ -76,32 +76,22 @@ function save_surfs_(im, pref)
 	toc()
 end
 
-function save_images(im, pref)
-	tic()
-	m, n, T = size(im)
-	run(`mkdir -p $rootdir/$pref`)
-	for t=1:T 
-		save_image_t(im, pref, t)
-	end
-	toc()
-end
-
 function save_all()
-	println("save_images_ $rootdir") 
-	save_images_(s, "s")
+	println("save_images $rootdir") 
+	save_images(s, "s")
 
-	save_images_(I, "I")
-	save_surfs_(I,"I")
+	save_images(I, "I")
+	save_surfs(I,"I")
 
-# 	save_images_(I_vorgabe, "I_given")
-# 	save_surfs_(I_vorgabe, "I_given")
+# 	save_images(I_vorgabe, "I_given")
+# 	save_surfs(I_vorgabe, "I_given")
 
-# 	save_images_(diff_vorgabe, "diff_vorgabe")
-# 	save_surfs_(diff_vorgabe, "diff_vorgabe")
+# 	save_images(diff_vorgabe, "diff_vorgabe")
+# 	save_surfs(diff_vorgabe, "diff_vorgabe")
 
-# 	save_images_(p, "p")
-	save_quivers_(u,v,"w")
-# 	save_quivers_(grd_u_J, grd_v_J,"grad_J")
+# 	save_images(p, "p")
+	save_quivers(u,v,"w")
+# 	save_quivers(grd_u_J, grd_v_J,"grad_J")
 end
 
 function save_value(M, pref)
