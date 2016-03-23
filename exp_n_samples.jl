@@ -136,7 +136,6 @@ echo("\n\nelapsed time: ", elapsed_t)
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 echo("\n\nL2 Differenz: ", L2norm(diff_vorgabe))
-
 save_all()
 
 _="fertig"

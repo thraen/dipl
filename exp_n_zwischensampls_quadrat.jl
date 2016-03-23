@@ -92,7 +92,7 @@ make_output_dir(rootdir)
 
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
-save_demo_rot_disc()
+save_demo_rot_disc([(".png", 100),(".eps", 1200)])
 nzw_table("Test Anzahl Frames", "dummy")
 
 # pygui(true)

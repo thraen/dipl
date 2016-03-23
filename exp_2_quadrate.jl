@@ -131,7 +131,6 @@ echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
-
 save_all()
 
 _="fertig"

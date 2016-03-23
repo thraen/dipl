@@ -2,96 +2,113 @@ using PyPlot
 @everywhere using PyPlot
 @everywhere pygui(false)
 
-@everywhere isuff=".png"
-# @everywhere isuff=".eps"
-
-# @everywhere isuff=".svg"
-#suff=".svg"
 @everywhere vsuff=".dlm"
-
-# @everywhere dpi=1200
-@everywhere dpi=60
 
 function delete_output()
 	run(`rm $rootdir -r`)
 end
 
-@everywhere function save_image_t(im, pref, t)
-	imshow(im[:,:,t], interpolation="none", origin="lower", cmap="gray")
-	#imshow(im[:,:,t], interpolation="none", cmap="gray")
-	savefig(rootdir * pref * "/img" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+# pygui(true)
+# cmap = "gray_r"
+# cmap = "gray"
+# cmap = "GnBu"
+# cmap = "GnBu_r"
+# cmap = "Blues"
+# cmap = "Blues_r"
+# cmap = "coolwarm"
+# cmap = "coolwarm_r"
+
+@everywhere function save_image_t(im, t, dir, pref, isuff=".png", dpi=100, cmap="gray", vmin=0, vmax=1, axlbls=false)
+	imshow(im[:,:,t], cmap=cmap, interpolation="none", origin="lower", vmin=vmin, vmax=vmax)
+	if ~axlbls
+		fig	= gcf()
+		ax	= gca()
+		ax[:set_xticklabels]([])  #keine labels
+		ax[:set_yticklabels]([])  #keine labels
+	end
+
+	savefig(dir * pref * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
 end
 
-@everywhere function save_surf(im, pref, t)
+function save_images(im, ts, dir, pref, isuff, dpi, cmap="gray", vmin=0, vmax=1, axlbls=false)
+	println("save_images", dir, pref)
+	tic()
+	m, n, T = size(im)
+	run(`mkdir -p $dir`)
+	@sync @parallel for t in ts
+		save_image_t(im, t, dir, pref, isuff, dpi, cmap, vmin, vmax, axlbls)
+	end
+	toc()
+end
+
+@everywhere function save_surf_t(im, t, dir, pref, isuff=".png", dpi=100, cmap="gray", zlim=(0,1), azim=-39, elev=53, axlbls=false)
 	##
 	## surf(X,Y,Z)!! man muss die arrays also transponieren!
 	##
-	surf(im[:,:,t]',rstride=1, cstride=1) # rstride, cstride aufloesung
-	fig	= gcf()
+	surf(im[:,:,t]', cmap=cmap, cstride=1, rstride=1, linewidth=0.2)
 	ax	= gca()
-	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
-	savefig(rootdir * pref * "/srf" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
+	ax[:view_init](azim=azim, elev=elev)
+	if ~axlbls
+		fig	= gcf()
+		ax	= gca()
+		ax[:set_xticklabels]([])  #keine labels
+		ax[:set_yticklabels]([])  #keine labels
+	end
+
+	savefig(dir * pref * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
 end
 
-@everywhere function save_quiver(u,v, pref, t, mpad, npad)
-	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
-	savefig(rootdir * pref * "/" * lpad(t, 8,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-	clf()
-end
-
-function save_quivers(u,v, pref)
+function save_surfs(im, ts, dir, pref, isuff, dpi, cmap="gray", zlim=(0,1), azim=-39, elev=53, axlbls=true)
+	println("save_surfs", dir, pref)
 	tic()
+	m, n, T = size(im)
+	run(`mkdir -p $dir`)
+	@sync @parallel for t in ts
+		save_surf_t(im, t, dir, pref, isuff, dpi, cmap, zlim, azim, elev, axlbls)
+	end
+	toc()
+end
+
+
+@everywhere function save_quiver_t(u, v, t, dir, pref, isuff=".png", dpi=100, alle=1, axlbls=true)
 	mu, nu, T = size(u)
 	mv, nv, T = size(v)
 	mpad = abs(mu-mv)
 	npad = abs(nu-nv)
-	run(`mkdir -p $rootdir/$pref`)
 
-	@sync @parallel for t=1:T 
-		print("$t ")
-		save_quiver(u, v, pref, t, mpad, npad)
-	end
-	toc()
+# 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
+# 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]], width=0.0015 )
+	quiver( [zeros(m, npad) u[:,:,t]][1:alle:end, 1:alle:end], [zeros(mpad, n); v[:,:,t]][1:alle:end, 1:alle:end], width=0.0015 )
+
+	savefig(dir * pref * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	clf()
 end
 
-function save_images(im, pref)
+function save_quivers(u, v, ts, dir, pref, isuff, dpi, alle=1, axlbls=true)
+	println("save_quivers", dir, pref)
+	println(size(u), size(v))
 	tic()
-	m, n, T = size(im)
-	run(`mkdir -p $rootdir/$pref`)
-	@sync @parallel for t=1:T 
-		save_image_t(im, pref, t)
-	end
-	toc()
-end
+	run(`mkdir -p $dir`)
 
-function save_surfs(im, pref)
-	tic()
-	m, n, T = size(im)
-	run(`mkdir -p $rootdir/$pref`)
-	@sync @parallel for t=1:T 
-		save_surf(im, pref, t)
+	@sync @parallel for t in ts
+		save_quiver_t(u, v, t, dir, pref, isuff, dpi, alle, axlbls)
 	end
 	toc()
 end
 
 function save_all()
-	println("save_images $rootdir") 
-	save_images(s, "s")
-
-	save_images(I, "I")
-	save_surfs(I,"I")
-
-# 	save_images(I_vorgabe, "I_given")
-# 	save_surfs(I_vorgabe, "I_given")
-
-# 	save_images(diff_vorgabe, "diff_vorgabe")
-# 	save_surfs(diff_vorgabe, "diff_vorgabe")
-
-# 	save_images(p, "p")
-	save_quivers(u,v,"w")
-# 	save_quivers(grd_u_J, grd_v_J,"grad_J")
+	save_images(s, 1:size(s,3), rootdir*"s/", "img", ".png", 60)
+	save_images(I, 1:size(I,3), rootdir*"I/", "img", ".png", 60)
+	save_surfs(I,1:size(I,3), rootdir*"I/", "srf", ".png", 60)
+# 	save_images(I_vorgabe, 1:size(I,3), rootdir*"I_vorgabe/", "img", ".png", 60)
+# 	save_surfs(I_vorgabe,1:size(I,3), rootdir*"I_vorgabe/", "img", ".png", 60)
+# 	save_images(diff_vorgabe, 1:size(I,3), rootdir*"verr/", "img", ".png", 60)
+# 	save_surfs(diff_vorgabe,1:size(I,3), rootdir*"verr/", "srf", ".png", 60)
+	save_quivers(u, v, 1:size(u,3), rootdir*"w/", "", ".png", 60, 2)
+# 	save_quivers(grd_u_J, grd_v_J,"grad_J", 1:size(u,3), rootdir*"grad/" ,"", ".png", 60)
 end
 
 function save_value(M, pref)
@@ -104,7 +121,7 @@ function save_values(M, pref)
 	pref = rootdir * pref * "/"
 	run(`mkdir -p $pref`)
 	for t = 1:T
-		#fn	= pref * lpad(t, 8,"0") * vsuff
+		#fn	= pref * lpad(t, 4,"0") * vsuff
 		fn	= "$(pref)$(t)$vsuff"
 		writedlm(fn, M[:,:,t])
 	end
@@ -160,7 +177,6 @@ function to_file(file, str)
 	write(file, str); close(tblfile)
 end
 
-
 # Spezielle Reports
 # 
 # fuer die 2-Bilder-Demos
@@ -171,77 +187,31 @@ end
 	savefig(dir * "displacement" *isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 end
 
-# @everywhere cmpsurf = "gray_r"
-@everywhere cmpsurf = "gray"
-# @everywhere cmpsurf = "GnBu"
-# @everywhere cmpsurf = "Blues"
-
-@everywhere function save_auswahl_rot_disc(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
-	@sync @parallel for t in ts
-		clf()
-		imshow(what[:,:,t], cmap="gray_r", interpolation="none", origin="lower")
-		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-		clf()
-
-		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
-		fig	= gcf()
-		ax	= gca()
-		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
-		ax[:view_init](azim=-39, elev=53)
-
-		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+function save_demo_rot_disc(outputs)
+	for op in outputs
+		suff, dpi= op[1], op[2]
+		save_displacement(rootdir, suff, dpi)
+		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+		auswahl = collect(vorgabe_frames)
+		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray_r", 0, 1, false)
+		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
+		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
+		#das Geschwindigkeitsfeld enthaelt einen Zeitpunkt weniger als die Bilder
+		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten
 	end
 end
 
-@everywhere function save_verr(verr, name, dir, isuff, dpi)
-	m,n,ts = size(verr)
-	@sync @parallel for t in 1:ts
-		imshow(abs(verr[:,:,t]), cmap="gray_r", interpolation="none", origin="lower", vmin=0, vmax=1)
-		savefig(dir * "img_$name" * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-		clf()
+function save_demo_taxi(outputs)
+	for op in outputs
+		suff, dpi= op[1], op[2]
+		save_displacement(rootdir, suff, dpi)
+		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
+		auswahl = collect(vorgabe_frames)
+		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray", 0, 1, false)
+# 		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
+		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
+		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten
 	end
-end
-
-function save_demo_rot_disc()
-	save_displacement(rootdir, ".eps", 1200)
-	save_displacement(rootdir, ".png", 100)
-	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-	auswahl = collect(vorgabe_frames)
-	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".png", 100)
-	save_auswahl_rot_disc(I, "I", auswahl, rootdir, ".eps", 1200)
-	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
-	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
-end
-
-@everywhere function save_auswahl_taxi(what, name, ts, dir, isuff, dpi, zlim=(0,1), azim=-30, elev=55)
-	@sync @parallel for t in ts
-		clf()
-		imshow(what[:,:,t], cmap="gray", interpolation="none", origin="lower")
-		ax	= gca()
-# 		ax[:set_axis_off]()  #ganze achsenbeschriftung weg
-# 		ax[:set_xticks]([xx,xx,xx..])  #positionen der ticks
-# 		ax[:set_xticklabels]([])  #keine labels
-# 		ax[:set_yticklabels]([])  #keine labels
-		savefig(dir * "img_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-
-		clf()
-		surf(what[:,:,t]', cmap=cmpsurf, cstride=1, rstride=1, linewidth=0.2)
-		fig	= gcf()
-		ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
-		ax[:view_init](azim=-39, elev=53)
-		savefig(dir * "srf_$name" * lpad(Int(t), 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
-	end
-end
-
-function save_demo_taxi()
-	save_displacement(rootdir, ".eps", 1200)
-	save_displacement(rootdir, ".png", 100)
-	vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
-	auswahl = collect(vorgabe_frames)
-	save_auswahl_taxi(I, "I", auswahl, rootdir, ".png", 100)
-	save_auswahl_taxi(I, "I", auswahl, rootdir, ".eps", 1200)
-	save_verr(vorgabe_fehler, "verr", rootdir, ".eps", 1200)
-	save_verr(vorgabe_fehler, "verr", rootdir, ".png", 100)
 end
 
 function demo_table(capt, label)
@@ -253,7 +223,7 @@ function demo_table(capt, label)
 
 	to_file(rootdir*"head_"*"errors"*".tex", tabularline(head))
 	to_file(rootdir*"line_"*"errors"*".tex", tabularline(res))
-	print( rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
+# 	print( rootdir*"table_"*"errors"*".tex", latextable_normal(capt, label, head, res) )
 end
 
 function nzw_table(capt, label)
@@ -276,26 +246,6 @@ function nzw_table(capt, label)
 	to_file(rootdir*"v3line_"*"errors"*".tex", tabularline(res))
 end
 
-function cmaptest(what, cmp)
-	clf()
-	surf(what[:,:,floor(3*T/4)]', cmap=cmp, cstride=1, rstride=1, linewidth=0.2)
-	fig	= gcf()
-	ax	= gca()
-	ax[:set_zlim](0,1) # z-Achsen range auf 0,1 festlegen
-	ax[:view_init](azim=-30, elev=55)
-end
-
-# pygui(true)
-# cmaptest(I, "gray_r") #super scheisse
-# cmaptest(I, "gray") #ok
-# cmaptest(I, "GnBu")
-# cmaptest(I, "GnBu_r")
-# cmaptest(I, "Blues")
-# cmaptest(I, "Blues_r")
-# cmaptest(I, "coolwarm")
-# cmaptest(I, "coolwarm_r")
-
-
 function save_endergebnis(dir)
 	try
 		save("$(dir)res.jld", 
@@ -312,3 +262,4 @@ function save_endergebnis(dir)
 		warn("ERGEBNIS KONNTE NICHT GESPEICHERT WERDEN!", e)
 	end
 end
+

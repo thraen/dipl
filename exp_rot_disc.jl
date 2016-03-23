@@ -1,7 +1,3 @@
-# armijo_bas			= 0.5
-# armijo_sig			= 0.0
-# armijo_maxtry		= 40
-
 armijo_bas			= 0.9
 armijo_sig			= 0.0
 armijo_maxtry		= 80
@@ -62,32 +58,33 @@ velocities_at == "interfaces" && begin
 	v		= 0* ones( m-1, n, T-1 )
 end
 
-include("verfahren.jl") 
+# include("verfahren.jl") 
+using JLD
 
-@everywhere rootdir = "../out/demo/exp_rot_disc/new/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
-make_output_dir(rootdir)
+@everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
-echo=_echolog
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
-# @load "$(rootdir)res.jld"
-save_endergebnis(rootdir)
+# make_output_dir(rootdir)
+# echo=_echolog
+# @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
+# save_endergebnis(rootdir)
+@load "$(rootdir)res.jld"
 
-echo("==============")
-echo("Gradnorm", H1_J_ws[end])
-echo("L2err", L2_errs[end])
-echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
-echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
-
-# # Differenz zur Vorgabe
+# echo("==============")
+# echo("Gradnorm", H1_J_ws[end])
+# echo("L2err", L2_errs[end])
+# echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
+# echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
+# 
+# Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
-
-echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
-echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
-for l=1:T_vorgabe
-	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
-end
-
-save_demo_rot_disc()
-demo_table("demoRotDisc", "demo_rot_disc")
+# 
+# echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
+# echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
+# for l=1:T_vorgabe
+# 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
+# end
+# 
+# demo_table("demoRotDisc", "demo_rot_disc")
+save_demo_rot_disc([(".png", 100),(".eps", 1200)])
 
 _="fertig"

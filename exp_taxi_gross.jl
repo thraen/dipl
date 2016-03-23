@@ -90,6 +90,6 @@ for l=1:T_vorgabe
 end
 
 demo_table("demoTaxi", "demo_taxi")
-save_demo_taxi()
+save_demo_taxi([(".png", 100),(".eps", 1200)])
 
 _="fertig"
