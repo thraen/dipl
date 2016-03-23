@@ -116,18 +116,24 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/rausch/$(rfac)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
+echo=_echolog
 @time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
+save_endergebnis(rootdir)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
-
 echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_ws[end])
+echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
+echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
+for l=1:T_vorgabe
+	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
+end
 
 demo_table("test", "test")
-save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+save_demo_taxi([(".png", 100),(".eps", 1200)])
 
 # save_all()
 
