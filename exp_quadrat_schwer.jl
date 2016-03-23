@@ -117,7 +117,7 @@ include("verfahren.jl")
 make_output_dir(rootdir)
 
 echo=_echolog
-@time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
+@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
 save_endergebnis(rootdir)
 
 # # Differenz zur Vorgabe
