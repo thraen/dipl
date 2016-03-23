@@ -133,7 +133,7 @@ for l=1:T_vorgabe
 end
 
 demo_table("test", "test")
-save_demo_taxi([(".png", 100),(".eps", 1200)])
+save_demo_quadrat_schwer([(".png", 100),(".eps", 1200)])
 
 # save_all()
 
