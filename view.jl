@@ -51,8 +51,6 @@ end
 	ax[:set_zlim](zlim) # z-Achsen range auf 0,1 festlegen
 	ax[:view_init](azim=azim, elev=elev)
 	if ~axlbls
-		fig	= gcf()
-		ax	= gca()
 		ax[:set_xticklabels]([])  #keine labels
 		ax[:set_yticklabels]([])  #keine labels
 	end
@@ -82,6 +80,11 @@ end
 # 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]] )
 # 	quiver( [zeros(m, npad) u[:,:,t]], [zeros(mpad, n); v[:,:,t]], width=0.0015 )
 	quiver( [zeros(m, npad) u[:,:,t]][1:alle:end, 1:alle:end], [zeros(mpad, n); v[:,:,t]][1:alle:end, 1:alle:end], width=0.0015 )
+	if ~axlbls
+		ax	= gca()
+		ax[:set_xticklabels]([])  #keine labels
+		ax[:set_yticklabels]([])  #keine labels
+	end
 
 	savefig(dir * pref * lpad(t, 4,"0") * isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 	clf()
@@ -190,12 +193,12 @@ end
 function save_demo_rot_disc(outputs)
 	for op in outputs
 		suff, dpi= op[1], op[2]
-		save_displacement(rootdir, suff, dpi)
+# 		save_displacement(rootdir, suff, dpi)
 		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 		auswahl = collect(vorgabe_frames)
-		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray_r", 0, 1, false)
-		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
-		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
+# 		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray_r", 0, 1, false)
+# 		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
+# 		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
 		#das Geschwindigkeitsfeld enthaelt einen Zeitpunkt weniger als die Bilder
 		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten
 	end
@@ -204,12 +207,12 @@ end
 function save_demo_taxi(outputs)
 	for op in outputs
 		suff, dpi= op[1], op[2]
-		save_displacement(rootdir, suff, dpi)
+# 		save_displacement(rootdir, suff, dpi)
 		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 		auswahl = collect(vorgabe_frames)
-		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray", 0, 1, false)
+# 		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray", 0, 1, false)
 # 		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
-		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
+# 		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
 		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten
 	end
 end

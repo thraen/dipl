@@ -2,9 +2,9 @@
 # armijo_sig			= 0
 # armijo_maxtry		= 40
 
-armijo_bas			= 0.7
+armijo_bas			= 0.9
 armijo_sig			= 0
-armijo_maxtry		= 40
+armijo_maxtry		= 80
 grad_bound			= 1e-8
 
 @everywhere const alpha	= 0.0000001
@@ -127,6 +127,8 @@ echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
+save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+
 # save_all()
 
 _="fertig"
