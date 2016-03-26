@@ -121,6 +121,7 @@ include("verfahren.jl")
 make_output_dir(rootdir)
 
 @time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
+save_endergebnis(rootdir)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)

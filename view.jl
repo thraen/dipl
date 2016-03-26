@@ -223,7 +223,8 @@ function save_demo_quadrat_schwer(outputs)
 		save_displacement(rootdir, suff, dpi)
 		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 		auswahl = collect(vorgabe_frames)
-		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray", minimum(I), maximum(I), false)
+		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray_r", minimum(I), maximum(I), false)
+		save_images(I_vorgabe, auswahl, rootdir, "I", suff, dpi, "gray_r", minimum(I), maximum(I), false)
 		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten
 	end
 end
