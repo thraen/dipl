@@ -117,7 +117,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/2quadrate_eng/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/new/2quadrate_eng/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
