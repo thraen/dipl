@@ -15,7 +15,7 @@ maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+@everywhere time_regularization	= false  # geht nicht mit velocities_at interfaces
 
 # velocities_at		= "interfaces"
 velocities_at		= "centers"
