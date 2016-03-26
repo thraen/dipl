@@ -133,7 +133,7 @@ echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
 
-save_demo_quadrat_schwer([".png", 100], [".eps", 1200])
+save_demo_quadrat_schwer([(".png", 100), (".eps", 1200)])
 # save_all()
 
 _="fertig"
