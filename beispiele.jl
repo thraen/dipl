@@ -46,13 +46,25 @@ function char_slotted_circle_param(y,x,cy,cx,r,slotd,slotw)
 	return (sqrt(x^2+y^2) < r) * (1-( (abs(y)<slotw)*(x>slotd) ))
 end
 
-function rot_circle_ex(m,n,T) 
+function rot_circle_ex_alt(m,n,T) 
 	w=0.1
 	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
 	slotw	=  0.02*m
 	r		= (1/10)*m 
 	fun = function(y,x,t)
 		rxy = rot(-1*w*t/pi/2 - pi/4 +(T/2)*w/pi/2)*[x-n/2;y-m/2]
+		return char_slotted_circle_param(rxy[2], rxy[1], m/3, 0, r,slotd,slotw)
+	end
+	return fun
+end
+
+function rot_circle_ex(m,n,T) 
+	w=0.003
+	slotd	= -0.05*m #ich setze ein quadratisches Omega voraus
+	slotw	=  0.02*m
+	r		= (1/10)*m 
+	fun = function(y,x,t)
+		rxy = rot(-1*w*t*2*pi - pi/4 +(T/2)*w*pi*2)*[x-n/2;y-m/2]
 		return char_slotted_circle_param(rxy[2], rxy[1], m/3, 0, r,slotd,slotw)
 	end
 	return fun
