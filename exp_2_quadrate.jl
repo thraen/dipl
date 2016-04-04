@@ -10,7 +10,7 @@ grad_bound			= 1e-8
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-# maxsteps 			= 10
+# maxsteps 			= 1
 maxsteps 			= 100000
 
 save_every			= 0
@@ -56,6 +56,8 @@ include("view.jl")
 
 @everywhere const m					= 60 
 @everywhere const n					= 60
+# @everywhere const m					= 120 
+# @everywhere const n					= 120
 
 include("beispiele.jl")
 
@@ -117,6 +119,7 @@ end
 
 include("verfahren.jl") 
 
+echo=_echolog
 @everywhere rootdir = "../out/new/2quadrate_eng/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
@@ -133,8 +136,8 @@ echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
 
-save_demo_quadrat_schwer([(".png", 100), (".eps", 1200)])
+# save_demo_quadrat_schwer([(".png", 100), (".eps", 1200)])
 # save_all()
 
 _="fertig"
-# pygui(true)
+pygui(true)

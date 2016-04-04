@@ -188,6 +188,13 @@ end
 	clf()
 	imshow(s[:,:,2]-s[:,:,1], cmap="gray_r", interpolation="none", origin="lower")
 	savefig(dir * "displacement" *isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	clf()
+	# bug in matplotlib, eps abspeichern schlaegt fehl
+	# 	imshow(s[:,:,1], cmap="gray_r", interpolation="none", origin="lower")
+	# 	imshow(s[:,:,2], cmap="gray_r", interpolation="none", origin="lower", alpha=0.4)
+	# 	savefig(dir * "displacement_alpha" *isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
+	imshow(0.5*s[:,:,1]+0.5*s[:,:,2], cmap="gray_r", interpolation="none", origin="lower")
+	savefig(dir * "displacement_alpha" *isuff, dpi=dpi, bbox_inches="tight", pad_inches=0)
 end
 
 function save_demo_rot_disc(outputs)
@@ -211,6 +218,7 @@ function save_demo_taxi(outputs)
 		vorgabe_frames	= (1:(zwischen_ausgelassen+1):(zwischen_ausgelassen+1)*T_vorgabe) 
 		auswahl = collect(vorgabe_frames)
 		save_images(I, auswahl, rootdir, "I", suff, dpi, "gray", 0, 1, false)
+		save_images(I_vorgabe, 1:T_vorgabe, rootdir, "I_vorgabe", suff, dpi, "gray", 0, 1, false)
 # 		save_surfs(I, auswahl, rootdir, "I_srf", suff, dpi, "gray", (0,1), -39, 53, true)
 		save_images(abs(vorgabe_fehler), 1:size(vorgabe_fehler,3), rootdir, "verr", suff, dpi, "gray_r", 0, 1, false)
 		save_quivers(u, v, auswahl[1:end-1], rootdir, "w", suff, dpi, 2, false) # nur alle 2 pfeile plotten

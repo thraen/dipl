@@ -59,7 +59,6 @@ velocities_at == "interfaces" && begin
 end
 
 # include("verfahren.jl") 
-using JLD
 
 @everywhere rootdir = "../out/demo/exp_deform_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
@@ -67,6 +66,7 @@ using JLD
 # echo=_echolog
 # @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 # save_endergebnis(rootdir)
+using JLD
 @load "$(rootdir)res.jld"
 
 # echo("==============")
@@ -76,7 +76,7 @@ using JLD
 # echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
 # 
 # Differenz zur Vorgabe
-vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+# vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 # 
 # echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
 # echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
@@ -85,6 +85,8 @@ vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 # end
 # 
 # demo_table("demoRotDisc", "demo_rot_disc")
-save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+# save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+save_displacement(rootdir, ".png", 100)
+save_displacement(rootdir, ".eps", 1200)
 
 _="fertig"

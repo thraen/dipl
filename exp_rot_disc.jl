@@ -47,10 +47,10 @@ include("beispiele.jl")
 
 I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 
-@everywhere rfac=0.2
-srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
-randerr	= randn(size(I_vorgabe))
-I_vorgabe+= rfac*randerr
+# @everywhere rfac=0.2
+# srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
+# randerr	= randn(size(I_vorgabe))
+# I_vorgabe+= rfac*randerr
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -63,31 +63,34 @@ velocities_at == "interfaces" && begin
 	v		= 0* ones( m-1, n, T-1 )
 end
 
-include("verfahren.jl") 
+# include("verfahren.jl") 
 
-@everywhere rootdir = "../out/demo/exp_rot_disc_rauschen/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
-make_output_dir(rootdir)
-echo=_echolog
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
-save_endergebnis(rootdir)
+@everywhere rootdir = "../out/demo/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
-# using JLD
-# @load "$(rootdir)res.jld"
+# make_output_dir(rootdir)
+# echo=_echolog
+# @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
+# save_endergebnis(rootdir)
 
-echo("==============")
-echo("Gradnorm", H1_J_ws[end])
-echo("L2err", L2_errs[end])
-echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
-echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
+using JLD
+@load "$(rootdir)res.jld"
 
-vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
-echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
-echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
-for l=1:T_vorgabe
-	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
-end
+# echo("==============")
+# echo("Gradnorm", H1_J_ws[end])
+# echo("L2err", L2_errs[end])
+# echo("unweightened space reg error", H1_norm_w_noweight_space(u,v))
+# echo("unweightened time reg error", H1_norm_w_noweight_time(u,v))
+# 
+# vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+# echo("L2( I-I_vorgabe )", L2norm(vorgabe_fehler))
+# echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
+# for l=1:T_vorgabe
+# 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
+# end
 
-demo_table("demoRotDisc", "demo_rot_disc")
-save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+# demo_table("demoRotDisc", "demo_rot_disc")
+# save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+save_displacement(rootdir, ".png", 100)
+save_displacement(rootdir, ".eps", 1200)
 
 _="fertig"

@@ -10,8 +10,8 @@ grad_bound			= 1e-8
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-# maxsteps 			= 10
-maxsteps 			= 100000
+maxsteps 			= 1
+# maxsteps 			= 100000
 
 save_every			= 0
 
@@ -77,9 +77,9 @@ include("beispiele.jl")
 @everywhere const dt	= 1/(T-1)
 @everywhere const dx	= 1/(max(m,n) -1)
 
-iv1	= init_vorgabe(char_quadratR, m,n, T_vorgabe)
-iv2	= init_vorgabe(char_quadratL, m,n, T_vorgabe)
-I_vorgabe = iv1+iv2
+# iv1	= init_vorgabe(char_quadratR, m,n, T_vorgabe)
+# iv2	= init_vorgabe(char_quadratL, m,n, T_vorgabe)
+# I_vorgabe = iv1+iv2
 
 
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
@@ -120,7 +120,7 @@ include("verfahren.jl")
 @everywhere rootdir = "../out/new/2quadrate_eng/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
-@time I, u, v, p, L2_errs, H1_errs, J, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
+@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
 
 # # Differenz zur Vorgabe
 vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
@@ -132,7 +132,9 @@ echo("Gradnorm", H1_J_ws[end])
 
 demo_table("test", "test")
 
-save_all()
+# save_all()
 
+pygui(true)
+s1=s[:,:,1]
+s2=s[:,:,2]
 _="fertig"
-# pygui(true)

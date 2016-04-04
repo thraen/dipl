@@ -11,8 +11,8 @@ armijo_bas			= 0.5
 armijo_sig			= 0.0
 armijo_maxtry		= 40
 
-@everywhere const alpha	= 0.0001
-@everywhere const beta	= 0.0001
+@everywhere const alpha	= 0.001
+@everywhere const beta	= 0.001
 
 # maxsteps 			= 10
 maxsteps 			= 100000
@@ -83,16 +83,20 @@ velocities_at == "interfaces" && begin
 end
 
 include("verfahren.jl") 
-@everywhere rootdir = "../out/exp_n_zwischen_quadrat/$(zwischen_ausgelassen)/"
-make_output_dir(rootdir)
+@everywhere rootdir = "../out/demo/exp_n_zwischen_quadrat/alpha_$(alpha)/$(zwischen_ausgelassen)/"
+# make_output_dir(rootdir)
 
-@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
-# @load "$(rootdir)res.jld"
+# @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 # save_endergebnis(rootdir)
 
-vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+using JLD
+@load "$(rootdir)res.jld"
 
-save_demo_rot_disc([(".png", 100),(".eps", 1200)])
-nzw_table("Test Anzahl Frames", "dummy")
+# vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
-# pygui(true)
+# save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+# nzw_table("Test Anzahl Frames", "dummy")
+
+save_displacement(rootdir, ".png", 100)
+save_displacement(rootdir, ".eps", 1200)
+pygui(true)

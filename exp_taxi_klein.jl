@@ -73,7 +73,6 @@ velocities_at == "interfaces" && begin
 end
 
 # include("verfahren.jl") 
-using JLD
 
 @everywhere rootdir = "../out/demo/exp_taxi_klein/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
@@ -81,10 +80,12 @@ using JLD
 #echo=_echolog
 #@time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0)
 #save_endergebnis(rootdir)
+
+using JLD
 @load(rootdir*"res.jld")
 
 # # Differenz zur Vorgabe
-vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
+# vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 
 # echo("==============")
 # echo("Gradnorm", H1_J_ws[end])
@@ -99,6 +100,8 @@ vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 # end
 # 
 # demo_table("demoTaxi", "demo_taxi")
-save_demo_taxi([(".png", 100),(".eps", 1200)])
+# save_demo_taxi([(".png", 100),(".eps", 1200)])
+save_displacement(rootdir, ".png", 100)
+save_displacement(rootdir, ".eps", 1200)
 
 _="fertig"
