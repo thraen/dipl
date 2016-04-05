@@ -48,10 +48,10 @@ include("beispiele.jl")
 I_vorgabe   	= init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe_lat   = init_vorgabe(rot_circle_ex_alt, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 
-# @everywhere rfac=0.2
-# srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
-# randerr	= randn(size(I_vorgabe))
-# I_vorgabe+= rfac*randerr
+@everywhere rfac=0.2
+srand(1) #random seed setzen, damit fuer verschiedene Durchlaeufe vergleichbarere Ergebnisse 
+randerr	= randn(size(I_vorgabe))
+I_vorgabe+= rfac*randerr
 
 s			= I_vorgabe[:,:,auswahl_vorgabe(auslassen, n_samples)] 
 
@@ -66,7 +66,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/exp_rot_disc/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/new/exp_rot_disc_rauschen/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
 make_output_dir(rootdir)
 echo=_echolog
