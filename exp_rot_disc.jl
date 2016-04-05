@@ -90,7 +90,8 @@ for l=1:T_vorgabe
 end
 
 demo_table("demoRotDisc", "demo_rot_disc")
-save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+# save_demo_rot_disc([(".png", 100),(".eps", 1200)])
+save_demo_rot_disc_rauschen([(".png", 100),(".eps", 1200)])
 save_displacement(rootdir, ".png", 100)
 save_displacement(rootdir, ".eps", 1200)
 
