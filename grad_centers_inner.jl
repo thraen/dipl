@@ -1,12 +1,15 @@
 @everywhere const L			= generate_laplace(m, n, dx)
+@everywhere const L_		= generate_laplace_inner(m, n)/dx^2
 const Cx, Cy	= generate_differentiation_central(m, n, dx) 
 
 poisson_solver == "lufact" && begin
-	@everywhere const LU		= factorize(L)
+# 	@everywhere const LU		= factorize(L)
+	@everywhere const LU_		= factorize(L_)
 	#thr
 	# 	const _LU		= factorize(L*dx)
 	@everywhere function solve_poisson(b)
-		return LU\b
+# 		return LU\b
+		return LU_\b
 	end
 end
 
@@ -60,12 +63,18 @@ H1_norm_w_noweight_time		= function(u,v) return "{\\text{k.A.}}" end
 	# die 0-Randbedingung steckt in der Multiplikation mit den Differentiationsmatrizen. Die Matrix setzt den Rand schon 0!
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
+	
+	pI_x_			= reshape( reshape(pI_x, m,n)[2:m-1,2:n-1] , (m-2)*(n-2))
+	pI_y_			= reshape( reshape(pI_y, m,n)[2:m-1,2:n-1] , (m-2)*(n-2))
 
-	phi_x			= solve_poisson(pI_x)
-	phi_y			= solve_poisson(pI_y)
+	phi_x			= solve_poisson(pI_x_)
+	phi_y			= solve_poisson(pI_y_)
 
-	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
-	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
+	grd_u_J[2:m-1, 2:n-1,t] = reshape(phi_x, m-2, n-2)
+	grd_v_J[2:m-1, 2:n-1,t] = reshape(phi_y, m-2, n-2)
+
+	grd_u_J[:,:,t] += alpha*u[:,:,t]
+	grd_v_J[:,:,t] += alpha*v[:,:,t]
 end
 
 function grad_J(I, p, u, v)

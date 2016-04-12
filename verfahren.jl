@@ -11,9 +11,11 @@ L2norm		= function(s) return Xnorm(s, B) end # thr das sollte besser L2sum heiss
 sample_err	= sample_err_L2
 
 time_regularization == true		&& include("grad_time_reg.jl")  
-~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
+
+# ~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
+~time_regularization && velocities_at == "centers"		&& include("grad_centers_inner.jl") 	
+
 ~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces.jl")
-# ~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces_richig.jl") #thr wegraeumen, wenn nicht mehr gebraucht
 
 function plot_grad_section(lastJ, u, v, grd_u_J, grd_v_J, H1_J_w, s0, norm_s, k, steps)
 	Js		= zeros(k)

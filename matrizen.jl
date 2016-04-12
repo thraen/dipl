@@ -1,10 +1,9 @@
 
-function generate_laplace_inner(m, n)
+@everywhere function generate_laplace_inner(m, n)
 	_m, _n	= m-2, n-2
 	Dxx = spdiagm( (ones(_n-1),-2*ones(_n),ones(_n-1)), (-1,0,1), _n, _n) #1D discrete Laplacian in the x-direction ;
 	Dyy = spdiagm( (ones(_m-1),-2*ones(_m),ones(_m-1)), (-1,0,1), _m, _m) #1D discrete Laplacian in the y-direction ;
-	L = kron(Dyy, speye(_n)) + kron(speye(_m), Dxx)
-	return L
+	return -(kron(Dyy, speye(_n)) + kron(speye(_m), Dxx))
 end
 
 function generate_differentiation_central(m, n, dx)
@@ -90,3 +89,45 @@ end
 
 	return ellOp, GradNormOp, CostNormOp, LT/dt, R/dt
 end
+
+@everywhere function ellop_inner_hilfsmatrizen(m,n,k)
+	_m, _n	= m-2, n-2
+	dh0 	= [[1] ; 2*ones(k-3); [1]]
+	dhpm1 	= -ones(k-2)
+	ht		= spdiagm( (dhpm1, dh0, dhpm1), (-1,0,1) )
+	hl		= spdiagm( [[0.5] ; ones(k-3) ; [0.5] ] , 0)
+	return ht, hl
+end
+
+@everywhere function _generate_ellop_beta(m,n,T, dt, dx, alpha, beta)
+	ht, hl		= ellop_inner_hilfsmatrizen(m,n,T)
+	L			= generate_laplace(m,n,dx)
+	L2			= kron(hl,L) *dt^2
+
+	# das ist T in der niederschrift
+	R			= kron(ht, spdiagm(ones(m*n), 0)) 
+	ellOp		= L2 + R
+	GradNormOp	= (L2 + R) /dt
+	CostNormOp	= (alpha * L2 + beta * R)/dt
+
+	return ellOp, GradNormOp, CostNormOp, L2/dt, R/dt
+end
+
+# testn	= 100
+# testm	= 100
+# testT	= 100
+# 
+# testdx	= 0.5
+# testdt	= 0.4
+# 
+# testalph	= 0.2
+# testbet	= 0.3
+# 
+# @time el , gr , cst , lt , r =generate_ellip_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
+# @time el_, gr_, cst_, lt_, r_ =_generate_ellop_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
+# 
+# println(el == el )
+# println(gr == gr )
+# println(cst == cst )
+# println(lt == lt )
+# println(r  ==r)

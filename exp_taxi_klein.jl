@@ -72,7 +72,7 @@ velocities_at == "interfaces" && begin
 	v		= 0* ones( m-1, n, T-1 )
 end
 
-# include("verfahren.jl") 
+include("verfahren.jl") 
 
 @everywhere rootdir = "../out/demo/exp_taxi_klein/$(velocities_at)/time_reg_$(time_regularization)/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 
@@ -101,7 +101,7 @@ using JLD
 # 
 # demo_table("demoTaxi", "demo_taxi")
 # save_demo_taxi([(".png", 100),(".eps", 1200)])
-save_displacement(rootdir, ".png", 100)
-save_displacement(rootdir, ".eps", 1200)
+# save_displacement(rootdir, ".png", 100)
+# save_displacement(rootdir, ".eps", 1200)
 
 _="fertig"

@@ -92,7 +92,7 @@ vorgabe_fehler	= diff_vorgabe(I_vorgabe, I, auslassen, zwischen_ausgelassen)
 # 	echo("vorgabefehler", l, "psnr", psnr(vorgabe_fehler[:,:,l]), "L2", vorgabe_fehler[:,:,l][:]'*B*vorgabe_fehler[:,:,l][:], "Linf", l_inf(vorgabe_fehler[:,:,l]))
 # end
 
-demo_table("demoTaxi", "demo_taxi")
-save_demo_taxi([(".png", 100),(".eps", 1200)])
+# demo_table("demoTaxi", "demo_taxi")
+# save_demo_taxi([(".png", 100),(".eps", 1200)])
 
 _="fertig"
