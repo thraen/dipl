@@ -12,8 +12,8 @@ sample_err	= sample_err_L2
 
 time_regularization == true		&& include("grad_time_reg.jl")  
 
-# ~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
-~time_regularization && velocities_at == "centers"		&& include("grad_centers_inner.jl") 	
+~time_regularization && velocities_at == "centers"		&& include("grad_centers.jl") 	
+# ~time_regularization && velocities_at == "centers"		&& include("grad_centers_inner.jl") 	
 
 ~time_regularization && velocities_at == "interfaces"	&& include("grad_interfaces.jl")
 
