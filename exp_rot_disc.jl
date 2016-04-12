@@ -10,7 +10,7 @@ maxsteps 			= 30
 
 save_every			= 0
 
-@everywhere time_regularization	= true 
+@everywhere time_regularization	= false 
 # @everywhere velocities_at		= "centers"
 @everywhere velocities_at		= "interfaces"
 @everywhere interpolate_w_time	= true

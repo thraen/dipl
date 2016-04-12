@@ -58,16 +58,19 @@ function H1_norm_grd_timereg(u,v)
 	return  ret[1]
 end
 
-function H1_norm_w_noweight_space(u,v)
+function H1_norm_w_noweight_space_centers(u,v)
 	return dx*dx* (u[:]'*Sreg*u[:] + v[:]'*Sreg*v[:])
 end
 
-function H1_norm_w_noweight_time(u,v)
+function H1_norm_w_noweight_time_centers(u,v)
 	return dx*dx* (u[:]'*Treg*u[:] + v[:]'*Treg*v[:])
 end
 
 H1_norm_w   = H1_norm_w_timereg
 H1_norm_grd = H1_norm_grd_timereg
+
+H1_norm_w_noweight_space	= H1_norm_w_noweight_space_centers
+H1_norm_w_noweight_time		= H1_norm_w_noweight_time_centers
 
 @everywhere function constr_rhs_beta(I, p, uv, Cxy, L)
 	rhs	= zeros( m, n, T-1 )
@@ -88,10 +91,12 @@ H1_norm_grd = H1_norm_grd_timereg
 	return reshape(rhs, (T-1)*n*m)
 end
 
+	pygui(true)
 @everywhere function grad_J_beta_dim_x(I, p, uv, Cxy, L)
 	rhs	= constr_rhs_beta(I, p, uv, Cxy, L)
-	#@show(reshape(rhs, m, n, T-1)[:,:,5])
-	#surf(reshape(rhs, m, n, T-1)[:,:,5], cstride=1, rstride=1)
+	@show(reshape(rhs, m, n, T-1)[:,:,5])
+	surf(reshape(rhs, m, n, T-1)[:,:,5], cstride=1, rstride=1)
+	#imshow(reshape(rhs, m, n, T-1)[:,:,5])
 	#savefig("~/tr_cent.png")
 	zuv = solve_timereg_x( rhs )
 	return zuv
@@ -105,8 +110,10 @@ end
 
 function grad_J(I, p, u, v)
 	echo( "================Calculate gradient with time regularization $m x $n parallel=$grad_parallel" )
-	zu = @spawn grad_J_beta_dim_x( I, p, u, Cx, L )
-	zv = @spawn grad_J_beta_dim_y( I, p, v, Cy, L )
+# 	zu = @spawn grad_J_beta_dim_x( I, p, u, Cx, L )
+# 	zv = @spawn grad_J_beta_dim_y( I, p, v, Cy, L )
+	zu = grad_J_beta_dim_x( I, p, u, Cx, L )
+	zv = grad_J_beta_dim_y( I, p, v, Cy, L )
 	return reshape(fetch(zu), m, n, T-1) +beta*u, reshape(fetch(zv), m, n, T-1)+beta*v
 end
 

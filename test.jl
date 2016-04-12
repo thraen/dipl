@@ -10,15 +10,15 @@ grad_bound			= 1e-8
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 2
- #maxsteps 			= 100000
+# maxsteps 			= 1
+maxsteps 			= 100000
 
 save_every			= 0
 
-time_regularization	= true  # geht nicht mit velocities_at interfaces
+time_regularization	= false  # geht nicht mit velocities_at interfaces
 
-velocities_at		= "interfaces"
-# velocities_at		= "centers"
+# velocities_at		= "interfaces"
+velocities_at		= "centers"
 
 transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 @everywhere interpolate_w_time	= true #thr! hier ist was kaputt mit interfaces
@@ -39,8 +39,8 @@ poisson_solver	= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-
 #stokes_solver	= "gmres"	#ungenau
 stokes_solver	= "lufact"#fur gegebene Probleme am besten
 
-timereg_solver	= "multig"#fur gegebene Probleme am besten
-#timereg_solver	= "gmres"	#ungenau
+#timereg_solver	= "multig"#fur gegebene Probleme am besten
+timereg_solver	= "gmres"	#ungenau
 #timereg_solver	= "lufact"	#nur fuer sehr kleine Probleme benutzbar
 
 #multigrid solver tolerance

@@ -22,18 +22,18 @@ const P_zgy = abs(Cy_zg)*dx/2
 # 	end
 # end
 
-# timereg_solver == "gmres" && begin
-# 	@everywhere using IterativeSolvers
-# 	#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
-# 	@everywhere function solve_timereg_x(b)
-# 		x, conv_hist	= gmres(ellOp, b, restart=5) 
-# 		return x
-# 	end
-# 	@everywhere function solve_timereg_y(b)
-# 		x, conv_hist	= gmres(ellOp, b, restart=5) 
-# 		return x
-# 	end
-# end
+timereg_solver == "gmres" && begin
+	@everywhere using IterativeSolvers
+	#@everywhere using KrylovMethods   #thr das spaeter noch mal probieren. das Paket ist suboptimal
+	@everywhere function solve_timereg_x(b)
+		x, conv_hist	= gmres(ellOp_x, b, restart=5) 
+		return x
+	end
+	@everywhere function solve_timereg_y(b)
+		x, conv_hist	= gmres(ellOp_y, b, restart=5) 
+		return x
+	end
+end
 
 timereg_solver == "multig" && begin
 	include("pyamg.jl")
@@ -70,18 +70,19 @@ end
 
 #thr die hier koennen nicht bei mehreren durchlaeufen mit versch. parametern umdefiniert werden
 # musst du noch was machen!
-function H1_norm_w_noweight_space(u,v)
+function H1_norm_w_noweight_space_interf(u,v)
 	return dx*dx* (u[:]'*Sreg_x*u[:] + v[:]'*Sreg_y*v[:])
 end
 
-function H1_norm_w_noweight_time(u,v)
+function H1_norm_w_noweight_time_interf(u,v)
 	return dx*dx* (u[:]'*Treg_x*u[:] + v[:]'*Treg_y*v[:])
 end
 
 H1_norm_w   = H1_norm_w_timereg
 H1_norm_grd = H1_norm_grd_timereg
 
-##XXX hier bistu
+H1_norm_w_noweight_space	= H1_norm_w_noweight_space_interf
+H1_norm_w_noweight_time		= H1_norm_w_noweight_time_interf
 
 @everywhere function constr_rhs_beta_x(I, p, u, Cx_zg, Lx, P_zgx)
 	rhs_x	= zeros( m, n-1, T-1 )
@@ -117,12 +118,13 @@ end
 	return reshape(rhs_y, (T-1)*n*(m-1))
 end
 
+pygui(true)
 @everywhere function grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
 	rhs_x	= constr_rhs_beta_x(I, p, u, Cx_zg, Lx, P_zgx)
 	#@show(reshape(rhs_x, m, n-1, T-1)[:,:,5])
 	#surf(reshape(rhs_x, m, n-1, T-1)[:,:,5], cstride=1, rstride=1)
 	#savefig("~/tr_int.png")
-	#zv		= solve_timereg_x( rhs_x )
+	zv		= solve_timereg_x( rhs_x )
 	#@show(zv)
 	return zv
 end
@@ -136,8 +138,10 @@ end
 
 function grad_J(I, p, u, v)
 	echo( "================Calculate gradient with time regularization $m x $n parallel=$grad_parallel" )
-	zu = @spawn grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
-	zv = @spawn grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
+# 	zu = @spawn grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
+# 	zv = @spawn grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
+	zu = grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
+	zv = grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
 	return reshape(fetch(zu), m, n-1, T-1) +beta*u, reshape(fetch(zv), m-1, n, T-1)+beta*v
 end
 
