@@ -90,6 +90,9 @@ end
 
 @everywhere function grad_J_beta_dim_x(I, p, uv, Cxy, L)
 	rhs	= constr_rhs_beta(I, p, uv, Cxy, L)
+	#@show(reshape(rhs, m, n, T-1)[:,:,5])
+	#surf(reshape(rhs, m, n, T-1)[:,:,5], cstride=1, rstride=1)
+	#savefig("~/tr_cent.png")
 	zuv = solve_timereg_x( rhs )
 	return zuv
 end

@@ -1,3 +1,4 @@
+include("matrizen_zellgrenzen.jl")
 @everywhere const ellOp_x, GradNormOp_x, CostNormOp_x, Sreg_x, Treg_x	= generate_ellip_beta_u(m, n, T, dt, dx, alpha, beta)
 @everywhere const ellOp_y, GradNormOp_y, CostNormOp_y, Sreg_y, Treg_y	= generate_ellip_beta_v(m, n, T, dt, dx, alpha, beta)
 @everywhere const Lx	= -generateLu(m,n,dx)
@@ -43,9 +44,11 @@ timereg_solver == "multig" && begin
 	@everywhere const ellOp_mg_x		= construct_mgsolv(ellOp_x)
 	@everywhere const ellOp_mg_y		= construct_mgsolv(ellOp_y)
 	@everywhere function solve_timereg_x(b)
+		# return ellOp_mg_x[:solve](b, tol=mg_tol)
 		return ellOp_mg_x[:solve](b, tol=mg_tol, accel="cg")
 	end
 	@everywhere function solve_timereg_y(b)
+		#return ellOp_mg_y[:solve](b, tol=mg_tol)
 		return ellOp_mg_y[:solve](b, tol=mg_tol, accel="cg")
 	end
 end
@@ -65,6 +68,8 @@ function H1_norm_grd_timereg(u,v)
 	return  ret[1]
 end
 
+#thr die hier koennen nicht bei mehreren durchlaeufen mit versch. parametern umdefiniert werden
+# musst du noch was machen!
 function H1_norm_w_noweight_space(u,v)
 	return dx*dx* (u[:]'*Sreg_x*u[:] + v[:]'*Sreg_y*v[:])
 end
@@ -95,11 +100,11 @@ H1_norm_grd = H1_norm_grd_timereg
 	return reshape(rhs_x, (T-1)*(n-1)*m)
 end
 
-@everywhere function constr_rhs_beta_y(I, p, u, Cy_zg, Ly, P_zgy)
+@everywhere function constr_rhs_beta_y(I, p, v, Cy_zg, Ly, P_zgy)
 	rhs_y	= zeros( m-1, n, T-1 )
 	for t= 1:T-1
 		Lv			= Ly*  reshape(v[:,:,t], n*(m-1))
-		p_zgx		= P_zgx * reshape(p[:,:,t], m*n)
+		p_zgy		= P_zgy * reshape(p[:,:,t], m*n)
 
 		pI_y		= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 
@@ -113,8 +118,12 @@ end
 end
 
 @everywhere function grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
-	rhs_x	= constr_rhs_beta_x(I, p, uv, Cx_zg, Lx, P_zgx)
-	zv		= solve_timereg_x( rhs_x )
+	rhs_x	= constr_rhs_beta_x(I, p, u, Cx_zg, Lx, P_zgx)
+	#@show(reshape(rhs_x, m, n-1, T-1)[:,:,5])
+	#surf(reshape(rhs_x, m, n-1, T-1)[:,:,5], cstride=1, rstride=1)
+	#savefig("~/tr_int.png")
+	#zv		= solve_timereg_x( rhs_x )
+	#@show(zv)
 	return zv
 end
 

@@ -11,7 +11,7 @@ grad_bound			= 1e-8
 @everywhere const beta	= 0.001
 
 maxsteps 			= 2
-# maxsteps 			= 100000
+ #maxsteps 			= 100000
 
 save_every			= 0
 
@@ -21,7 +21,7 @@ velocities_at		= "interfaces"
 # velocities_at		= "centers"
 
 transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
-@everywhere interpolate_w_time	= false
+@everywhere interpolate_w_time	= true #thr! hier ist was kaputt mit interfaces
 
 # das Verfahren mit Zeitregularisierung parallelisiert 
 # automatisch die Dimensionen, wenn mehr als ein Worker existiert
@@ -131,11 +131,11 @@ echo("linf( I-I_vorgabe )", l_inf(vorgabe_fehler))
 echo("PNSR( I-I_vorgabe )", psnr(vorgabe_fehler))
 echo("Gradnorm", H1_J_ws[end])
 
-demo_table("test", "test")
+#demo_table("test", "test")
 
 # save_all()
 
-pygui(true)
-s1=s[:,:,1]
-s2=s[:,:,2]
-_="fertig"
+#pygui(true)
+#s1=s[:,:,1]
+#s2=s[:,:,2]
+#_="fertig"
