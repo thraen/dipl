@@ -97,13 +97,45 @@ end
 function generate_stokes(m, n, dx, Cx_zg, Cy_zg, Lx, Ly)
 	ndofu	= prod(m*(n-1))
 	ndofv	= prod((m-1)*n)
-
 	S 		= [	Lx						spzeros(ndofu, ndofv)	Cx_zg;
 				spzeros(ndofv, ndofu)	Ly						Cy_zg;
 				Cx_zg'					Cy_zg'					spzeros(m*n, m*n) ]
-
 	S[end, :]	= 0
 	S[end, end] = 1
-
 	return S
+end
+
+@everywhere function ellop_inner_hilfsmatrizen(m,n,k)
+	_m, _n	= m-2, n-2
+	dh0 	= [[1] ; 2*ones(k-3); [1]]
+	dhpm1 	= -ones(k-2)
+	ht		= spdiagm( (dhpm1, dh0, dhpm1), (-1,0,1) )
+	hl		= spdiagm( [[0.5] ; ones(k-3) ; [0.5] ] , 0)
+	return ht, hl
+end
+
+@everywhere function generate_ellip_beta_u(m,n,T, dt, dx, alpha, beta)
+	ht, hl		= ellop_inner_hilfsmatrizen(m,n,T)
+	L			= generate_Lu(m,n,dx)
+	L2			= kron(hl,L) *dt^2
+
+	# das ist T in der niederschrift
+	R			= kron(ht, spdiagm(ones(m*n), 0)) 
+	ellOp		= L2 + R
+	GradNormOp	= (L2 + R) /dt
+	CostNormOp	= (alpha * L2 + beta * R)/dt
+	return ellOp, GradNormOp, CostNormOp, L2/dt, R/dt
+end
+
+@everywhere function generate_ellip_beta_v(m,n,T, dt, dx, alpha, beta)
+	ht, hl		= ellop_inner_hilfsmatrizen(m,n,T)
+	L			= generate_Lv(m,n,dx)
+	L2			= kron(hl,L) *dt^2
+
+	# das ist T in der niederschrift
+	R			= kron(ht, spdiagm(ones(m*n), 0)) 
+	ellOp		= L2 + R
+	GradNormOp	= (L2 + R) /dt
+	CostNormOp	= (alpha * L2 + beta * R)/dt
+	return ellOp, GradNormOp, CostNormOp, L2/dt, R/dt
 end

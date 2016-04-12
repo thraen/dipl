@@ -113,6 +113,7 @@ end
  	#oder so
 	# 	itpp = interpolate(p[:,:,t], (BSpline(Linear()), BSpline(Linear())), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
 
+	# hier werden zentrale differenzen angewendet. ergebnisse beziehen sich auf zellzwischenraeume
 	pI_x			= Cx_zg * reshape(I[:,:,t], m*n) .* p_zgx
 	pI_y			= Cy_zg * reshape(I[:,:,t], m*n) .* p_zgy
 

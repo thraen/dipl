@@ -72,7 +72,8 @@ end
 	return spdiagm( (block_ndiagl2, block_ndiagl1, block_diag, block_ndiagr1, block_ndiagr2), (-m, -1, 0, 1, m) ) * dt^2 / (dx*dx)
 end
 
-@everywhere function generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
+#alte version, langsam und unflexibel
+@everywhere function _generate_ellip_beta(m, n, T, dt, dx, alpha, beta)
 	println("generate elliptic operator")
 	LT		= generate_block_laplace(m,n,T,dt, dx)
 
@@ -90,17 +91,16 @@ end
 	return ellOp, GradNormOp, CostNormOp, LT/dt, R/dt
 end
 
-@everywhere function ellop_inner_hilfsmatrizen(m,n,k)
-	_m, _n	= m-2, n-2
-	dh0 	= [[1] ; 2*ones(k-3); [1]]
-	dhpm1 	= -ones(k-2)
+@everywhere function ellop_hilfsmatrizen(T)
+	dh0 	= [[1] ; 2*ones(T-3); [1]]
+	dhpm1 	= -ones(T-2)
 	ht		= spdiagm( (dhpm1, dh0, dhpm1), (-1,0,1) )
-	hl		= spdiagm( [[0.5] ; ones(k-3) ; [0.5] ] , 0)
+	hl		= spdiagm( [[0.5] ; ones(T-3) ; [0.5] ] , 0)
 	return ht, hl
 end
 
-@everywhere function _generate_ellip_beta(m,n,T, dt, dx, alpha, beta)
-	ht, hl		= ellop_inner_hilfsmatrizen(m,n,T)
+@everywhere function generate_ellip_beta(m,n,T, dt, dx, alpha, beta)
+	ht, hl		= ellop_hilfsmatrizen(T)
 	L			= generate_laplace(m,n,dx)
 	L2			= kron(hl,L) *dt^2
 
@@ -124,10 +124,30 @@ end
 # testbet	= 0.3
 # 
 # @time el , gr , cst , lt , r =generate_ellip_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
-# @time el_, gr_, cst_, lt_, r_ =_generate_ellop_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
+# @time el_, gr_, cst_, lt_, r_ =_generate_ellip_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
 # 
 # println(el == el )
 # println(gr == gr )
 # println(cst == cst )
 # println(lt == lt )
 # println(r  ==r)
+# 
+
+# a=generate_laplace(testm,testn,testdx)
+# b=generate_laplace_inner(testm,testn)/testdx^2
+# 
+# u__ = rand(testm-2, testn-2)
+# u_= zeros(testm, testn)
+# u_[2:testm-1, 2:testn-1] = u__
+# println("wtf")
+# 
+# c= u_[:]'*a*u_[:]
+# 
+# println(size(u__))
+# println(size(b))
+# 
+# d= u__[:]'*b*u__[:]
+# 
+# println(c)
+# println(d)
+# 

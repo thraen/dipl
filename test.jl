@@ -15,10 +15,10 @@ maxsteps 			= 2
 
 save_every			= 0
 
-time_regularization	= false  # geht nicht mit velocities_at interfaces
+time_regularization	= true  # geht nicht mit velocities_at interfaces
 
-# velocities_at		= "interfaces"
-velocities_at		= "centers"
+velocities_at		= "interfaces"
+# velocities_at		= "centers"
 
 transport_parallel				= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll
 @everywhere interpolate_w_time	= false
@@ -84,6 +84,7 @@ include("beispiele.jl")
 
 # I_vorgabe   = init_vorgabe(rot_circle_ex, 2*m,2*n, T_vorgabe)[m+1:2*m, n+1:2*n, :]
 # I_vorgabe   = init_vorgabe(transl_circle, m, n, T_vorgabe)
+I_vorgabe   = init_vorgabe(char_quadrat, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(deform_circle, m, n, T_vorgabe)
 # I_vorgabe   = init_vorgabe(__rot_circle_ex, m,n, T_vorgabe)
 # I_vorgabe   = readtaxi_alt()[3:192, 3:end-2, 1:T_vorgabe] # die dlm-dateien wurden am Rand mit Nullen aufgefuellt
@@ -117,7 +118,7 @@ end
 
 include("verfahren.jl") 
 
-@everywhere rootdir = "../out/new/2quadrate_eng/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
+@everywhere rootdir = "../out/new/zeugs/$(m)_x_$(n)_$(n_samples)_$(n_zwischensamples)_$(alpha)_$(beta)/"
 make_output_dir(rootdir)
 
 @time I, u, v, p, L2_errs, H1_errs, Js, H1_J_ws, steps = verfahren_grad(s, u, v, 1, 1.0, grad_bound)
