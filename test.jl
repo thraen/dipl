@@ -39,8 +39,8 @@ poisson_solver	= "lufact" #fur gegebene Probleme am besten. Eigentlich Cholesky-
 #stokes_solver	= "gmres"	#ungenau
 stokes_solver	= "lufact"#fur gegebene Probleme am besten
 
-#timereg_solver	= "multig"#fur gegebene Probleme am besten
-timereg_solver	= "gmres"	#ungenau
+timereg_solver	= "multig"#fur gegebene Probleme am besten
+# timereg_solver	= "gmres"	#ungenau
 #timereg_solver	= "lufact"	#nur fuer sehr kleine Probleme benutzbar
 
 #multigrid solver tolerance
