@@ -99,7 +99,7 @@ end
 	return ht, hl
 end
 
-@everywhere function _generate_ellop_beta(m,n,T, dt, dx, alpha, beta)
+@everywhere function _generate_ellip_beta(m,n,T, dt, dx, alpha, beta)
 	ht, hl		= ellop_inner_hilfsmatrizen(m,n,T)
 	L			= generate_laplace(m,n,dx)
 	L2			= kron(hl,L) *dt^2
