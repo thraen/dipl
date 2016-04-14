@@ -118,14 +118,9 @@ end
 	return reshape(rhs_y, (T-1)*n*(m-1))
 end
 
-pygui(true)
 @everywhere function grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
 	rhs_x	= constr_rhs_beta_x(I, p, u, Cx_zg, Lx, P_zgx)
-	#@show(reshape(rhs_x, m, n-1, T-1)[:,:,5])
-	#surf(reshape(rhs_x, m, n-1, T-1)[:,:,5], cstride=1, rstride=1)
-	#savefig("~/tr_int.png")
 	zv		= solve_timereg_x( rhs_x )
-	#@show(zv)
 	return zv
 end
 
