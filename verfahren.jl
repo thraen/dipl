@@ -8,6 +8,8 @@ const B		= generate_L2(m, n, dx)
 
 include("misc.jl")
 L2norm		= function(s) return Xnorm(s, B) end # thr das sollte besser L2sum heissen
+# L2norm = l2norm #riemannsummen auf den zellen
+
 sample_err	= sample_err_L2
 
 time_regularization && velocities_at =="centers" 		&& include("grad_time_reg.jl")  

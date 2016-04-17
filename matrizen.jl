@@ -6,7 +6,7 @@
 	return -(kron(Dyy, speye(_n)) + kron(speye(_m), Dxx))
 end
 
-function generate_differentiation_central(m, n, dx)
+@everywhere function generate_differentiation_central(m, n, dx)
 	println("generate central differences Matrices for cell centers $m x $n")
 	ndiag_x_m	= -[ repmat( [ 0; ones(m-2); 0], n-2) ; zeros(m) ] /(2*dx)
 	ndiag_x_p	=  [ zeros(m) ; repmat( [ 0; ones(m-2); 0], n-2) ] /(2*dx)
@@ -18,23 +18,23 @@ function generate_differentiation_central(m, n, dx)
 	return Cx, Cy
 end
 
-function L2diag(m, n, dx)
+@everywhere function L2diag(m, n, dx)
 	return [2; 6*ones(m-2); 4;   repmat([6; 12*ones(m-2); 6], n-2);     4; 6*ones(m-2); 2]* (dx^2/24)
 end
 
-function L2diagM(m, n, dx)
+@everywhere function L2diagM(m, n, dx)
 	return repmat([1; 2*ones(m-2); 1], n-1)* (dx^2/24)
 end
 
-function L2diag1(m, n, dx)
+@everywhere function L2diag1(m, n, dx)
 	return [ ones(m-1); 0;  repmat([2*ones(m-1); 0], n-2); ones(m-1) ]* (dx^2/24)
 end
 
-function L2diagpMm1(m, n, dx)
+@everywhere function L2diagpMm1(m, n, dx)
   	return [ repmat([0; 2*ones(m-1)], n-1); 0 ]* (dx^2/24)
 end
 
-function generate_L2(m, n, dx)
+@everywhere function generate_L2(m, n, dx)
 	diags = (L2diagpMm1(m, n, dx), L2diagM(m, n, dx), L2diag1(m, n, dx), L2diag(m, n, dx), L2diag1(m,n,dx), L2diagM(m,n,dx), L2diagpMm1(m,n,dx))
 	return spdiagm( diags, ( -(m-1), -m, -1, 0, 1, m, (m-1) ) )
 end

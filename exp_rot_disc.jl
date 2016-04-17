@@ -5,14 +5,14 @@ armijo_maxtry		= 80
 @everywhere const alpha	= 0.01
 @everywhere const beta	= 0.01
 
-maxsteps 			= 30
-# maxsteps 			= 100000
+# maxsteps 			= 2
+maxsteps 			= 100000
 
 save_every			= 0
 
 @everywhere time_regularization	= false 
-# @everywhere velocities_at		= "centers"
-@everywhere velocities_at		= "interfaces"
+@everywhere velocities_at		= "centers"
+# @everywhere velocities_at		= "interfaces"
 @everywhere interpolate_w_time	= true
 
 transport_parallel	= false # geht nicht gut, erst ab ca 500x500 Pixel sinnvoll

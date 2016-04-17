@@ -61,8 +61,8 @@ H1_norm_w_noweight_time		= function(u,v) return "{\\text{k.A.}}" end
 	pI_x			= Cx*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 	pI_y			= Cy*reshape(I[:,:,t], n*m).* reshape(p[:,:,t], m*n)
 
-	phi_x			= solve_poisson(pI_x)
-	phi_y			= solve_poisson(pI_y)
+# 	phi_x			= solve_poisson(B*pI_x/dx^2)
+# 	phi_y			= solve_poisson(B*pI_y/dx^2)
 
 	grd_u_J[:,:,t]	= reshape(phi_x, m, n) + alpha*u[:,:,t] 
 	grd_v_J[:,:,t]	= reshape(phi_y, m, n) + alpha*v[:,:,t] 
