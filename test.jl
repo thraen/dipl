@@ -10,8 +10,8 @@ grad_bound			= 1e-8
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-# maxsteps 			= 1
-maxsteps 			= 100000
+maxsteps 			= 1
+# maxsteps 			= 100000
 
 save_every			= 0
 

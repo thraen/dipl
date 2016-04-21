@@ -113,9 +113,9 @@ end
 	return ellOp, GradNormOp, CostNormOp, L2/dt, R/dt
 end
 
-# testn	= 100
-# testm	= 100
-# testT	= 100
+# testn	= 3
+# testm	= 3
+# testT	= 3
 # 
 # testdx	= 0.5
 # testdt	= 0.4
@@ -125,7 +125,7 @@ end
 # 
 # @time el , gr , cst , lt , r =generate_ellip_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
 # @time el_, gr_, cst_, lt_, r_ =_generate_ellip_beta(testm, testn, testT, testdt, testdx, testalph, testbet)
-# 
+
 # println(el == el )
 # println(gr == gr )
 # println(cst == cst )
