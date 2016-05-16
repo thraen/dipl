@@ -133,10 +133,8 @@ end
 
 function grad_J(I, p, u, v)
 	echo( "================Calculate gradient with time regularization $m x $n parallel=$grad_parallel" )
-# 	zu = @spawn grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
-# 	zv = @spawn grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
-	zu = grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
-	zv = grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
+	zu = @spawn grad_J_beta_dim_x(I, p, u, Cx_zg, Lx, P_zgx)
+	zv = @spawn grad_J_beta_dim_y(I, p, v, Cy_zg, Ly, P_zgy)
 	return reshape(fetch(zu), m, n-1, T-1) +beta*u, reshape(fetch(zv), m-1, n, T-1)+beta*v
 end
 

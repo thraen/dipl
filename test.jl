@@ -10,7 +10,7 @@ grad_bound			= 1e-8
 @everywhere const alpha	= 0.001
 @everywhere const beta	= 0.001
 
-maxsteps 			= 1
+maxsteps 			= 2
 # maxsteps 			= 100000
 
 save_every			= 0
@@ -46,7 +46,7 @@ timereg_solver	= "multig"#fur gegebene Probleme am besten
 #multigrid solver tolerance
 @everywhere const mg_tol = 1e-1 
 
-@everywhere with_cfl_check = true
+@everywhere with_cfl_check = false
 
 # Zeitregularisierung funktioniert nur mit Flussdiskretisierung an Zellmittelpunkten
 # diese Zeile ist zu Sicherheit, damit man nichts falsch einstellt

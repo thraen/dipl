@@ -66,18 +66,17 @@ function ruecktransport_ser!(s, I, u, v, n_samp, n_zsamp, norm_s)
 # 	vip = interpolate(v, (BSpline(Cubic(Flat())), BSpline(Cubic(Flat())), BSpline(Cubic(Flat()))), OnGrid()) #thr ongrid? oncell? kommt das gleiche raus
 
 	for t = T:-1:2
-		# thr!!! rechter oder linker grenzwert zum diracterm?
 		if mod(t-1, n_zsamp+1) == 0 then
-# 			echo("am sample        ", t, "->", t-1, n_samp-sk)
+# 			info("am Sample", t)
 			err			= I[:, :, t] - s[:, :, n_samp-sk] 
 			p[:,:,t] 	= p[:,:,t] - err/norm_s
 			ph			= p[:,:,t]
 			sk 			+= 1
 		else
-# 			echo("zwischensample        ", t, "->", t-1, n_samp-sk)
+# 			info("zwischen Samples", t)
 		end
-# 		procchunk_x_bw!(p, ph, uip, t, 3:m-2, 3:n-2 )
-# 		procchunk_y_bw!(p, ph, vip, t, 3:m-2, 3:n-2 )
+		# 		procchunk_x_bw!(p, ph, uip, t, 3:m-2, 3:n-2 )
+		# 		procchunk_y_bw!(p, ph, vip, t, 3:m-2, 3:n-2 )
 
 		procchunk_x_bw!(p, ph, uip, t, 1:m, 3:n-2 )
 		procchunk_x_bw_innerer_rand_LR!(p, ph, uip, t, 1:m, [2,n-1])
